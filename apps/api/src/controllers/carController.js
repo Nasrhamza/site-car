@@ -1,0 +1,304 @@
+import Car from "../models/Car.js";
+import Inquiry from "../models/Inquiry.js";
+import { makeSlug } from "../utils/slug.js";
+import { getCategoryAliases, normalizeCategoryValue } from "../utils/category.js";
+import { getFuelTypeAliases, isOtherFuelType, normalizeFuelTypeValue } from "../utils/fuel.js";
+
+function toNumber(value) {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function toStringList(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeStatusValue(value) {
+  const input = String(value || "").trim().toLowerCase();
+
+  if (input.includes("vend")) return "Vendu";
+  if (input.includes("masq")) return "Masque";
+  if (input.includes("reserv")) return "Reserve";
+
+  return "Disponible";
+}
+
+function normalizePriceTypeValue(value) {
+  const input = String(value || "").trim().toLowerCase();
+  return input.includes("negoc") ? "Negociable" : "Prix fixe";
+}
+
+function serializeCar(car) {
+  const payload = typeof car?.toObject === "function" ? car.toObject() : car;
+  const availability = normalizeStatusValue(payload?.availability || payload?.status);
+
+  return {
+    ...payload,
+    category: normalizeCategoryValue(payload?.category),
+    fuelType: normalizeFuelTypeValue(payload?.fuelType),
+    status: availability,
+    availability,
+    priceType: normalizePriceTypeValue(payload?.priceType)
+  };
+}
+
+function normalizeCarPayload(body) {
+  const normalized = { ...body };
+
+  const year = toNumber(body.year);
+  const mileage = toNumber(body.mileage);
+  const price = toNumber(body.price);
+
+  if (year !== undefined) normalized.year = year;
+  if (mileage !== undefined) normalized.mileage = mileage;
+  if (price !== undefined) normalized.price = price;
+
+  if (typeof body.category === "string") {
+    normalized.category = normalizeCategoryValue(body.category);
+  }
+
+  if (body.fuelType !== undefined) {
+    normalized.fuelType = normalizeFuelTypeValue(body.fuelType);
+  }
+
+  const badges = toStringList(body.badges);
+  const equipment = toStringList(body.equipment);
+
+  if (badges !== undefined) normalized.badges = badges;
+  if (equipment !== undefined) normalized.equipment = equipment;
+
+  if (body.priceType !== undefined) {
+    normalized.priceType = normalizePriceTypeValue(body.priceType);
+  }
+
+  if (body.status !== undefined || body.availability !== undefined) {
+    const availability = normalizeStatusValue(body.availability || body.status);
+    normalized.status = availability;
+    normalized.availability = availability;
+  }
+
+  const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl.trim() : "";
+  if (imageUrl) {
+    normalized.images = [{ url: imageUrl, alt: body.name || "Vehicule" }];
+  }
+
+  delete normalized.imageUrl;
+
+  return Object.fromEntries(
+    Object.entries(normalized).filter(([, value]) => value !== undefined)
+  );
+}
+
+export async function getCars(req, res) {
+  try {
+    const {
+      page = 1,
+      limit = 9,
+      search,
+      brand,
+      category,
+      minPrice,
+      maxPrice,
+      yearFrom,
+      yearTo,
+      fuelType,
+      gearbox,
+      sort = "-createdAt"
+    } = req.query;
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { name: new RegExp(search, "i") },
+        { brand: new RegExp(search, "i") },
+        { model: new RegExp(search, "i") }
+      ];
+    }
+
+    if (brand) query.brand = { $in: String(brand).split(",") };
+    if (category) {
+      query.category = { $in: getCategoryAliases(category) };
+    }
+    if (fuelType) {
+      if (isOtherFuelType(fuelType)) {
+        query.$and = [
+          ...(query.$and || []),
+          {
+            $or: [
+              { fuelType: { $exists: false } },
+              { fuelType: null },
+              { fuelType: "" },
+              { fuelType: { $in: getFuelTypeAliases(fuelType) } }
+            ]
+          }
+        ];
+      } else {
+        query.fuelType = { $in: getFuelTypeAliases(fuelType) };
+      }
+    }
+    if (gearbox) query.gearbox = gearbox;
+
+    if (minPrice || maxPrice) {
+      query.price = {
+        ...(minPrice ? { $gte: Number(minPrice) } : {}),
+        ...(maxPrice ? { $lte: Number(maxPrice) } : {})
+      };
+    }
+
+    if (yearFrom || yearTo) {
+      query.year = {
+        ...(yearFrom ? { $gte: Number(yearFrom) } : {}),
+        ...(yearTo ? { $lte: Number(yearTo) } : {})
+      };
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [items, total] = await Promise.all([
+      Car.find(query).sort(sort).skip(skip).limit(Number(limit)),
+      Car.countDocuments(query)
+    ]);
+
+    res.json({
+      items: items.map(serializeCar),
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
+    });
+  } catch (error) {
+    console.error("getCars error:", error);
+    res.status(500).json({ message: "Erreur lors du chargement des vehicules" });
+  }
+}
+
+export async function getCarBySlug(req, res) {
+  try {
+    const car = await Car.findOne({ slug: req.params.slug });
+
+    if (!car) {
+      return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+
+    car.views = (car.views || 0) + 1;
+    await car.save();
+
+    const similar = await Car.find({
+      _id: { $ne: car._id },
+      $or: [{ category: { $in: getCategoryAliases(car.category) } }, { brand: car.brand }]
+    }).limit(3);
+
+    const inquiriesCount = await Inquiry.countDocuments({ car: car._id });
+
+    res.json({ car: serializeCar(car), similar: similar.map(serializeCar), inquiriesCount });
+  } catch (error) {
+    console.error("getCarBySlug error:", error);
+    res.status(500).json({ message: "Erreur lors du chargement du vehicule" });
+  }
+}
+
+export async function getCarById(req, res) {
+  try {
+    const car = await Car.findById(req.params.id);
+
+    if (!car) {
+      return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+
+    res.json(serializeCar(car));
+  } catch (error) {
+    console.error("getCarById error:", error);
+    res.status(500).json({ message: "Erreur lors du chargement du vehicule" });
+  }
+}
+
+export async function createCar(req, res) {
+  try {
+    const body = normalizeCarPayload(req.body);
+    const slug = makeSlug(body.brand, body.model, body.year);
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const car = await Car.create({
+      ...body,
+      slug,
+      images: imagePath ? [{ url: imagePath, alt: body.name || "Vehicule" }] : body.images || []
+    });
+
+    res.status(201).json(serializeCar(car));
+  } catch (error) {
+    console.error("createCar error:", error);
+    res.status(500).json({ message: "Erreur lors de la creation du vehicule" });
+  }
+}
+
+export async function updateCar(req, res) {
+  try {
+    const updateData = normalizeCarPayload(req.body);
+
+    if (updateData.brand && updateData.model && updateData.year) {
+      updateData.slug = makeSlug(updateData.brand, updateData.model, updateData.year);
+    }
+
+    if (req.file) {
+      updateData.images = [
+        {
+          url: `/uploads/${req.file.filename}`,
+          alt: req.body.name || "Vehicule"
+        }
+      ];
+    }
+
+    const car = await Car.findByIdAndUpdate(req.params.id, updateData, {
+      new: true
+    });
+
+    if (!car) {
+      return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+
+    res.json(serializeCar(car));
+  } catch (error) {
+    console.error("updateCar error:", error);
+    res.status(500).json({ message: "Erreur lors de la mise a jour" });
+  }
+}
+
+export async function deleteCar(req, res) {
+  try {
+    const car = await Car.findByIdAndDelete(req.params.id);
+
+    if (!car) {
+      return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+
+    res.json({ message: "Vehicule supprime" });
+  } catch (error) {
+    console.error("deleteCar error:", error);
+    res.status(500).json({ message: "Erreur lors de la suppression" });
+  }
+}
+
+export async function getFeaturedCars(req, res) {
+  try {
+    const cars = await Car.find({ featured: true, status: "Disponible" }).limit(6);
+    res.json(cars.map(serializeCar));
+  } catch (error) {
+    console.error("getFeaturedCars error:", error);
+    res.status(500).json({ message: "Erreur lors du chargement des vehicules en vedette" });
+  }
+}
