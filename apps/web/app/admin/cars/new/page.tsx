@@ -8,7 +8,10 @@ import {
   DEFAULT_VEHICLE_CATEGORY,
   FUEL_TYPE_OPTIONS,
   PRODUCT_STATUS_OPTIONS,
-  VEHICLE_CATEGORIES
+  VEHICLE_CATEGORIES,
+  getCategoryLabel,
+  getFuelTypeLabel,
+  getStatusLabel
 } from "@/lib/company";
 
 const initialForm = {
@@ -34,7 +37,7 @@ export default function AddCarPage() {
 
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -68,9 +71,9 @@ export default function AddCarPage() {
       formData.append("badges", form.badges || "");
       formData.append("equipment", form.equipment || "");
 
-      if (selectedFile) {
-        formData.append("image", selectedFile);
-      }
+      selectedFiles.forEach((file) => {
+        formData.append("images", file);
+      });
 
       await api.post("/cars", formData, {
         headers: {
@@ -79,9 +82,10 @@ export default function AddCarPage() {
       });
 
       router.push("/admin/cars");
+      router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Erreur lors de l'ajout du vehicule");
+      alert("حدث خطأ أثناء إضافة المركبة");
     } finally {
       setLoading(false);
     }
@@ -91,59 +95,59 @@ export default function AddCarPage() {
     <section className="mx-auto w-full max-w-5xl px-4 py-10 md:px-6">
       <div className="mb-6">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-rose-500">
-          Catalogue admin
+          معرض الإدارة
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Ajouter un vehicule
+          إضافة مركبة
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-slate-500 md:text-base">
-          Ajoutez un nouveau vehicule au catalogue avec ses informations principales et une image importee depuis votre appareil.
+          أضف مركبة جديدة مع عدة صور. أول صورة يتم اختيارها ستظهر كالصورة الرئيسية داخل صفحة التفاصيل.
         </p>
       </div>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900 md:p-8">
         <form onSubmit={handleSubmit} className="grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Nom</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الاسم</label>
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
-              placeholder="Ex: Volvo FH 2023"
+              placeholder="مثال: Volvo FH 2023"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Marque</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الماركة</label>
             <input
               type="text"
               name="brand"
               value={form.brand}
               onChange={handleChange}
-              placeholder="Ex: Volvo"
+              placeholder="مثال: Volvo"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Modele</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الموديل</label>
             <input
               type="text"
               name="model"
               value={form.model}
               onChange={handleChange}
-              placeholder="Ex: FH"
+              placeholder="مثال: FH"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Categorie</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الفئة</label>
             <select
               name="category"
               value={form.category}
@@ -151,13 +155,15 @@ export default function AddCarPage() {
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             >
               {VEHICLE_CATEGORIES.map((category) => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category} value={category}>
+                  {getCategoryLabel(category)}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Annee</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">السنة</label>
             <input
               type="number"
               name="year"
@@ -170,7 +176,7 @@ export default function AddCarPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Kilometrage</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الكيلومترات</label>
             <input
               type="number"
               name="mileage"
@@ -183,7 +189,7 @@ export default function AddCarPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Carburant</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">نوع الوقود</label>
             <select
               name="fuelType"
               value={form.fuelType}
@@ -191,52 +197,54 @@ export default function AddCarPage() {
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             >
               {FUEL_TYPE_OPTIONS.map((fuelType) => (
-                <option key={fuelType} value={fuelType}>{fuelType}</option>
+                <option key={fuelType} value={fuelType}>
+                  {getFuelTypeLabel(fuelType)}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Boite</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">علبة السرعة</label>
             <input
               type="text"
               name="gearbox"
               value={form.gearbox}
               onChange={handleChange}
-              placeholder="Automatique / Manuelle"
+              placeholder="أوتوماتيك / يدوي"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Transmission</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الدفع / النقل</label>
             <input
               type="text"
               name="transmission"
               value={form.transmission}
               onChange={handleChange}
-              placeholder="4x2 / 6x4 / Integrale"
+              placeholder="4x2 / 6x4 / دفع رباعي"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Couleur exterieure</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">اللون الخارجي</label>
             <input
               type="text"
               name="exteriorColor"
               value={form.exteriorColor}
               onChange={handleChange}
-              placeholder="Blanc / Rouge / Gris"
+              placeholder="أبيض / أحمر / رمادي"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Prix</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">السعر</label>
             <input
               type="number"
               name="price"
@@ -249,7 +257,7 @@ export default function AddCarPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Disponibilite</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الحالة</label>
             <select
               name="status"
               value={form.status}
@@ -257,60 +265,76 @@ export default function AddCarPage() {
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             >
               {PRODUCT_STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>
+                  {getStatusLabel(status)}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Image principale</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">صور المركبة</label>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null;
-                setSelectedFile(file);
-              }}
+              multiple
+              onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             />
-            {selectedFile && (
-              <p className="text-sm text-slate-500">
-                Fichier selectionne : {selectedFile.name}
-              </p>
-            )}
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
+              {selectedFiles.length ? (
+                <div className="space-y-2">
+                  <p className="font-medium text-slate-700 dark:text-white">
+                    تم اختيار {selectedFiles.length} صورة
+                  </p>
+                  <ul className="grid gap-1 sm:grid-cols-2">
+                    {selectedFiles.map((file, index) => (
+                      <li key={`${file.name}-${index}`}>
+                        {index + 1}. {file.name}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    الصورة الأولى ستكون الصورة الرئيسية، والبقية ستظهر في شريط الصور داخل صفحة السيارة.
+                  </p>
+                </div>
+              ) : (
+                "يمكنك اختيار صورة واحدة أو عدة صور لنفس المركبة."
+              )}
+            </div>
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Badges</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الشارات</label>
             <input
               type="text"
               name="badges"
               value={form.badges}
               onChange={handleChange}
-              placeholder="Inspection, Export, Garantie"
+              placeholder="فحص، تصدير، جاهز"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Equipements</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">التجهيزات</label>
             <input
               type="text"
               name="equipment"
               value={form.equipment}
               onChange={handleChange}
-              placeholder="Retarder, GPS, Camera, Climatisation"
+              placeholder="GPS، كاميرا، تكييف..."
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Description</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">الوصف</label>
             <textarea
               name="description"
               value={form.description}
               onChange={handleChange}
-              placeholder="Decrivez le vehicule..."
+              placeholder="اكتب وصف المركبة..."
               rows={5}
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
               required
@@ -323,7 +347,7 @@ export default function AddCarPage() {
               disabled={loading}
               className="rounded-2xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Ajout en cours..." : "Ajouter le vehicule"}
+              {loading ? "جارٍ الإضافة..." : "إضافة المركبة"}
             </button>
 
             <button
@@ -331,7 +355,7 @@ export default function AddCarPage() {
               onClick={() => router.push("/admin/cars")}
               className="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5"
             >
-              Annuler
+              إلغاء
             </button>
           </div>
         </form>

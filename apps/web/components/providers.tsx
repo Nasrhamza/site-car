@@ -9,7 +9,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient());
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      storageKey="alhaduni-theme-v2"
+    >
       <QueryClientProvider client={client}>
         {children}
       </QueryClientProvider>

@@ -20,10 +20,22 @@ import {
 import { api } from "@/lib/api";
 import { useGarageStore } from "@/store/favorites";
 import { buildWhatsAppLink, currency, resolveMediaUrl } from "@/lib/utils";
-import { buildWhatsAppUrl } from "@/lib/company";
+import {
+  buildWhatsAppUrl,
+  getBadgeLabel,
+  getCategoryLabel,
+  getFuelTypeLabel,
+  getPriceTypeLabel,
+  getStatusLabel,
+  getTransmissionLabel,
+  localizeDescription,
+  localizeEquipmentLabel,
+  localizeFeatureLabel,
+  localizeFeatureValue
+} from "@/lib/company";
 import { CarCard } from "@/components/car-card";
 
-const tabs = ["Presentation", "Caracteristiques", "Equipements", "Importation"];
+const tabs = ["نبذة", "المواصفات", "التجهيزات", "الشحن"];
 
 export default function CarDetailsPage() {
   const params = useParams();
@@ -35,7 +47,7 @@ export default function CarDetailsPage() {
   const [error, setError] = useState("");
   const [watchers, setWatchers] = useState(0);
   const [active, setActive] = useState(0);
-  const [tab, setTab] = useState("Presentation");
+  const [tab, setTab] = useState("نبذة");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -63,12 +75,12 @@ export default function CarDetailsPage() {
           });
         }
       } catch (requestError: any) {
-        console.error("Erreur chargement vehicule :", requestError);
+        console.error("خطأ أثناء تحميل المركبة :", requestError);
         setData(null);
         setWatchers(0);
         setError(
           requestError?.response?.data?.message ||
-            "Cette fiche est temporairement indisponible. Merci de reessayer dans quelques instants."
+            "هذه الصفحة غير متاحة مؤقتًا. حاول مرة أخرى بعد قليل."
         );
       }
     };
@@ -80,11 +92,15 @@ export default function CarDetailsPage() {
     };
   }, [slug]);
 
+  useEffect(() => {
+    setActive(0);
+  }, [data?.car?._id]);
+
   const whatsappHref = useMemo(() => {
     if (!data?.car) return "#";
 
     return buildWhatsAppLink({
-      name: data.car.name || "Vehicule",
+      name: data.car.name || "مركبة",
       slug: data.car.slug || "",
       price: data.car.price || 0,
       mileage: data.car.mileage || 0,
@@ -98,7 +114,7 @@ export default function CarDetailsPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch (shareError) {
-      console.error("Erreur copie lien :", shareError);
+      console.error("خطأ نسخ الرابط :", shareError);
     }
   };
 
@@ -106,22 +122,22 @@ export default function CarDetailsPage() {
     return (
       <div className="container-premium section-spacing">
         <div className="mx-auto max-w-3xl rounded-[28px] border border-amber-300/60 bg-white p-8 shadow-premium dark:border-amber-500/20 dark:bg-zinc-900">
-          <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">Fiche vehicule</p>
-          <h1 className="mt-3 font-serif text-4xl font-bold">Detail temporairement indisponible</h1>
+          <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">تفاصيل المركبة</p>
+          <h1 className="mt-3 font-serif text-4xl font-bold">التفاصيل غير متاحة مؤقتًا</h1>
           <p className="mt-4 text-zinc-500 dark:text-zinc-400">{error}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/catalogue"
               className="rounded-2xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950"
             >
-              Retour au catalogue
+              العودة إلى المعرض
             </Link>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="rounded-2xl border border-zinc-200 px-5 py-3 text-sm font-semibold transition hover:bg-zinc-50 dark:border-white/10 dark:hover:bg-white/5"
             >
-              Reessayer
+              إعادة المحاولة
             </button>
           </div>
         </div>
@@ -130,34 +146,49 @@ export default function CarDetailsPage() {
   }
 
   if (!data) {
-    return <div className="container-premium py-20">Chargement...</div>;
+    return <div className="container-premium py-20">جارٍ التحميل...</div>;
   }
 
   const { car, similar } = data;
   const images = Array.isArray(car?.images) ? car.images : [];
   const activeImage = resolveMediaUrl(images[active]?.url) || "/guide-import.svg";
-  const availability = car?.availability || car?.status || "Disponible";
+  const availability = getStatusLabel(car?.availability || car?.status || "Disponible");
   const safePrice = car?.price || null;
   const safeYear = car?.year || "-";
   const safeMileage =
-    typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("fr-FR")} km` : "-";
-  const safeFuel = car?.fuelType || car?.fuel || "Autre";
-  const safeTransmission = car?.transmission || car?.gearbox || "-";
+    typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("ar-TN")} km` : "-";
+  const safeFuel = getFuelTypeLabel(car?.fuelType || car?.fuel || "Autre");
+  const safeTransmission = getTransmissionLabel(car?.transmission || car?.gearbox || "-");
   const safeViews = car?.views || 0;
-  const safeDescription =
-    car?.description || "Aucune description disponible pour ce vehicule.";
-  const safePriceType = car?.priceType || "Prix a confirmer";
+  const safeDescription = localizeDescription(car?.description, car?.name);
+  const safePriceType = getPriceTypeLabel(car?.priceType || "Sur demande");
   const safeReference = car?.slug ? car.slug.toUpperCase() : "-";
+  const detailFeatures = car?.features?.length
+    ? car.features.map((feature: any) => ({
+        label: localizeFeatureLabel(feature?.label),
+        value: localizeFeatureValue(feature?.value)
+      }))
+    : [
+        { label: "السنة", value: safeYear },
+        { label: "الكيلومترات", value: safeMileage },
+        { label: "الوقود", value: safeFuel },
+        { label: "علبة السرعة", value: safeTransmission },
+        { label: "الفئة", value: getCategoryLabel(car?.category || "-") || "-" },
+        { label: "الحالة", value: availability }
+      ];
+  const detailEquipment = car?.equipment?.length
+    ? car.equipment.map((item: string) => localizeEquipmentLabel(item))
+    : ["معاينة بصرية", "وثائق مؤكدة", "صور مفصلة", "إمكانية الشحن والمتابعة"];
 
   return (
     <div className="container-premium section-spacing pb-24 md:pb-12">
       <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-        <span>Catalogue</span>
+        <span>المعرض</span>
         <ChevronRight className="h-4 w-4" />
-        <span>{car?.brand || "Marque"}</span>
+        <span>{car?.brand || "الماركة"}</span>
         <ChevronRight className="h-4 w-4" />
         <span className="text-zinc-900 dark:text-white">
-          {car?.name || "Vehicule"}
+          {car?.name || "مركبة"}
         </span>
       </div>
 
@@ -170,7 +201,7 @@ export default function CarDetailsPage() {
           >
             <Image
               src={activeImage}
-              alt={car?.name || "Vehicule"}
+              alt={car?.name || "مركبة"}
               fill
               className="object-cover"
               sizes="(max-width: 1280px) 100vw, 66vw"
@@ -180,7 +211,7 @@ export default function CarDetailsPage() {
           </motion.div>
 
           {images.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
+            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {images.map((image: any, index: number) => {
                 const imageSrc = resolveMediaUrl(image?.url);
 
@@ -192,7 +223,7 @@ export default function CarDetailsPage() {
                   <button
                     key={(image?.url || "img") + index}
                     type="button"
-                    className={`relative h-20 overflow-hidden rounded-2xl border sm:h-24 ${
+                    className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-2xl border sm:h-24 sm:w-32 ${
                       active === index
                         ? "ring-2 ring-brand"
                         : "border-zinc-200 dark:border-white/10"
@@ -201,7 +232,7 @@ export default function CarDetailsPage() {
                   >
                     <Image
                       src={imageSrc}
-                      alt={image.alt || `${car?.name || "Vehicule"}-${index}`}
+                      alt={image.alt || `${car?.name || "مركبة"}-${index}`}
                       fill
                       className="object-cover"
                       sizes="120px"
@@ -230,27 +261,18 @@ export default function CarDetailsPage() {
               ))}
             </div>
 
-            {tab === "Presentation" && (
+            {tab === "نبذة" && (
               <div className="pt-6">
-                <h2 className="text-2xl font-bold">Presentation</h2>
+                <h2 className="text-2xl font-bold">نبذة</h2>
                 <p className="mt-4 leading-7 text-zinc-500 dark:text-zinc-400">
                   {safeDescription}
                 </p>
               </div>
             )}
 
-            {tab === "Caracteristiques" && (
+            {tab === "المواصفات" && (
               <div className="grid gap-4 pt-6 md:grid-cols-2">
-                {(car?.features?.length
-                  ? car.features
-                  : [
-                      { label: "Annee", value: safeYear },
-                      { label: "Kilometrage", value: safeMileage },
-                      { label: "Carburant", value: safeFuel },
-                      { label: "Boite", value: safeTransmission },
-                      { label: "Categorie", value: car?.category || "-" },
-                      { label: "Disponibilite", value: availability }
-                    ]).map((feature: any, index: number) => (
+                {detailFeatures.map((feature: any, index: number) => (
                   <div
                     key={feature.label || index}
                     className="rounded-2xl border p-4 dark:border-white/10"
@@ -266,12 +288,9 @@ export default function CarDetailsPage() {
               </div>
             )}
 
-            {tab === "Equipements" && (
+            {tab === "التجهيزات" && (
               <div className="grid gap-3 pt-6 md:grid-cols-2">
-                {(car?.equipment?.length
-                  ? car.equipment
-                  : ["Inspection visuelle", "Documents verifies", "Photos detaillees", "Suivi export possible"]).map(
-                  (item: string, index: number) => (
+                {detailEquipment.map((item: string, index: number) => (
                     <div
                       key={item + index}
                       className="flex items-center gap-3 rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-800"
@@ -279,37 +298,36 @@ export default function CarDetailsPage() {
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <span>{item}</span>
                     </div>
-                  )
-                )}
+                  ))}
               </div>
             )}
 
-            {tab === "Importation" && (
+            {tab === "الشحن" && (
               <div className="grid gap-4 pt-6 md:grid-cols-2">
                 <div className="rounded-2xl bg-zinc-50 p-5 dark:bg-zinc-800">
                   <Truck className="h-6 w-6 text-brand" />
-                  <h3 className="mt-3 text-lg font-bold">Preparation export</h3>
+                  <h3 className="mt-3 text-lg font-bold">التحضير قبل الشحن</h3>
                   <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-                    Nous pouvons vous accompagner pour la disponibilite, la preparation logistique et les confirmations avant expedition.
+                    نرافقك في التثبت من التوفر، الجاهزية اللوجستية والتأكيدات اللازمة قبل الإرسال.
                   </p>
                 </div>
                 <div className="rounded-2xl bg-zinc-50 p-5 dark:bg-zinc-800">
                   <FileText className="h-6 w-6 text-brand" />
-                  <h3 className="mt-3 text-lg font-bold">Documents & suivi</h3>
+                  <h3 className="mt-3 text-lg font-bold">الوثائق والمتابعة</h3>
                   <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-                    Facture, documents export et suivi jusqu&apos;a la livraison peuvent etre clarifies directement avec l&apos;equipe.
+                    الفاتورة، وثائق التصدير وتتبع الملف إلى حين الاستلام يتم توضيحهم مباشرة مع الفريق.
                   </p>
                 </div>
                 <a
                   href={buildWhatsAppUrl(
-                    `Bonjour, je souhaite en savoir plus sur l'importation de ${car?.name || "ce vehicule"}.`
+                    `مرحبًا، أريد معرفة المزيد عن شحن ${car?.name || "هذه المركبة"}.`
                   )}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-4 font-semibold text-white transition hover:-translate-y-0.5 md:col-span-2"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Poser une question sur l&apos;importation
+                  اسأل عن الشحن
                 </a>
               </div>
             )}
@@ -324,13 +342,13 @@ export default function CarDetailsPage() {
                   key={badge}
                   className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white"
                 >
-                  {badge}
+                  {getBadgeLabel(badge)}
                 </span>
               ))}
             </div>
 
             <h1 className="mt-4 text-3xl font-bold sm:text-4xl">
-              {car?.name || "Vehicule"}
+              {car?.name || "مركبة"}
             </h1>
 
             <p className="mt-3 text-zinc-500 dark:text-zinc-400">
@@ -338,38 +356,38 @@ export default function CarDetailsPage() {
             </p>
 
             <p className="mt-5 text-3xl font-extrabold text-brand sm:text-4xl">
-              {safePrice ? currency(safePrice) : "Prix non disponible"}
+              {safePrice ? currency(safePrice) : "السعر غير متوفر"}
             </p>
 
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              {safePriceType} - Ref: {safeReference}
+              {safePriceType} - المرجع: {safeReference}
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/5">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Annee
+                  السنة
                 </p>
                 <p className="mt-2 font-semibold">{safeYear}</p>
               </div>
 
               <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/5">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Kilometrage
+                  الكيلومترات
                 </p>
                 <p className="mt-2 font-semibold">{safeMileage}</p>
               </div>
 
               <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/5">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Categorie
+                  الفئة
                 </p>
-                <p className="mt-2 font-semibold">{car?.category || "-"}</p>
+                <p className="mt-2 font-semibold">{getCategoryLabel(car?.category || "-") || "-"}</p>
               </div>
 
               <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/5">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Disponibilite
+                  الحالة
                 </p>
                 <p className="mt-2 font-semibold">{availability}</p>
               </div>
@@ -378,10 +396,10 @@ export default function CarDetailsPage() {
             <div className="mt-5 flex flex-col gap-2 text-sm text-zinc-500 dark:text-zinc-400">
               <span className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
-                {safeViews} vues
+                {safeViews} مشاهدة
               </span>
               <span>
-                {watchers} personne(s) consultent cette fiche en ce moment
+                {watchers} شخص يشاهد هذه الصفحة الآن
               </span>
             </div>
 
@@ -420,7 +438,7 @@ export default function CarDetailsPage() {
 
             {copied && (
               <p className="mt-3 text-sm font-medium text-green-600 dark:text-green-400">
-                Lien copie
+                تم نسخ الرابط
               </p>
             )}
 
@@ -431,15 +449,15 @@ export default function CarDetailsPage() {
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-4 font-semibold text-white transition hover:-translate-y-0.5"
             >
               <MessageCircle className="h-5 w-5" />
-              Demander sur WhatsApp
+              اسأل على واتساب
             </a>
 
             <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-7 text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
               <div className="flex items-center gap-2 font-semibold text-zinc-950 dark:text-white">
                 <ShieldCheck className="h-4 w-4 text-brand" />
-                Achat securise
+                شراء آمن
               </div>
-              Facture officielle, verification documentaire et echanges directs avant validation.
+              فاتورة رسمية، توثيق واضح وتواصل مباشر قبل تأكيد العملية.
             </div>
 
             <form
@@ -458,29 +476,29 @@ export default function CarDetailsPage() {
                     message: form.get("message")
                   });
 
-                  alert("Demande envoyee");
+                  alert("تم إرسال الطلب");
                   (e.currentTarget as HTMLFormElement).reset();
                 } catch (requestError: any) {
-                  console.error("Erreur envoi demande :", requestError);
+                  console.error("خطأ أثناء إرسال الطلب :", requestError);
                   alert(
                     requestError?.response?.data?.message ||
-                      "Impossible d'envoyer votre demande pour le moment."
+                      "تعذر إرسال طلبك في الوقت الحالي."
                   );
                 }
               }}
             >
-              <h3 className="text-xl font-bold">Demander un renseignement</h3>
+              <h3 className="text-xl font-bold">اطلب معلومات إضافية</h3>
 
               <input
                 name="name"
-                placeholder="Nom"
+                placeholder="الاسم"
                 className="rounded-2xl border bg-transparent px-4 py-3 dark:border-white/10"
                 required
               />
 
               <input
                 name="email"
-                placeholder="Email"
+                placeholder="البريد الإلكتروني"
                 type="email"
                 className="rounded-2xl border bg-transparent px-4 py-3 dark:border-white/10"
                 required
@@ -488,21 +506,21 @@ export default function CarDetailsPage() {
 
               <input
                 name="phone"
-                placeholder="Telephone"
+                placeholder="رقم الهاتف"
                 className="rounded-2xl border bg-transparent px-4 py-3 dark:border-white/10"
                 required
               />
 
               <textarea
                 name="message"
-                placeholder="Votre message"
-                defaultValue={`Bonjour, je souhaite plus d’informations sur ${car?.name || "ce vehicule"}.`}
+                placeholder="اكتب رسالتك"
+                defaultValue={`مرحبًا، أريد معلومات أكثر عن ${car?.name || "هذه المركبة"}.`}
                 className="rounded-2xl border bg-transparent px-4 py-3 dark:border-white/10"
                 rows={4}
               />
 
               <button className="rounded-2xl bg-brand px-5 py-4 font-semibold text-white">
-                Envoyer
+                إرسال
               </button>
             </form>
           </div>
@@ -512,7 +530,7 @@ export default function CarDetailsPage() {
       {similar?.length > 0 && (
         <section className="mt-20">
           <h2 className="font-serif text-3xl font-bold sm:text-4xl">
-            Vehicules similaires
+            مركبات مشابهة
           </h2>
 
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">

@@ -43,6 +43,66 @@ function normalizePriceTypeValue(value) {
   return input.includes("negoc") ? "Negociable" : "Prix fixe";
 }
 
+function getUploadedFiles(req) {
+  if (Array.isArray(req?.files)) {
+    return req.files;
+  }
+
+  if (req?.file) {
+    return [req.file];
+  }
+
+  if (!req?.files || typeof req.files !== "object") {
+    return [];
+  }
+
+  return [...(req.files.images || []), ...(req.files.image || [])];
+}
+
+function buildUploadedImages(files, fallbackAlt) {
+  const safeAlt = String(fallbackAlt || "Vehicule").trim() || "Vehicule";
+
+  return files.map((file, index) => ({
+    url: `/uploads/${file.filename}`,
+    alt: files.length > 1 ? `${safeAlt} ${index + 1}` : safeAlt
+  }));
+}
+
+function parseExistingImages(value) {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+
+    if (!Array.isArray(parsed)) {
+      return undefined;
+    }
+
+    return parsed
+      .map((item) => {
+        if (typeof item === "string") {
+          const url = item.trim();
+          return url ? { url, alt: "Vehicule" } : null;
+        }
+
+        const url = String(item?.url || "").trim();
+        if (!url) {
+          return null;
+        }
+
+        return {
+          url,
+          alt: String(item?.alt || "Vehicule").trim() || "Vehicule"
+        };
+      })
+      .filter(Boolean);
+  } catch (_error) {
+    return undefined;
+  }
+}
+
 function serializeCar(car) {
   const payload = typeof car?.toObject === "function" ? car.toObject() : car;
   const availability = normalizeStatusValue(payload?.availability || payload?.status);
@@ -97,6 +157,7 @@ function normalizeCarPayload(body) {
     normalized.images = [{ url: imageUrl, alt: body.name || "Vehicule" }];
   }
 
+  delete normalized.existingImages;
   delete normalized.imageUrl;
 
   return Object.fromEntries(
@@ -231,12 +292,15 @@ export async function createCar(req, res) {
   try {
     const body = normalizeCarPayload(req.body);
     const slug = makeSlug(body.brand, body.model, body.year);
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+    const uploadedImages = buildUploadedImages(
+      getUploadedFiles(req),
+      body.name || `${body.brand || "Vehicule"} ${body.model || ""}`.trim()
+    );
 
     const car = await Car.create({
       ...body,
       slug,
-      images: imagePath ? [{ url: imagePath, alt: body.name || "Vehicule" }] : body.images || []
+      images: uploadedImages.length ? uploadedImages : body.images || []
     });
 
     res.status(201).json(serializeCar(car));
@@ -249,18 +313,18 @@ export async function createCar(req, res) {
 export async function updateCar(req, res) {
   try {
     const updateData = normalizeCarPayload(req.body);
+    const existingImages = parseExistingImages(req.body?.existingImages);
+    const uploadedImages = buildUploadedImages(
+      getUploadedFiles(req),
+      req.body?.name || updateData.name || "Vehicule"
+    );
 
     if (updateData.brand && updateData.model && updateData.year) {
       updateData.slug = makeSlug(updateData.brand, updateData.model, updateData.year);
     }
 
-    if (req.file) {
-      updateData.images = [
-        {
-          url: `/uploads/${req.file.filename}`,
-          alt: req.body.name || "Vehicule"
-        }
-      ];
+    if (existingImages !== undefined || uploadedImages.length > 0) {
+      updateData.images = [...(existingImages || []), ...uploadedImages];
     }
 
     const car = await Car.findByIdAndUpdate(req.params.id, updateData, {
