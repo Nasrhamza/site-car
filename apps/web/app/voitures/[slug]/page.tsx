@@ -192,12 +192,12 @@ export default function CarDetailsPage() {
         </span>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[1.35fr_.65fr]">
-        <div>
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
+        <div className="min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative h-[260px] overflow-hidden rounded-[28px] bg-zinc-100 sm:h-[420px] lg:h-[520px] dark:bg-zinc-800"
+            className="relative h-[260px] w-full overflow-hidden rounded-[28px] bg-zinc-100 sm:h-[420px] lg:h-[520px] dark:bg-zinc-800"
           >
             <Image
               src={activeImage}
@@ -211,8 +211,9 @@ export default function CarDetailsPage() {
           </motion.div>
 
           {images.length > 0 && (
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-              {images.map((image: any, index: number) => {
+            <div className="mt-4 max-w-full overflow-x-auto pb-2">
+              <div className="flex min-w-full gap-3">
+                {images.map((image: any, index: number) => {
                 const imageSrc = resolveMediaUrl(image?.url);
 
                 if (!imageSrc) {
@@ -239,7 +240,8 @@ export default function CarDetailsPage() {
                     />
                   </button>
                 );
-              })}
+                })}
+              </div>
             </div>
           )}
 
