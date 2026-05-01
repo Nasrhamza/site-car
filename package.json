@@ -2,15 +2,15 @@
   "name": "site-car-monorepo",
   "private": true,
   "workspaces": [
-    "apps/web",
-    "apps/api"
+    "frontend",
+    "backend"
   ],
   "scripts": {
     "install:all": "npm install --workspaces",
-    "dev": "concurrently \"npm run dev --workspace apps/api\" \"npm run dev --workspace apps/web\"",
-    "lint": "npm run lint --workspace apps/web",
-    "build": "npm run build --workspace apps/api && npm run build --workspace apps/web",
-    "seed": "npm run seed --workspace apps/api"
+    "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "lint": "npm run lint --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "seed": "npm run seed --workspace backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

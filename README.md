@@ -19,9 +19,8 @@ Monorepo complet avec :
 
 ```bash
 site-car/
-├─ apps/
-│  ├─ api/              # API Express
-│  └─ web/              # Frontend Next.js
+├─ backend/             # API Express
+├─ frontend/            # Frontend Next.js
 ├─ package.json         # workspaces
 └─ README.md
 ```
@@ -50,8 +49,8 @@ npm run install:all
 Copier les fichiers d'exemple :
 
 ```bash
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env.local
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
 ```
 
 Configurer les valeurs :
@@ -70,7 +69,7 @@ Configurer les valeurs :
 ### Backend
 
 ```bash
-cd apps/api
+cd backend
 npm run dev
 ```
 
@@ -79,7 +78,7 @@ API sur : `http://localhost:5000`
 ### Frontend
 
 ```bash
-cd apps/web
+cd frontend
 npm run dev
 ```
 
@@ -149,11 +148,11 @@ Le seed ajoute :
 
 ### Frontend
 - **Vercel**
-- Définir variables d'environnement de `apps/web/.env.example`
+- Définir variables d'environnement de `frontend/.env.example`
 
 ### Backend
 - **Render / Railway**
-- Définir variables d'environnement de `apps/api/.env.example`
+- Définir variables d'environnement de `backend/.env.example`
 
 ### MongoDB
 - MongoDB Atlas recommandé
@@ -178,7 +177,7 @@ Pour finaliser en prod :
 
 ### API
 ```bash
-cd apps/api
+cd backend
 npm run dev
 npm run seed
 npm run build
@@ -187,7 +186,7 @@ npm start
 
 ### WEB
 ```bash
-cd apps/web
+cd frontend
 npm run dev
 npm run build
 npm start
@@ -207,4 +206,3 @@ Tu peux ensuite me demander une **Continuation — Module X** pour :
 - intégrer Stripe / PayPal
 - générer les tests
 - packager en Docker / CI-CD
-

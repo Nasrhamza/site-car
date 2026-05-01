@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 220" fill="none">
+  <defs>
+    <linearGradient id="paintTruck" x1="120" y1="48" x2="338" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF4D4F" />
+      <stop offset="1" stop-color="#B20D1C" />
+    </linearGradient>
+    <linearGradient id="paintSilver" x1="360" y1="74" x2="782" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3F4F6" />
+      <stop offset="1" stop-color="#A1A1AA" />
+    </linearGradient>
+  </defs>
+  <rect width="860" height="220" rx="44" fill="#09090B" />
+  <path d="M72 141L116 98C131 84 151 76 171 76H261C285 76 308 86 324 104L357 141" stroke="url(#paintTruck)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M105 141H325L357 129" stroke="#E4E4E7" stroke-width="12" stroke-linecap="round" />
+  <path d="M78 151H341" stroke="#E4E4E7" stroke-width="14" stroke-linecap="round" />
+  <path d="M109 151L126 174" stroke="#E4E4E7" stroke-width="12" stroke-linecap="round" />
+  <path d="M302 151L285 174" stroke="#E4E4E7" stroke-width="12" stroke-linecap="round" />
+  <circle cx="146" cy="168" r="22" fill="#0A0A0C" stroke="#C7C7CC" stroke-width="8" />
+  <circle cx="276" cy="168" r="22" fill="#0A0A0C" stroke="#C7C7CC" stroke-width="8" />
+  <path d="M367 64H416" stroke="#FF4D4F" stroke-width="9" stroke-linecap="round" />
+  <path d="M450 72H792" stroke="#27272A" stroke-width="2" />
+  <path d="M452 148H792" stroke="#27272A" stroke-width="2" />
+  <text x="410" y="112" font-family="Segoe UI, Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="3" fill="#FF4D4F">ALHADUNI</text>
+  <text x="706" y="112" font-family="Segoe UI, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="3" fill="url(#paintSilver)">CARS</text>
+  <text x="452" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="8" fill="#E4E4E7">AUTOMOTIVE</text>
+</svg>
