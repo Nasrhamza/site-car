@@ -32,6 +32,7 @@ export const FUEL_TYPE_OPTIONS = [
   "Diesel",
   "Essence",
   "Hybride",
+  "PHEV",
   "Électrique",
   "GPL",
   "Autre"
@@ -110,6 +111,7 @@ export const FUEL_TYPE_LABELS: Record<(typeof FUEL_TYPE_OPTIONS)[number], string
   Diesel: "ديزل",
   Essence: "بنزين",
   Hybride: "هجين",
+  PHEV: "هجين قابل للشحن",
   Électrique: "كهربائي",
   GPL: "غاز",
   Autre: "أخرى"
@@ -132,6 +134,7 @@ const BADGE_LABELS: Record<string, string> = {
   Électrique: "كهربائي",
   Electrique: "كهربائي",
   Hybride: "هجين",
+  PHEV: "هجين قابل للشحن",
   Diesel: "ديزل",
   Essence: "بنزين"
 };

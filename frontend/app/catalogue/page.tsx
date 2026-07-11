@@ -35,6 +35,12 @@ function serializeParams(params: CatalogueParams) {
   return JSON.stringify(params);
 }
 
+const fallbackCars = [
+  { title: "Toyota Corolla", image: "/alhaduni-logo.jpg" },
+  { title: "BMW X5", image: "/alhaduni-logo.jpg" },
+  { title: "Mercedes C-Class", image: "/alhaduni-logo.jpg" }
+];
+
 export default function CataloguePage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -126,9 +132,6 @@ export default function CataloguePage() {
       <div className="mb-10 max-w-3xl">
         <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">المعرض</p>
         <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">المركبات المتوفرة لدينا</h1>
-        <p className="mt-3 text-zinc-500 dark:text-zinc-400">
-          ابحث بسرعة حسب الفئة، نوع الوقود، السعر والتوفر داخل معرض واضح على الهاتف والكمبيوتر.
-        </p>
       </div>
 
       <SearchFilters
@@ -160,8 +163,29 @@ export default function CataloguePage() {
       )}
 
       {!loading && cars.length === 0 && !error && (
-        <div className="mt-10 rounded-[28px] border border-dashed p-10 text-center text-zinc-500 dark:text-zinc-400">
-          لا توجد مركبات مطابقة للفلاتر الحالية. جرّب فئة أخرى أو وقودًا مختلفًا أو نطاق سعر آخر.
+        <div className="mt-10">
+          <div className="mb-4 text-center text-zinc-500 dark:text-zinc-400">
+            لا توجد مركبات مطابقة للفلاتر الحالية، لذلك نعرض مثالًا بسيطًا حتى تبقى الصفحة مرئية.
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {fallbackCars.map((car) => (
+              <article key={car.title} className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
+                <div className="relative h-56 bg-zinc-100">
+                  <img
+                    src={car.image}
+                    alt={car.title}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-zinc-950">{car.title}</h3>
+                  <p className="mt-1 text-sm text-zinc-500">أضف السيارات من لوحة التحكم ليظهر المخزون الحقيقي هنا.</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       )}
 
