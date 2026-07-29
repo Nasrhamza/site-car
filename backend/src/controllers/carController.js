@@ -256,8 +256,11 @@ export async function getCarBySlug(req, res) {
       return res.status(404).json({ message: "Vehicule introuvable" });
     }
 
+    // Increment views without re-validating legacy records. Some demo cars were
+    // created before all current required fields existed, and `save()` made
+    // their public detail page fail even though the record could be displayed.
+    await Car.updateOne({ _id: car._id }, { $inc: { views: 1 } });
     car.views = (car.views || 0) + 1;
-    await car.save();
 
     const similar = await Car.find({
       _id: { $ne: car._id },

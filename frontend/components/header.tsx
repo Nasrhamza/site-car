@@ -39,6 +39,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: t.nav[0] },
     { href: "/catalogue", label: t.nav[1] },
+    { href: "/guide", label: language === "en" ? "Guide" : "الدليل" },
     { href: "/contact", label: t.nav[2] }
   ];
 
@@ -85,7 +86,7 @@ export function Header() {
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
             <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-zinc-950">ALHADUNI CARS</p>
+              <p className="truncate text-sm font-semibold text-zinc-950">ALHADUNICARS</p>
               <p className="text-xs text-zinc-500">Dubai car marketplace</p>
             </div>
           </Link>

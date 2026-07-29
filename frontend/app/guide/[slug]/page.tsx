@@ -161,7 +161,7 @@ export default function GuideDetailsPage({
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
           >
             <MessageCircle className="h-4 w-4" />
-            تواصل مع ALHADUNI CARS
+            تواصل مع ALHADUNICARS
           </a>
         </div>
       </section>

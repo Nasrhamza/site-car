@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, CheckCircle2, MessageCircle, Search, Sparkles } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { resolveMediaUrl } from "@/lib/utils";
@@ -13,7 +14,7 @@ export function Hero({ cars = [] }: { cars?: HeroCar[] }) {
     .flatMap((car, carIndex) => (car.images || []).map((image, imageIndex) => ({
       id: `${car._id || car.slug || carIndex}-${imageIndex}`,
       src: resolveMediaUrl(image.url),
-      alt: image.alt || car.name || "ALHADUNI CARS"
+      alt: image.alt || car.name || "ALHADUNICARS"
     })))
     .filter((image) => Boolean(image.src))
     .slice(0, 10);
@@ -54,10 +55,17 @@ export function Hero({ cars = [] }: { cars?: HeroCar[] }) {
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400"><Sparkles className="h-3.5 w-3.5 text-brand" />{t.heroTag}</div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{t.heroTitle}</h1>
+            <Link
+              href="/catalogue"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            >
+              {t.inventory}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-300">
             <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-brand" />{t.featuredTag}</span>
-            <a href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد معرفة السيارات المتوفرة لدى ALHADUNI CARS." : "Hello, I would like to check the available cars at ALHADUNI CARS.")} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-white transition hover:text-green-300"><MessageCircle className="h-4 w-4 text-green-400" />{t.whatsapp}</a>
+            <a href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد معرفة السيارات المتوفرة لدى ALHADUNICARS." : "Hello, I would like to check the available cars at ALHADUNICARS.")} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-white transition hover:text-green-300"><MessageCircle className="h-4 w-4 text-green-400" />{t.whatsapp}</a>
           </div>
         </div>
       </div>

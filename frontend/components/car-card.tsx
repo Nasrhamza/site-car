@@ -10,7 +10,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { getBadgeLabel, getFuelTypeLabel, getStatusLabel } from "@/lib/company";
-import { buildWhatsAppLink, cn, formatCurrency, formatNumber, resolveMediaUrl } from "@/lib/utils";
+import { buildWhatsAppLink, cn, currencyTnd, formatCurrency, formatNumber, resolveMediaUrl } from "@/lib/utils";
 import { useGarageStore } from "@/store/favorites";
 import { translateVehicleValue, useLanguage } from "@/lib/site-language";
 
@@ -157,6 +157,8 @@ export function CarCard({
           <div className="shrink-0 text-right">
             <p className="text-xs text-zinc-400">{t.price}</p>
             <p className="mt-1 text-lg font-bold text-brand">{formatCurrency(car.price || 0)}</p>
+            <p className="mt-0.5 text-xs font-semibold text-zinc-600">≈ {currencyTnd(car.price || 0)}</p>
+            <p className="mt-1 text-[10px] font-medium text-emerald-700">{language === "ar" ? "السعر شامل كل شيء" : "All costs included"}</p>
           </div>
         </div>
 

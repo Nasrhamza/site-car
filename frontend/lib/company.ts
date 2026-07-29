@@ -1,6 +1,6 @@
-export const COMPANY_NAME = "ALHADUNI CARS";
-export const COMPANY_SHORT_NAME = "ALHADUNI";
-export const COMPANY_SECONDARY_NAME = "ALHADUNI";
+export const COMPANY_NAME = "ALHADUNICARS";
+export const COMPANY_SHORT_NAME = "ALHADUNICARS";
+export const COMPANY_SECONDARY_NAME = "ALHADUNICARS";
 export const COMPANY_SUBTITLE = "الحادوني للسيارات";
 export const COMPANY_DESCRIPTION =
   "منصة احترافية لبيع السيارات والمركبات التجارية مع المعاينة الميدانية، التوثيق، الشحن والمتابعة حتى الاستلام.";
@@ -314,7 +314,7 @@ export const GUIDE_PAGES = [
     image: "/alhaduni-logo.jpg",
     heroLabel: "المعاينة، التوثيق، الشحن والمتابعة",
     ctaMessage:
-      "مرحبًا، أريد الاستفسار عن خطوات شراء سيارة بأمان مع ALHADUNI CARS.",
+      "مرحبًا، أريد الاستفسار عن خطوات شراء سيارة بأمان مع ALHADUNICARS.",
     highlights: [
       {
         title: "استجابة تتعدى التوقعات",

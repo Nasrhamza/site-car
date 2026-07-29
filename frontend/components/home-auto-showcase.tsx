@@ -35,12 +35,12 @@ function buildSlides(cars: ShowcaseCar[]): Slide[] {
 
         return {
           id: `${car._id || car.slug || `${car.name || "car"}-${carIndex}`}-${imageIndex}`,
-          name: car.name || "ALHADUNI CARS",
-          brand: car.brand || "ALHADUNI CARS",
+          name: car.name || "ALHADUNICARS",
+          brand: car.brand || "ALHADUNICARS",
           category: car.category || "Inventory photo",
           price: car.price,
           imageUrl,
-          alt: image.alt || car.name || "ALHADUNI CARS"
+          alt: image.alt || car.name || "ALHADUNICARS"
         };
       })
     )
@@ -52,10 +52,10 @@ function buildSlides(cars: ShowcaseCar[]): Slide[] {
     {
       id: "fallback-showcase",
       name: "Inventory preview",
-      brand: "ALHADUNI CARS",
+      brand: "ALHADUNICARS",
       category: "Add cars from the admin panel to show them here",
       imageUrl: "",
-      alt: "ALHADUNI CARS"
+      alt: "ALHADUNICARS"
     }
   ];
 }

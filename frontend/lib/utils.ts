@@ -23,6 +23,16 @@ export function currency(value: number) {
   }).format(value);
 }
 
+const TND_PER_USD = Number(process.env.NEXT_PUBLIC_TND_PER_USD || 3.1);
+
+export function currencyTnd(valueInUsd: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "TND",
+    maximumFractionDigits: 0
+  }).format(valueInUsd * TND_PER_USD);
+}
+
 export function formatCurrency(value: number) {
   return currency(value);
 }

@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { io } from "socket.io-client";
 import { motion } from "framer-motion";
 import {
   Heart,
-  Eye,
   Share2,
   MessageCircle,
   CheckCircle2,
@@ -19,7 +17,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useGarageStore } from "@/store/favorites";
-import { buildWhatsAppLink, currency, resolveMediaUrl } from "@/lib/utils";
+import { buildWhatsAppLink, currency, currencyTnd, resolveMediaUrl } from "@/lib/utils";
 import {
   buildWhatsAppUrl,
   getBadgeLabel,
@@ -45,15 +43,12 @@ export default function CarDetailsPage() {
 
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
-  const [watchers, setWatchers] = useState(0);
   const [active, setActive] = useState(0);
   const [tab, setTab] = useState("نبذة");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
-
-    let socket: ReturnType<typeof io> | undefined;
 
     const fetchCar = async () => {
       try {
@@ -62,22 +57,9 @@ export default function CarDetailsPage() {
 
         setData(payload);
         setError("");
-        setWatchers(payload?.car?.liveWatchers || 0);
-
-        if (payload?.car?._id && process.env.NEXT_PUBLIC_SOCKET_URL) {
-          socket = io(process.env.NEXT_PUBLIC_SOCKET_URL);
-          socket.emit("join_car_room", payload.car._id);
-
-          socket.on("car_watchers", (watchersPayload: any) => {
-            if (watchersPayload.carId === payload.car._id) {
-              setWatchers(watchersPayload.watchers);
-            }
-          });
-        }
       } catch (requestError: any) {
         console.error("خطأ أثناء تحميل المركبة :", requestError);
         setData(null);
-        setWatchers(0);
         setError(
           requestError?.response?.data?.message ||
             "هذه الصفحة غير متاحة مؤقتًا. حاول مرة أخرى بعد قليل."
@@ -87,9 +69,6 @@ export default function CarDetailsPage() {
 
     fetchCar();
 
-    return () => {
-      if (socket) socket.disconnect();
-    };
   }, [slug]);
 
   useEffect(() => {
@@ -159,7 +138,6 @@ export default function CarDetailsPage() {
     typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("ar-TN")} km` : "-";
   const safeFuel = getFuelTypeLabel(car?.fuelType || car?.fuel || "Autre");
   const safeTransmission = getTransmissionLabel(car?.transmission || car?.gearbox || "-");
-  const safeViews = car?.views || 0;
   const safeDescription = localizeDescription(car?.description, car?.name);
   const safePriceType = getPriceTypeLabel(car?.priceType || "Sur demande");
   const safeReference = car?.slug ? car.slug.toUpperCase() : "-";
@@ -192,18 +170,18 @@ export default function CarDetailsPage() {
         </span>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
-        <div className="min-w-0">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="order-1 min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative h-[260px] w-full overflow-hidden rounded-[28px] bg-zinc-100 sm:h-[420px] lg:h-[520px] dark:bg-zinc-800"
+            className="relative h-[250px] w-full overflow-hidden rounded-[28px] bg-zinc-100 sm:h-[320px] lg:h-[390px] dark:bg-zinc-800"
           >
             <Image
               src={activeImage}
               alt={car?.name || "مركبة"}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               sizes="(max-width: 1280px) 100vw, 66vw"
             />
 
@@ -244,7 +222,7 @@ export default function CarDetailsPage() {
             </div>
           )}
 
-          <div className="mt-8 rounded-[28px] border bg-white p-4 shadow-premium dark:border-white/10 dark:bg-zinc-900 sm:p-6">
+          <div className="mt-6 rounded-[28px] border bg-white p-4 shadow-premium dark:border-white/10 dark:bg-zinc-900 sm:p-6">
             <div className="flex flex-wrap gap-2 border-b pb-4 dark:border-white/10">
               {tabs.map((item) => (
                 <button
@@ -335,7 +313,7 @@ export default function CarDetailsPage() {
           </div>
         </div>
 
-        <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+        <aside className="order-2 xl:sticky xl:top-24 xl:self-start">
           <div className="rounded-[28px] border bg-white p-5 shadow-premium dark:border-white/10 dark:bg-zinc-900 sm:p-6">
             <div className="flex flex-wrap gap-2">
               {car?.badges?.map((badge: string) => (
@@ -356,9 +334,13 @@ export default function CarDetailsPage() {
               {safeYear} - {safeFuel} - {safeTransmission} - {safeMileage}
             </p>
 
-            <p className="mt-5 text-3xl font-extrabold text-brand sm:text-4xl">
-              {safePrice ? currency(safePrice) : "السعر غير متوفر"}
-            </p>
+            <div className="mt-5">
+              <p className="text-3xl font-extrabold text-brand sm:text-4xl">
+                {safePrice ? currency(safePrice) : "السعر غير متوفر"}
+              </p>
+              {safePrice ? <p className="mt-1 text-base font-semibold text-zinc-700 dark:text-zinc-200">≈ {currencyTnd(safePrice)}</p> : null}
+              {safePrice ? <p className="mt-2 inline-flex rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">السعر شامل كل شيء</p> : null}
+            </div>
 
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               {safePriceType} - المرجع: {safeReference}
@@ -394,17 +376,7 @@ export default function CarDetailsPage() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-              <span className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                {safeViews} مشاهدة
-              </span>
-              <span>
-                {watchers} شخص يشاهد هذه الصفحة الآن
-              </span>
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => toggleFavorite(car._id)}
@@ -427,14 +399,6 @@ export default function CarDetailsPage() {
                 <Share2 className="mx-auto h-5 w-5" />
               </button>
 
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl border border-green-500/30 bg-green-500/10 p-3 text-green-700 dark:text-green-300"
-              >
-                <MessageCircle className="mx-auto h-5 w-5" />
-              </a>
             </div>
 
             {copied && (
@@ -462,7 +426,7 @@ export default function CarDetailsPage() {
             </div>
 
             <form
-              className="mt-6 grid gap-3"
+              className="hidden"
               onSubmit={async (e) => {
                 e.preventDefault();
 
