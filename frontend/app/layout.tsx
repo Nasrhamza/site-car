@@ -4,14 +4,16 @@ import Providers from "@/components/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
-import { COMPANY_DESCRIPTION, COMPANY_NAME, COMPANY_SUBTITLE, getSiteUrl } from "@/lib/company";
+import { BottomRadialNav } from "@/components/bottom-radial-nav";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
+import { COMPANY_NAME, getSiteUrl } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: {
-    default: `${COMPANY_NAME} | ${COMPANY_SUBTITLE}`,
+    default: `${COMPANY_NAME} | Find your next car`,
     template: `%s | ${COMPANY_NAME}`
   },
-  description: COMPANY_DESCRIPTION,
+  description: "A simple Dubai car marketplace. Browse cars and contact the team directly.",
   metadataBase: new URL(getSiteUrl()),
   icons: {
     icon: [
@@ -23,7 +25,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: COMPANY_NAME,
-    description: COMPANY_DESCRIPTION,
+    description: "A simple Dubai car marketplace. Browse cars and contact the team directly.",
+    images: ["/og.png"],
     url: "/",
     siteName: COMPANY_NAME
   }
@@ -31,13 +34,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
+          <AnalyticsTracker />
           <Header />
           <main>{children}</main>
           <Footer />
           <WhatsAppFloat />
+          <BottomRadialNav />
         </Providers>
       </body>
     </html>

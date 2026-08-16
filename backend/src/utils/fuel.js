@@ -4,6 +4,8 @@ const FUEL_TYPE_ALIASES = {
   Diesel: ["Diesel", "diesel"],
   Essence: ["Essence", "essence", "Petrol", "petrol"],
   Hybride: ["Hybride", "hybride", "Hybrid", "hybrid"],
+  PHEV: ["PHEV", "phev", "Plug-in Hybrid", "Plug in Hybrid", "Plug-in Hybrid Electric Vehicle"],
+  REEV: ["REEV", "reev", "Range Extended Electric Vehicle", "Range-Extended Electric Vehicle"],
   "Électrique": ["Électrique", "Electrique", "électrique", "electrique", "EV", "ev"],
   GPL: ["GPL", "gpl", "Gaz", "gaz"],
   Autre: ["Autre", "autre", "Other", "other", ""]

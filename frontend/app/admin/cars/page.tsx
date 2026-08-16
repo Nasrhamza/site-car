@@ -112,7 +112,7 @@ export default function AdminCarsPage() {
                         </div>
                       </td>
                       <td className="p-4">{getCategoryLabel(car.category)}</td>
-                      <td className="p-4">{currency(car.price || 0)}</td>
+                      <td className="p-4">{Number(car.price) > 0 ? currency(Number(car.price)) : "السعر عند الطلب"}</td>
                       <td className="p-4">{car.year}</td>
                       <td className="p-4">
                         <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold dark:bg-white/5">

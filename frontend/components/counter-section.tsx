@@ -1,60 +1,55 @@
-"use client";
-
 import { Clock3, Globe2, ShieldCheck, Sparkles } from "lucide-react";
-import { Reveal } from "@/components/reveal";
 
 const stats = [
   {
-    value: "120+",
-    label: "ملف بيع ومعاينة تم ترتيبه باحتراف",
+    value: "100+",
+    label: "Listings organized and ready to scan",
     icon: Sparkles
   },
   {
-    value: "14",
-    label: "سوقًا ووجهة شحن نتعامل معها بمرونة",
+    value: "24/7",
+    label: "Website access for browsing anytime",
     icon: Globe2
   },
   {
-    value: "48h",
-    label: "متوسط الرد الأولي على الاستفسارات الجادة",
+    value: "< 1h",
+    label: "Typical first reply for direct inquiries",
     icon: Clock3
   },
   {
-    value: "100%",
-    label: "تركيز على الوضوح في المعاينة والتأكيد",
+    value: "Clear",
+    label: "Vehicle details laid out in a familiar format",
     icon: ShieldCheck
   }
 ];
 
 export function CounterSection() {
   return (
-    <section className="section-spacing">
+    <section className="section-spacing bg-white">
       <div className="container-premium">
-        <Reveal className="max-w-3xl">
-          <p className="gradient-text text-xs font-semibold uppercase tracking-[0.34em] sm:text-sm">
-            أرقام تبني الثقة
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            Quick facts
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-950 transition-colors dark:text-white sm:text-4xl lg:text-5xl">
-            مؤشرات سريعة تلخص أسلوب العمل في ALHADUNI CARS
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            Small details that make the site easier to use
           </h2>
-        </Reveal>
+        </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item, index) => {
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {stats.map((item) => {
             const Icon = item.icon;
 
             return (
-              <Reveal key={item.label} delay={0.05 * index}>
-                <article className="h-full rounded-[30px] border border-zinc-200/70 bg-white/90 p-6 shadow-premium transition-colors dark:border-white/10 dark:bg-zinc-900/90 dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-950 text-white">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <p className="text-3xl font-bold text-brand sm:text-4xl">{item.value}</p>
+              <article key={item.label} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-brand shadow-sm">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <p className="mt-5 text-sm leading-7 text-zinc-600 transition-colors dark:text-zinc-300">{item.label}</p>
-                </article>
-              </Reveal>
+                  <p className="text-3xl font-bold text-zinc-950">{item.value}</p>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-zinc-600">{item.label}</p>
+              </article>
             );
           })}
         </div>

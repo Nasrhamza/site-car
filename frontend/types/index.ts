@@ -12,7 +12,7 @@ export type CarFront = {
   transmission: string;
   gearbox: string;
   exteriorColor: string;
-  price: number;
+  price?: number | null;
   priceType: string;
   status: string;
   badges: string[];

@@ -1,77 +1,90 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, MapPin, MessageCircle, ShieldCheck } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import {
-  COMPANY_LOCATION,
   COMPANY_NAME,
   COMPANY_WHATSAPP_DISPLAY,
-  NAV_LINKS,
   buildWhatsAppUrl
 } from "@/lib/company";
+import { useLanguage } from "@/lib/site-language";
 
 export function Footer() {
+  const { language, t } = useLanguage();
+  const navLinks = [
+    { href: "/", label: t.nav[0] },
+    { href: "/catalogue", label: t.nav[1] },
+    { href: "/contact", label: t.nav[2] }
+  ];
+
   return (
-    <footer className="border-t border-zinc-200/10 bg-zinc-950 text-white">
-      <div className="container-premium grid gap-10 py-14 md:grid-cols-4">
+    <footer className="border-t border-zinc-200 bg-white text-zinc-900">
+      <div className="container-premium grid gap-8 py-12 md:grid-cols-4">
         <div>
-          <BrandLogo className="h-24 w-24" />
-          <p className="mt-4 text-sm text-zinc-400">
-            {COMPANY_NAME} يوفّر مرافقة واضحة في المعاينة، التوثيق، الشحن والمتابعة حتى الاستلام.
-          </p>
+          <BrandLogo className="h-20 w-20" />
+          <p className="mt-4 text-sm leading-7 text-zinc-600">{t.footerText}</p>
         </div>
 
         <div>
-          <h4 className="font-semibold">التصفح</h4>
-          <div className="mt-4 grid gap-2 text-sm text-zinc-300">
-            {NAV_LINKS.map((item) => (
-              <Link key={item.href} href={item.href}>
+          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            {language === "ar" ? "التنقل" : "Navigation"}
+          </h4>
+          <div className="mt-4 grid gap-2 text-sm text-zinc-700">
+            {navLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-brand">
                 {item.label}
               </Link>
             ))}
-            <Link href="/faq">الأسئلة الشائعة</Link>
           </div>
         </div>
 
         <div>
-          <h4 className="font-semibold">معلومات قانونية</h4>
-          <div className="mt-4 grid gap-2 text-sm text-zinc-300">
-            <Link href="/mentions-legales">البيانات القانونية</Link>
-            <Link href="/confidentialite">سياسة الخصوصية</Link>
-            <Link href="/cookies">ملفات الارتباط</Link>
+          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">{language === "ar" ? "معلومات" : "Information"}</h4>
+          <div className="mt-4 grid gap-2 text-sm text-zinc-700">
+            <Link href="/mentions-legales" className="transition hover:text-brand">
+              {language === "ar" ? "الشروط القانونية" : "Legal notice"}
+            </Link>
+            <Link href="/confidentialite" className="transition hover:text-brand">
+              {language === "ar" ? "الخصوصية" : "Privacy policy"}
+            </Link>
+            <Link href="/cookies" className="transition hover:text-brand">
+              {language === "ar" ? "ملفات الارتباط" : "Cookies"}
+            </Link>
           </div>
         </div>
 
         <div>
-          <h4 className="font-semibold">التواصل</h4>
-          <div className="mt-4 grid gap-3 text-sm text-zinc-300">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            {t.contact}
+          </h4>
+          <div className="mt-4 grid gap-3 text-sm text-zinc-700">
             <p className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              {COMPANY_LOCATION}
+              {t.location}
             </p>
             <p className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4" />
-              واتساب {COMPANY_WHATSAPP_DISPLAY}
+              WhatsApp {COMPANY_WHATSAPP_DISPLAY}
             </p>
             <p className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
-              بيع، شحن ومتابعة إلى حين الاستلام
+              {language === "ar" ? "معلومات واضحة ومتابعة مباشرة" : "Clear details and direct follow-up"}
             </p>
             <a
-              href={buildWhatsAppUrl(
-                "مرحبًا، أريد الاستفسار عن المركبات المتوفرة لديكم."
-              )}
+              href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد مزيداً من المعلومات عن السيارات المتوفرة." : "Hello, I would like more information about the available cars.")}
               target="_blank"
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-brand"
             >
-              تواصل مع فريقنا
+              {t.contact}
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 py-4 text-center text-sm text-zinc-400">
-        &copy; {new Date().getFullYear()} {COMPANY_NAME} - جميع الحقوق محفوظة.
+      <div className="border-t border-zinc-200 py-4 text-center text-sm text-zinc-500">
+        &copy; {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.
       </div>
     </footer>
   );

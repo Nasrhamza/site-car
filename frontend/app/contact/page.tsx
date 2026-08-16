@@ -35,7 +35,7 @@ export default function ContactPage() {
             </div>
             <a
               href={buildWhatsAppUrl(
-                "مرحبًا، أريد التحدث مع فريق ALHADUNI CARS."
+                "مرحبًا، أريد التحدث مع فريق ALHADUNICARS."
               )}
               target="_blank"
               rel="noreferrer"

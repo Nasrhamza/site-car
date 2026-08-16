@@ -1,76 +1,71 @@
 import { BadgeCheck, Eye, MessageCircle, ShieldCheck, Truck } from "lucide-react";
-import { Reveal } from "@/components/reveal";
 
 const trustPoints = [
   {
-    title: "معاينة موثقة",
-    description: "صور وتفاصيل تساعدك تقرر بثقة قبل أي خطوة.",
+    title: "Clear listings",
+    description: "Photos, prices, and key specs are shown in one place.",
     icon: Eye
   },
   {
-    title: "شفافية كاملة",
-    description: "عرض واضح للمعلومة والسعر وحالة المركبة دون ضبابية.",
+    title: "Transparent details",
+    description: "Each car card keeps the core information easy to compare.",
     icon: ShieldCheck
   },
   {
-    title: "دعم مباشر",
-    description: "تواصل سريع عبر واتساب وفريق يجاوبك بوضوح.",
+    title: "Direct support",
+    description: "WhatsApp contact stays visible for faster follow-up.",
     icon: MessageCircle
   },
   {
-    title: "شحن آمن",
-    description: "تنسيق ومتابعة حتى تصل المركبة كما تم الاتفاق.",
+    title: "Delivery follow-up",
+    description: "The workflow stays organized after the vehicle is chosen.",
     icon: Truck
   }
 ];
 
 export function HomeTrust() {
   return (
-    <section className="section-spacing bg-zinc-50/80 transition-colors dark:bg-zinc-950">
-      <div className="container-premium grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-        <Reveal className="rounded-[34px] bg-zinc-950 p-7 text-white shadow-[0_26px_80px_rgba(9,9,11,0.38)] sm:p-9">
-          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-brand-gold">
-            لماذا ALHADUNI CARS؟
+    <section className="section-spacing bg-zinc-50">
+      <div className="container-premium grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            Why this layout works
           </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            لأن القرار الكبير يحتاج شريكًا واضحًا، سريعًا، واحترافيًا
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            A standard structure reduces friction for visitors
           </h2>
-          <p className="mt-5 text-sm leading-7 text-zinc-300 sm:text-base">
-            لا نعرض مركبات فقط، بل نبني تجربة شراء مطمئنة تبدأ بالمعلومة الدقيقة وتنتهي بملف منظم واستلام آمن.
+          <p className="mt-4 text-sm leading-7 text-zinc-600 sm:text-base">
+            We keep the homepage focused on the inventory, the contact route, and a few trust
+            signals so visitors do not have to hunt for basic information.
           </p>
 
-          <div className="mt-8 grid gap-3">
+          <div className="mt-6 grid gap-3">
             {[
-              "فريق يتابع معك خطوة بخطوة",
-              "تنسيق واضح للوثائق والفاتورة",
-              "إيقاع سريع في الرد والتأكيد",
-              "خدمة مناسبة للعملاء داخل وخارج الدولة"
+              "Inventory first",
+              "Direct contact",
+              "Simple navigation",
+              "Readable cards"
             ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-              >
-                <BadgeCheck className="h-5 w-5 text-brand-gold" />
-                <span className="text-sm text-zinc-100">{item}</span>
+              <div key={item} className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                <BadgeCheck className="h-5 w-5 text-brand" />
+                <span className="text-sm font-medium text-zinc-800">{item}</span>
               </div>
             ))}
           </div>
-        </Reveal>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {trustPoints.map((item, index) => {
+          {trustPoints.map((item) => {
             const Icon = item.icon;
 
             return (
-              <Reveal key={item.title} delay={0.06 * index}>
-                <article className="h-full rounded-[30px] border border-zinc-200/70 bg-white/90 p-6 shadow-premium transition duration-300 hover:-translate-y-1 hover:border-brand/20 dark:border-white/10 dark:bg-zinc-900/90 dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-5 text-xl font-bold text-zinc-950 transition-colors dark:text-white">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-zinc-600 transition-colors dark:text-zinc-300">{item.description}</p>
-                </article>
-              </Reveal>
+              <article key={item.title} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-950 text-white">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-zinc-950">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">{item.description}</p>
+              </article>
             );
           })}
         </div>

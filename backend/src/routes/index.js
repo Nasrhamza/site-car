@@ -7,6 +7,8 @@ import appointmentRoutes from "./appointmentRoutes.js";
 import inquiryRoutes from "./inquiryRoutes.js";
 import postRoutes from "./postRoutes.js";
 import reviewRoutes from "./reviewRoutes.js";
+import exchangeRateRoutes from "./exchangeRateRoutes.js";
+import analyticsRoutes from "./analyticsRoutes.js";
 
 const router = Router();
 
@@ -17,5 +19,7 @@ router.use("/appointments", appointmentRoutes);
 router.use("/inquiries", inquiryRoutes);
 router.use("/posts", postRoutes);
 router.use("/reviews", reviewRoutes);
+router.use("/exchange-rates", exchangeRateRoutes);
+router.use("/analytics", analyticsRoutes);
 
 export default router;

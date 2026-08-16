@@ -56,7 +56,7 @@ export function HomeImpact() {
                 </Link>
 
                 <a
-                  href={buildWhatsAppUrl("مرحبا، أريد التواصل مع فريق ALHADUNI CARS.")}
+                  href={buildWhatsAppUrl("مرحبا، أريد التواصل مع فريق ALHADUNICARS.")}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15"

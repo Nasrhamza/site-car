@@ -5,7 +5,7 @@ import { COMPANY_NAME, COMPANY_SUBTITLE, buildWhatsAppUrl } from "@/lib/company"
 export const metadata: Metadata = {
   title: `من نحن | ${COMPANY_NAME}`,
   description:
-    "تعرف على ALHADUNI CARS وخدمات المعاينة، التوثيق والشحن للسيارات والمركبات التجارية."
+    "تعرف على ALHADUNICARS وخدمات المعاينة، التوثيق والشحن للسيارات والمركبات التجارية."
 };
 
 export default function AboutPage() {

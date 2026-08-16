@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { BadgeCheck, ShieldCheck, Sparkles } from "lucide-react";
+import { Images, ListFilter, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCategoryLabel } from "@/lib/company";
 import { formatCurrency, resolveMediaUrl } from "@/lib/utils";
 
 type ShowcaseCar = {
@@ -29,51 +27,48 @@ type Slide = {
 
 function buildSlides(cars: ShowcaseCar[]): Slide[] {
   const slides = cars
-    .map((car, index) => {
-      const imageUrl = resolveMediaUrl(car.images?.[0]?.url);
+    .flatMap((car, carIndex) =>
+      (car.images || []).map((image, imageIndex) => {
+        const imageUrl = resolveMediaUrl(image.url);
 
-      if (!imageUrl) {
-        return null;
-      }
+        if (!imageUrl) return null;
 
-      return {
-        id: car._id || car.slug || `${car.name || "car"}-${index}`,
-        name: car.name || "ALHADUNI CARS",
-        brand: car.brand || "ALHADUNI CARS",
-        category: car.category ? getCategoryLabel(car.category) : "مركبات مختارة",
-        price: car.price,
-        imageUrl,
-        alt: car.images?.[0]?.alt || car.name || "ALHADUNI CARS"
-      };
-    })
+        return {
+          id: `${car._id || car.slug || `${car.name || "car"}-${carIndex}`}-${imageIndex}`,
+          name: car.name || "ALHADUNICARS",
+          brand: car.brand || "ALHADUNICARS",
+          category: car.category || "Inventory photo",
+          price: car.price,
+          imageUrl,
+          alt: image.alt || car.name || "ALHADUNICARS"
+        };
+      })
+    )
     .filter(Boolean) as Slide[];
 
-  if (slides.length) {
-    return slides;
-  }
+  if (slides.length) return slides;
 
   return [
     {
       id: "fallback-showcase",
-      name: "مركبات مختارة بمعايير واضحة",
-      brand: "ALHADUNI CARS",
-      category: "سيارات، شاحنات وآليات جاهزة للتواصل",
-      imageUrl: "/guide-import.svg",
-      alt: "ALHADUNI CARS"
+      name: "Inventory preview",
+      brand: "ALHADUNICARS",
+      category: "Add cars from the admin panel to show them here",
+      imageUrl: "",
+      alt: "ALHADUNICARS"
     }
   ];
 }
 
 export function HomeAutoShowcase({ cars = [] }: { cars?: ShowcaseCar[] }) {
   const slides = buildSlides(cars);
+  const isFallback = slides.length === 1 && slides[0].id === "fallback-showcase";
   const [activeIndex, setActiveIndex] = useState(0);
   const activeSlide = slides[activeIndex % slides.length];
   const railSlides = [...slides, ...slides, ...slides];
 
   useEffect(() => {
-    if (slides.length < 2) {
-      return;
-    }
+    if (slides.length < 2) return;
 
     const interval = window.setInterval(() => {
       setActiveIndex((index) => (index + 1) % slides.length);
@@ -83,100 +78,112 @@ export function HomeAutoShowcase({ cars = [] }: { cars?: ShowcaseCar[] }) {
   }, [slides.length]);
 
   return (
-    <div className="relative mx-auto max-w-[590px]">
-      <div className="animate-orbit-slow pointer-events-none absolute -inset-8 rounded-full border border-dashed border-brand-gold/25" />
-      <div className="animate-float-soft absolute -right-3 top-8 z-20 hidden rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur md:block">
-        <BadgeCheck className="mb-1 h-4 w-4 text-brand-gold" />
-        جاهزة للمعاينة
-      </div>
-      <div className="animate-float-delayed absolute -left-3 bottom-32 z-20 hidden rounded-2xl border border-white/10 bg-zinc-950/75 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur md:block">
-        <ShieldCheck className="mb-1 h-4 w-4 text-green-300" />
-        شحن آمن
-      </div>
-
-      <div className="premium-shine relative overflow-hidden rounded-[34px] border border-white/10 bg-white/10 p-3 shadow-[0_30px_120px_rgba(0,0,0,0.38)] backdrop-blur">
-        <div className="relative h-[330px] overflow-hidden rounded-[26px] bg-zinc-900 sm:h-[430px] lg:h-[520px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSlide.imageUrl}
-              className="absolute inset-0"
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.985 }}
-              transition={{ duration: 0.75, ease: "easeOut" }}
-            >
-              <Image
-                src={activeSlide.imageUrl}
-                alt={activeSlide.alt}
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 42vw"
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-          <div className="animate-scan-line pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-
-          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-2 text-xs font-bold text-white/80 backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
-            عرض تلقائي
-          </div>
-
-          <div className="absolute inset-x-4 bottom-4 rounded-[24px] border border-white/10 bg-black/60 p-4 text-white backdrop-blur-xl sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/60">
-              {activeSlide.brand}
+    <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+      {isFallback ? (
+        <div className="relative flex h-[320px] items-center justify-center overflow-hidden rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-6 sm:h-[420px] lg:h-[500px]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,18,31,0.06),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(212,175,55,0.08),transparent_30%)]" />
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-600">
+              <ListFilter className="h-3.5 w-3.5 text-brand" />
+              Inventory preview
+            </div>
+            <h2 className="mt-4 text-2xl font-semibold text-zinc-950">No cars published yet</h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-600">
+              Add vehicles from the admin panel and the homepage will show real listings here.
             </p>
-
-            <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-black sm:text-3xl">{activeSlide.name}</h2>
-                <p className="mt-2 text-sm text-white/70">{activeSlide.category}</p>
-              </div>
-
-              {activeSlide.price ? (
-                <span className="rounded-full bg-brand px-4 py-2 text-sm font-black shadow-lg shadow-brand/30">
-                  {formatCurrency(activeSlide.price)}
-                </span>
-              ) : null}
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                "Photos",
+                "Price",
+                "Mileage",
+                "Contact"
+              ].map((item) => (
+                <div key={item} className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">
+              <Search className="h-4 w-4" />
+              Browse the catalogue
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="mt-4 overflow-hidden rounded-3xl border border-white/10 bg-white/10 p-2 backdrop-blur">
-        <div className="animate-home-image-rail flex w-max gap-3">
-          {railSlides.map((slide, index) => {
-            const realIndex = index % slides.length;
-            const isActive = realIndex === activeIndex % slides.length;
-
-            return (
-              <button
-                key={`${slide.id}-${index}`}
-                type="button"
-                onClick={() => setActiveIndex(realIndex)}
-                className={`group relative h-20 w-32 shrink-0 overflow-hidden rounded-2xl border p-1 text-right transition hover:-translate-y-0.5 ${
-                  isActive ? "border-brand bg-brand/20" : "border-white/10 bg-white/10"
-                }`}
-                aria-label={slide.name}
+      ) : (
+        <>
+          <div className="relative h-[320px] overflow-hidden rounded-xl bg-zinc-100 sm:h-[420px] lg:h-[500px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide.imageUrl}
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
               >
-                <Image
-                  src={slide.imageUrl}
-                  alt={slide.alt}
-                  fill
-                  className="object-cover opacity-85 transition duration-500 group-hover:scale-110 group-hover:opacity-100"
-                  sizes="128px"
+                <img
+                  src={activeSlide.imageUrl}
+                  alt={activeSlide.alt}
+                  className="h-full w-full object-cover"
+                  loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
-                <span className="absolute inset-x-2 bottom-2 truncate text-[11px] font-bold text-white">
-                  {slide.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm backdrop-blur">
+              <Images className="h-3.5 w-3.5 text-brand" />
+              Inventory photos
+            </div>
+
+            <div className="absolute inset-x-4 bottom-4 rounded-xl bg-white/95 p-4 text-zinc-900 shadow-sm backdrop-blur-md">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                {activeSlide.brand}
+              </p>
+              <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold sm:text-2xl">{activeSlide.name}</h2>
+                  <p className="mt-1 text-sm text-zinc-600">{activeSlide.category}</p>
+                </div>
+                {activeSlide.price ? (
+                  <span className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white">
+                    {formatCurrency(activeSlide.price)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-xl bg-zinc-50 p-2">
+            <div className="animate-home-image-rail flex w-max gap-2">
+              {railSlides.map((slide, index) => {
+                const realIndex = index % slides.length;
+                const isActive = realIndex === activeIndex % slides.length;
+
+                return (
+                  <button
+                    key={`${slide.id}-${index}`}
+                    type="button"
+                    onClick={() => setActiveIndex(realIndex)}
+                    className={`relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border transition ${
+                      isActive ? "border-brand" : "border-transparent"
+                    }`}
+                    aria-label={slide.name}
+                  >
+                    <img
+                      src={slide.imageUrl}
+                      alt={slide.alt}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

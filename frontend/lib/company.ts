@@ -1,6 +1,6 @@
-export const COMPANY_NAME = "ALHADUNI CARS";
-export const COMPANY_SHORT_NAME = "ALHADUNI";
-export const COMPANY_SECONDARY_NAME = "ALHADUNI";
+export const COMPANY_NAME = "ALHADUNICARS";
+export const COMPANY_SHORT_NAME = "ALHADUNICARS";
+export const COMPANY_SECONDARY_NAME = "ALHADUNICARS";
 export const COMPANY_SUBTITLE = "الحادوني للسيارات";
 export const COMPANY_DESCRIPTION =
   "منصة احترافية لبيع السيارات والمركبات التجارية مع المعاينة الميدانية، التوثيق، الشحن والمتابعة حتى الاستلام.";
@@ -27,11 +27,79 @@ export const VEHICLE_CATEGORIES = [
   "Véhicules légers"
 ] as const;
 
+export const VEHICLE_BRANDS = [
+  "Abarth", "Acura", "Alfa Romeo", "Alpine", "Aston Martin", "Audi", "BAIC", "Bentley",
+  "BMW", "Bugatti", "Buick", "BYD", "Cadillac", "Changan", "Chery", "Chevrolet",
+  "Chrysler", "Citroën", "Cupra", "Dacia", "Daewoo", "DAF", "Daihatsu", "Dodge",
+  "Dongfeng", "DS Automobiles", "Exeed", "Ferrari", "Fiat", "Ford", "Foton", "Freightliner",
+  "GAC", "Geely", "Genesis", "GMC", "Great Wall", "Haval", "Hino", "Honda", "Hongqi",
+  "Hummer", "Hyundai", "Infiniti", "Isuzu", "Iveco", "JAC", "Jaguar", "Jeep", "Jetour",
+  "JMC", "Kia", "Koenigsegg", "Lamborghini", "Lancia", "Land Rover", "Lexus", "Lincoln",
+  "Lotus", "Lucid", "Mack", "Mahindra", "MAN", "Maserati", "Maxus", "Mazda", "McLaren",
+  "Mercedes-Benz", "MG", "MINI", "Mitsubishi", "NIO", "Nissan", "Opel", "Peugeot",
+  "Polestar", "Porsche", "RAM", "Renault", "Rivian", "Rolls-Royce", "Saab", "Scania",
+  "SEAT", "Škoda", "Smart", "SsangYong / KGM", "Subaru", "Suzuki", "Tank", "Tesla",
+  "Toyota", "UD Trucks", "Volkswagen", "Volvo", "XPeng", "Zeekr", "Caterpillar", "JCB",
+  "Komatsu", "Liebherr", "Hitachi", "Bobcat", "Case", "New Holland"
+] as const;
+
+export const VEHICLE_YEARS = Array.from(
+  { length: 2050 - 1950 + 1 },
+  (_unused, index) => 2050 - index
+);
+
+export const GEARBOX_OPTIONS = [
+  "Automatique", "Manuelle", "CVT", "DCT", "AMT", "Tiptronic", "Séquentielle", "Autre"
+] as const;
+
+export const DRIVETRAIN_OPTIONS = [
+  "4x2", "4x4", "6x2", "6x4", "6x6", "8x4", "AWD", "FWD", "RWD", "Autre"
+] as const;
+
+export const EXTERIOR_COLOR_OPTIONS = [
+  "Noir", "Blanc", "Gris", "Argent", "Bleu", "Rouge", "Vert", "Beige", "Marron",
+  "Or", "Orange", "Jaune", "Violet", "Autre"
+] as const;
+
+const VEHICLE_MODEL_SUGGESTIONS: Record<string, string[]> = {
+  audi: ["A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "e-tron"],
+  bmw: ["3 Series", "5 Series", "7 Series", "X1", "X3", "X5", "X6", "X7", "iX"],
+  byd: ["Atto 3", "Dolphin", "Han", "Seal", "Song Plus", "Tang"],
+  chevrolet: ["Camaro", "Captiva", "Corvette", "Silverado", "Suburban", "Tahoe"],
+  ford: ["Bronco", "Edge", "Explorer", "F-150", "Mustang", "Ranger", "Transit"],
+  gmc: ["Canyon", "Sierra", "Terrain", "Yukon"],
+  hyundai: ["Accent", "Elantra", "Palisade", "Santa Fe", "Sonata", "Tucson"],
+  iveco: ["Daily", "Eurocargo", "S-Way", "T-Way"],
+  jeep: ["Compass", "Gladiator", "Grand Cherokee", "Wrangler"],
+  kia: ["Carnival", "K5", "Sorento", "Sportage", "Telluride"],
+  "land rover": ["Defender", "Discovery", "Range Rover", "Range Rover Sport", "Range Rover Velar"],
+  lexus: ["ES", "GX", "IS", "LC", "LX", "NX", "RX"],
+  man: ["TGE", "TGM", "TGS", "TGX"],
+  "mercedes-benz": ["A-Class", "C-Class", "E-Class", "S-Class", "G-Class", "GLC", "GLE", "GLS", "Sprinter", "Actros"],
+  mitsubishi: ["ASX", "L200", "Montero", "Outlander", "Pajero"],
+  nissan: ["Altima", "Navara", "Patrol", "Pathfinder", "Sunny", "X-Trail"],
+  peugeot: ["208", "308", "3008", "5008", "Boxer", "Partner", "Traveller"],
+  porsche: ["718", "911", "Cayenne", "Macan", "Panamera", "Taycan"],
+  renault: ["Captur", "Clio", "Duster", "Kangoo", "Master", "Megane", "Trafic"],
+  scania: ["P-series", "G-series", "R-series", "S-series"],
+  tesla: ["Model 3", "Model S", "Model X", "Model Y", "Cybertruck"],
+  toyota: ["Camry", "Corolla", "Fortuner", "Hiace", "Hilux", "Land Cruiser", "Prado", "RAV4"],
+  volkswagen: ["Caddy", "Golf", "Passat", "Tiguan", "Touareg", "Transporter"],
+  volvo: ["S60", "S90", "XC40", "XC60", "XC90", "FH", "FM", "FMX"]
+};
+
+export function getVehicleModelSuggestions(brand?: string | null) {
+  if (!brand) return [];
+  return VEHICLE_MODEL_SUGGESTIONS[normalizeLookupKey(brand)] || [];
+}
+
 export const DEFAULT_VEHICLE_CATEGORY = "Utilitaires";
 export const FUEL_TYPE_OPTIONS = [
   "Diesel",
   "Essence",
   "Hybride",
+  "PHEV",
+  "REEV",
   "Électrique",
   "GPL",
   "Autre"
@@ -89,6 +157,21 @@ export const CATEGORY_LABELS: Record<(typeof VEHICLE_CATEGORIES)[number], string
   "Véhicules légers": "سيارات خفيفة"
 };
 
+export const CATEGORY_ENGLISH_LABELS: Record<(typeof VEHICLE_CATEGORIES)[number], string> = {
+  Tracteurs: "Tractors",
+  "Semi-remorques": "Semi-trailers",
+  Camions: "Trucks",
+  Utilitaires: "Commercial vehicles",
+  "Engins TP": "Construction equipment",
+  "Bus / Minibus": "Bus / Minibus",
+  "Véhicules légers": "Passenger cars"
+};
+
+export function getCategoryDisplayLabel(category: string, language: "ar" | "en") {
+  if (language === "ar") return getCategoryLabel(category);
+  return CATEGORY_ENGLISH_LABELS[category as (typeof VEHICLE_CATEGORIES)[number]] || category;
+}
+
 const LEGACY_CATEGORY_LABELS: Record<string, string> = {
   "Citadines / Compactes": "سيارات خفيفة",
   "SUV & 4x4": "سيارات رباعية الدفع",
@@ -110,6 +193,8 @@ export const FUEL_TYPE_LABELS: Record<(typeof FUEL_TYPE_OPTIONS)[number], string
   Diesel: "ديزل",
   Essence: "بنزين",
   Hybride: "هجين",
+  PHEV: "هجين قابل للشحن",
+  REEV: "كهربائي ممتد المدى",
   Électrique: "كهربائي",
   GPL: "غاز",
   Autre: "أخرى"
@@ -132,6 +217,7 @@ const BADGE_LABELS: Record<string, string> = {
   Électrique: "كهربائي",
   Electrique: "كهربائي",
   Hybride: "هجين",
+  PHEV: "هجين قابل للشحن",
   Diesel: "ديزل",
   Essence: "بنزين"
 };
@@ -209,6 +295,24 @@ export function getFuelTypeLabel(fuelType?: string | null) {
     NORMALIZED_FUEL_TYPE_LABELS[normalized] ||
     fuelType
   );
+}
+
+const FUEL_TYPE_IMAGES: Record<string, string> = {
+  essence: "/fuel-types/petrol.png",
+  petrol: "/fuel-types/petrol.png",
+  diesel: "/fuel-types/diesel.png",
+  hybride: "/fuel-types/hybrid.png",
+  hybrid: "/fuel-types/hybrid.png",
+  electrique: "/fuel-types/electric.png",
+  electric: "/fuel-types/electric.png",
+  ev: "/fuel-types/electric.png",
+  phev: "/fuel-types/phev.png",
+  reev: "/fuel-types/reev.png"
+};
+
+export function getFuelTypeImage(fuelType?: string | null) {
+  if (!fuelType) return null;
+  return FUEL_TYPE_IMAGES[normalizeLookupKey(fuelType)] || null;
 }
 
 export function getStatusLabel(status?: string | null) {
@@ -311,7 +415,7 @@ export const GUIDE_PAGES = [
     image: "/alhaduni-logo.jpg",
     heroLabel: "المعاينة، التوثيق، الشحن والمتابعة",
     ctaMessage:
-      "مرحبًا، أريد الاستفسار عن خطوات شراء سيارة بأمان مع ALHADUNI CARS.",
+      "مرحبًا، أريد الاستفسار عن خطوات شراء سيارة بأمان مع ALHADUNICARS.",
     highlights: [
       {
         title: "استجابة تتعدى التوقعات",

@@ -4,15 +4,22 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { resolveMediaUrl } from "@/lib/utils";
+import { currencyTnd, resolveMediaUrl } from "@/lib/utils";
+import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import {
   DEFAULT_FUEL_TYPE,
   DEFAULT_VEHICLE_CATEGORY,
+  DRIVETRAIN_OPTIONS,
+  EXTERIOR_COLOR_OPTIONS,
   FUEL_TYPE_OPTIONS,
+  GEARBOX_OPTIONS,
   PRODUCT_STATUS_OPTIONS,
+  VEHICLE_BRANDS,
   VEHICLE_CATEGORIES,
+  VEHICLE_YEARS,
   getCategoryLabel,
   getFuelTypeLabel,
+  getVehicleModelSuggestions,
   getStatusLabel
 } from "@/lib/company";
 
@@ -65,6 +72,7 @@ export default function EditCarPageClient() {
   const params = useParams();
   const router = useRouter();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const { rate: aedToTndRate, date: exchangeDate } = useAedToTndRate();
 
   const [form, setForm] = useState<CarForm>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -72,6 +80,7 @@ export default function EditCarPageClient() {
   const [error, setError] = useState("");
   const [existingImages, setExistingImages] = useState<CarImage[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const modelSuggestions = getVehicleModelSuggestions(form.brand);
 
   useEffect(() => {
     if (!id) return;
@@ -277,40 +286,75 @@ export default function EditCarPageClient() {
         </div>
 
         <div className="grid min-w-0 gap-4 md:grid-cols-3">
-          <input name="brand" value={form.brand} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="الماركة" />
-          <input name="model" value={form.model} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="الموديل" />
-          <select name="category" value={form.category} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent">
-            {VEHICLE_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {getCategoryLabel(category)}
-              </option>
-            ))}
-          </select>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            الماركة
+            <input name="brand" value={form.brand} onChange={handleChange} list="edit-vehicle-brands" className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="اختر أو اكتب الماركة" />
+            <datalist id="edit-vehicle-brands">{VEHICLE_BRANDS.map((brand) => <option key={brand} value={brand} />)}</datalist>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            الموديل
+            <input name="model" value={form.model} onChange={handleChange} list="edit-vehicle-models" className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="اختر أو اكتب الموديل" />
+            <datalist id="edit-vehicle-models">{modelSuggestions.map((model) => <option key={model} value={model} />)}</datalist>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            الفئة
+            <select name="category" value={form.category} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white">
+              {VEHICLE_CATEGORIES.map((category) => (
+                <option key={category} value={category}>{getCategoryLabel(category)}</option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <input name="price" type="number" value={form.price} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="السعر" />
-          <input name="year" type="number" value={form.year} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="السنة" />
-          <input name="mileage" type="number" value={form.mileage} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="Km" />
-          <input name="exteriorColor" value={form.exteriorColor} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="اللون" />
+          <label className="grid min-w-0 gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            السعر بالدرهم AED
+            <input name="price" type="number" min="0" step="100" value={form.price} onChange={handleChange} className="w-full rounded-2xl border px-4 py-3 text-sm text-zinc-950 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:border-white/10 dark:bg-transparent dark:text-white dark:disabled:bg-white/5" placeholder={form.priceType === "Sur demande" ? "السعر عند الطلب" : "95000"} required={form.priceType !== "Sur demande"} disabled={form.priceType === "Sur demande"} />
+            {form.priceType !== "Sur demande" && Number(form.price) > 0 ? <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">≈ {currencyTnd(Number(form.price), aedToTndRate)}{exchangeDate ? ` · ${exchangeDate}` : ""}</p> : null}
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            السنة
+            <select name="year" value={form.year} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white">
+              <option value="">اختر السنة</option>
+              {form.year && !VEHICLE_YEARS.includes(Number(form.year)) ? <option value={form.year}>{form.year}</option> : null}
+              {VEHICLE_YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
+            </select>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            الكيلومترات
+            <input name="mileage" type="number" min="0" step="1" value={form.mileage} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="0 km" />
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            اللون الخارجي
+            <input name="exteriorColor" value={form.exteriorColor} onChange={handleChange} list="edit-color-options" className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="اختر أو اكتب اللون" />
+            <datalist id="edit-color-options">{EXTERIOR_COLOR_OPTIONS.map((option) => <option key={option} value={option} />)}</datalist>
+          </label>
         </div>
 
         <div className="grid min-w-0 gap-4 md:grid-cols-3">
-          <select name="fuelType" value={form.fuelType} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent">
-            {FUEL_TYPE_OPTIONS.map((fuelType) => (
-              <option key={fuelType} value={fuelType}>
-                {getFuelTypeLabel(fuelType)}
-              </option>
-            ))}
-          </select>
-          <input name="gearbox" value={form.gearbox} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="علبة السرعة" />
-          <input name="transmission" value={form.transmission} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="الدفع / النقل" />
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            نوع الوقود
+            <select name="fuelType" value={form.fuelType} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white">
+              {FUEL_TYPE_OPTIONS.map((fuelType) => <option key={fuelType} value={fuelType}>{getFuelTypeLabel(fuelType)}</option>)}
+            </select>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            علبة السرعة
+            <input name="gearbox" value={form.gearbox} onChange={handleChange} list="edit-gearbox-options" className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="أوتوماتيك، يدوي..." />
+            <datalist id="edit-gearbox-options">{GEARBOX_OPTIONS.map((option) => <option key={option} value={option} />)}</datalist>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            نظام الدفع
+            <input name="transmission" value={form.transmission} onChange={handleChange} list="edit-drivetrain-options" className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" placeholder="4x2، 4x4، 6x4..." />
+            <datalist id="edit-drivetrain-options">{DRIVETRAIN_OPTIONS.map((option) => <option key={option} value={option} />)}</datalist>
+          </label>
         </div>
 
         <div className="grid min-w-0 gap-4 md:grid-cols-2">
-          <select name="priceType" value={form.priceType} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent">
+          <select name="priceType" value={form.priceType} onChange={(event) => setForm((prev) => ({ ...prev, priceType: event.target.value, price: event.target.value === "Sur demande" ? "" : prev.price }))} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent">
             <option value="Prix fixe">سعر ثابت</option>
             <option value="Negociable">قابل للتفاوض</option>
+            <option value="Sur demande">السعر عند الطلب</option>
           </select>
           <select name="status" value={form.status} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent">
             {PRODUCT_STATUS_OPTIONS.map((status) => (

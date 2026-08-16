@@ -3,6 +3,7 @@ import { DEFAULT_FUEL_TYPE, isAllowedFuelTypeValue, normalizeFuelTypeValue } fro
 
 function normalizePriceType(value) {
   const input = String(value || "").trim().toLowerCase();
+  if (input.includes("demande") || input.includes("request")) return "Sur demande";
   return input.includes("negoc") ? "Negociable" : "Prix fixe";
 }
 
@@ -42,7 +43,7 @@ const carSchema = new mongoose.Schema({
   drivetrain: String,
   powerHp: Number,
   powerKw: Number,
-  price: { type: Number, required: true, index: true },
+  price: { type: Number, default: null, index: true },
   priceType: {
     type: String,
     default: "Prix fixe",

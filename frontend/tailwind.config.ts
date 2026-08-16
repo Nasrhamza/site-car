@@ -18,7 +18,7 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["Montserrat", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
         serif: ["Playfair Display", "serif"]
       },
       boxShadow: {
