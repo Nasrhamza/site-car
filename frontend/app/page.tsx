@@ -1,6 +1,7 @@
 import { Hero } from "@/components/hero";
 import { FeaturedCars } from "@/components/featured-cars";
 import { HomeFinalCta } from "@/components/home-final-cta";
+import { CityTimeWeather } from "@/components/city-time-weather";
 import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero cars={cars} />
+      <CityTimeWeather />
       <FeaturedCars cars={cars} />
       <HomeFinalCta />
     </>

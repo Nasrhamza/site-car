@@ -13,6 +13,10 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function escapeRegex(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function toStringList(value) {
   if (Array.isArray(value)) {
     return value.map((item) => String(item).trim()).filter(Boolean);
@@ -40,6 +44,7 @@ function normalizeStatusValue(value) {
 
 function normalizePriceTypeValue(value) {
   const input = String(value || "").trim().toLowerCase();
+  if (input.includes("demande") || input.includes("request")) return "Sur demande";
   return input.includes("negoc") ? "Negociable" : "Prix fixe";
 }
 
@@ -126,7 +131,11 @@ function normalizeCarPayload(body) {
 
   if (year !== undefined) normalized.year = year;
   if (mileage !== undefined) normalized.mileage = mileage;
-  if (price !== undefined) normalized.price = price;
+  if (price !== undefined) {
+    normalized.price = price;
+  } else {
+    delete normalized.price;
+  }
 
   if (typeof body.category === "string") {
     normalized.category = normalizeCategoryValue(body.category);
@@ -144,6 +153,9 @@ function normalizeCarPayload(body) {
 
   if (body.priceType !== undefined) {
     normalized.priceType = normalizePriceTypeValue(body.priceType);
+    if (normalized.priceType === "Sur demande") {
+      normalized.price = null;
+    }
   }
 
   if (body.status !== undefined || body.availability !== undefined) {
@@ -165,6 +177,52 @@ function normalizeCarPayload(body) {
   );
 }
 
+async function makeUniqueCarSlug(brand, model, year, excludedId) {
+  const baseSlug = makeSlug(brand, model, year) || "vehicle";
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (
+    await Car.exists({
+      slug,
+      ...(excludedId ? { _id: { $ne: excludedId } } : {})
+    })
+  ) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+}
+
+function sendCarWriteError(res, error, fallbackMessage) {
+  if (error?.name === "ValidationError") {
+    const fieldLabels = {
+      name: "الاسم",
+      brand: "الماركة",
+      model: "الموديل",
+      category: "الفئة",
+      year: "السنة",
+      mileage: "عدد الكيلومترات",
+      fuelType: "نوع الوقود",
+      transmission: "الدفع / النقل",
+      gearbox: "علبة السرعة",
+      exteriorColor: "اللون"
+    };
+    const fields = Object.keys(error.errors || {}).map((field) => fieldLabels[field] || field);
+    const details = fields.length ? `: ${fields.join("، ")}` : "";
+    return res.status(400).json({ message: `الرجاء التثبت من الحقول المطلوبة${details}` });
+  }
+
+  if (error?.code === 11000) {
+    return res.status(409).json({
+      message: "يوجد إعلان آخر بنفس الرابط. أعد المحاولة وسيتم إنشاء رابط مختلف تلقائيًا."
+    });
+  }
+
+  return res.status(500).json({ message: fallbackMessage });
+}
+
 export async function getCars(req, res) {
   try {
     const {
@@ -172,13 +230,17 @@ export async function getCars(req, res) {
       limit = 9,
       search,
       brand,
+      model,
       category,
       minPrice,
       maxPrice,
       yearFrom,
       yearTo,
+      minMileage,
+      maxMileage,
       fuelType,
       gearbox,
+      transmission,
       sort = "-createdAt"
     } = req.query;
 
@@ -193,6 +255,7 @@ export async function getCars(req, res) {
     }
 
     if (brand) query.brand = { $in: String(brand).split(",") };
+    if (model) query.model = new RegExp(escapeRegex(model), "i");
     if (category) {
       query.category = { $in: getCategoryAliases(category) };
     }
@@ -227,6 +290,21 @@ export async function getCars(req, res) {
         ...(yearFrom ? { $gte: Number(yearFrom) } : {}),
         ...(yearTo ? { $lte: Number(yearTo) } : {})
       };
+    }
+
+    if (minMileage || maxMileage) {
+      query.mileage = {
+        ...(minMileage ? { $gte: Number(minMileage) } : {}),
+        ...(maxMileage ? { $lte: Number(maxMileage) } : {})
+      };
+    }
+
+    if (transmission) {
+      const transmissionPattern = new RegExp(`^${escapeRegex(transmission)}$`, "i");
+      query.$and = [
+        ...(query.$and || []),
+        { $or: [{ gearbox: transmissionPattern }, { transmission: transmissionPattern }] }
+      ];
     }
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -294,7 +372,7 @@ export async function getCarById(req, res) {
 export async function createCar(req, res) {
   try {
     const body = normalizeCarPayload(req.body);
-    const slug = makeSlug(body.brand, body.model, body.year);
+    const slug = await makeUniqueCarSlug(body.brand, body.model, body.year);
     const uploadedImages = buildUploadedImages(
       getUploadedFiles(req),
       body.name || `${body.brand || "Vehicule"} ${body.model || ""}`.trim()
@@ -309,7 +387,7 @@ export async function createCar(req, res) {
     res.status(201).json(serializeCar(car));
   } catch (error) {
     console.error("createCar error:", error);
-    res.status(500).json({ message: "Erreur lors de la creation du vehicule" });
+    sendCarWriteError(res, error, "تعذر إضافة المركبة. حاول مرة أخرى.");
   }
 }
 
@@ -323,7 +401,12 @@ export async function updateCar(req, res) {
     );
 
     if (updateData.brand && updateData.model && updateData.year) {
-      updateData.slug = makeSlug(updateData.brand, updateData.model, updateData.year);
+      updateData.slug = await makeUniqueCarSlug(
+        updateData.brand,
+        updateData.model,
+        updateData.year,
+        req.params.id
+      );
     }
 
     if (existingImages !== undefined || uploadedImages.length > 0) {
@@ -341,7 +424,7 @@ export async function updateCar(req, res) {
     res.json(serializeCar(car));
   } catch (error) {
     console.error("updateCar error:", error);
-    res.status(500).json({ message: "Erreur lors de la mise a jour" });
+    sendCarWriteError(res, error, "تعذر حفظ التعديلات. حاول مرة أخرى.");
   }
 }
 

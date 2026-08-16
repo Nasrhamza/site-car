@@ -12,10 +12,17 @@ type CatalogueParams = {
   limit: number;
   sort: string;
   search: string;
+  brand: string;
+  model: string;
   category: string;
   fuelType: string;
   minPrice: string;
   maxPrice: string;
+  yearFrom: string;
+  yearTo: string;
+  minMileage: string;
+  maxMileage: string;
+  transmission: string;
 };
 
 function parseSearchParams(searchParams: ReadonlyURLSearchParams): CatalogueParams {
@@ -24,10 +31,17 @@ function parseSearchParams(searchParams: ReadonlyURLSearchParams): CataloguePara
     limit: Number(searchParams.get("limit") || 9),
     sort: searchParams.get("sort") || "-createdAt",
     search: searchParams.get("search") || "",
+    brand: searchParams.get("brand") || "",
+    model: searchParams.get("model") || "",
     category: searchParams.get("category") || "",
     fuelType: searchParams.get("fuelType") || "",
     minPrice: searchParams.get("minPrice") || "",
-    maxPrice: searchParams.get("maxPrice") || ""
+    maxPrice: searchParams.get("maxPrice") || "",
+    yearFrom: searchParams.get("yearFrom") || "",
+    yearTo: searchParams.get("yearTo") || "",
+    minMileage: searchParams.get("minMileage") || "",
+    maxMileage: searchParams.get("maxMileage") || "",
+    transmission: searchParams.get("transmission") || ""
   };
 }
 
@@ -49,6 +63,7 @@ export default function CataloguePage() {
 
   const [params, setParams] = useState<CatalogueParams>(urlParams);
   const [cars, setCars] = useState<any[]>([]);
+  const [filterCars, setFilterCars] = useState<any[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, pages: 1 });
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(true);
@@ -71,14 +86,29 @@ export default function CataloguePage() {
     if (params.limit !== 9) query.set("limit", String(params.limit));
     if (params.sort && params.sort !== "-createdAt") query.set("sort", params.sort);
     if (params.search) query.set("search", params.search);
+    if (params.brand) query.set("brand", params.brand);
+    if (params.model) query.set("model", params.model);
     if (params.category) query.set("category", params.category);
     if (params.fuelType) query.set("fuelType", params.fuelType);
     if (params.minPrice) query.set("minPrice", params.minPrice);
     if (params.maxPrice) query.set("maxPrice", params.maxPrice);
+    if (params.yearFrom) query.set("yearFrom", params.yearFrom);
+    if (params.yearTo) query.set("yearTo", params.yearTo);
+    if (params.minMileage) query.set("minMileage", params.minMileage);
+    if (params.maxMileage) query.set("maxMileage", params.maxMileage);
+    if (params.transmission) query.set("transmission", params.transmission);
 
     const nextUrl = query.toString() ? `${pathname}?${query.toString()}` : pathname;
     router.replace(nextUrl, { scroll: false });
   }, [params, pathname, router]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.get("/cars", { params: { limit: 500, sort: "brand" } }).then(({ data }) => {
+      if (mounted) setFilterCars(data.items || []);
+    }).catch(() => undefined);
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -123,9 +153,11 @@ export default function CataloguePage() {
   }, [params]);
 
   const suggestions = useMemo(() => {
-    const names = cars.flatMap((car) => [car.name, car.brand, car.model]);
+    const names = (filterCars.length ? filterCars : cars).flatMap((car) => [car.name, car.brand, car.model]);
     return Array.from(new Set(names)).slice(0, 10);
-  }, [cars]);
+  }, [cars, filterCars]);
+  const brands = useMemo(() => Array.from(new Set(filterCars.map((car) => car.brand).filter(Boolean))).sort(), [filterCars]);
+  const models = useMemo(() => Array.from(new Set(filterCars.filter((car) => !params.brand || car.brand === params.brand).map((car) => car.model).filter(Boolean))).sort(), [filterCars, params.brand]);
 
   return (
     <div className="container-premium section-spacing">
@@ -141,6 +173,8 @@ export default function CataloguePage() {
         setView={setView}
         total={meta.total}
         suggestions={suggestions}
+        brands={brands}
+        models={models}
       />
 
       {error ? (

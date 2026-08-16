@@ -76,8 +76,10 @@ const translations: Record<string, string> = {
   "مركبات مشابهة": "Similar vehicles",
   "اطلب معلومات إضافية": "Request more information",
   "اسأل على واتساب": "Ask on WhatsApp",
+  "اطلب السعر على واتساب": "Ask for the price on WhatsApp",
   "اسأل عن الشحن": "Ask about shipping",
   "السعر غير متوفر": "Price unavailable",
+  "السعر عند الطلب": "Price on request",
   "تسجيل الدخول": "Sign in",
   "إدارة": "Management"
 };

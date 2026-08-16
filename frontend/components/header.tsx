@@ -80,14 +80,14 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
       <div className="container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
             <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-zinc-950">ALHADUNICARS</p>
-              <p className="text-xs text-zinc-500">Dubai car marketplace</p>
+              <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">ALHADUNICARS</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Dubai car marketplace</p>
             </div>
           </Link>
         </div>
@@ -101,8 +101,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium text-zinc-600 transition hover:text-zinc-950",
-                  active && "text-zinc-950"
+                  "text-sm font-medium text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white",
+                  active && "text-zinc-950 dark:text-white"
                 )}
               >
                 {item.label}
@@ -114,7 +114,7 @@ export function Header() {
         <div className="hidden items-center gap-2 lg:flex">
           {isAdminRoute && <Link
               href={authHref}
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 transition hover:border-brand hover:text-brand"
+              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 transition hover:border-brand hover:text-brand dark:border-white/10 dark:bg-zinc-900 dark:text-white"
             >
               <AuthIcon className="h-4 w-4" />
               {authLabel}
@@ -124,26 +124,26 @@ export function Header() {
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50"
+              className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/30 dark:bg-zinc-900 dark:hover:bg-rose-500/10"
             >
               <LogOut className="h-4 w-4" />
               Logout
             </button>
           )}
 
-          {!isAdminRoute && <button
+          <button
               type="button"
               onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold text-zinc-700 transition hover:border-brand hover:text-brand"
+              className="rounded-full border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold text-zinc-700 transition hover:border-brand hover:text-brand dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
               aria-label="Change language"
             >
               {language === "en" ? "العربية" : "EN"}
-            </button>}
+            </button>
 
           <button
             aria-label="Toggle theme"
             onClick={toggleTheme}
-            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-950"
+            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-950 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:text-white"
           >
             {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
@@ -170,26 +170,26 @@ export function Header() {
             {t.whatsapp}
           </a>
 
-          {!isAdminRoute && <button
+          <button
               type="button"
               onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold text-zinc-700"
+              className="rounded-full border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold text-zinc-700 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
               aria-label="Change language"
             >
               {language === "en" ? "العربية" : "EN"}
-            </button>}
+            </button>
 
           <button
             aria-label="Toggle theme"
             onClick={toggleTheme}
-            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-700 transition"
+            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-700 transition dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
           >
             {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
 
           <button
             onClick={() => setOpen((value) => !value)}
-            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-900"
+            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-900 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
             aria-label="Open menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -204,16 +204,16 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="border-t border-zinc-200 bg-white lg:hidden"
+            className="border-t border-zinc-200 bg-white lg:hidden dark:border-white/10 dark:bg-zinc-950"
           >
             <div className="container-premium py-4">
-              <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4">
+              <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
                 {navLinks.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-zinc-50",
+                      "rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-white/5",
                       pathname === item.href && "bg-zinc-950 text-white hover:bg-zinc-950"
                     )}
                   >
@@ -224,7 +224,7 @@ export function Header() {
                 {isAdminRoute && <div className="grid gap-2 pt-2">
                     <Link
                       href={authHref}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-900"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-900 dark:border-white/10 dark:text-white"
                     >
                       <AuthIcon className="h-4 w-4" />
                       {authLabel}

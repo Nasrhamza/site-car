@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowUpLeft,
-  CalendarRange,
   CarFront as CarIcon,
   Clock3,
-  Eye,
   MessageSquareText,
   PlusCircle,
   Settings,
@@ -16,7 +14,7 @@ import {
   Users
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { currency } from "@/lib/utils";
+import { useLanguage } from "@/lib/site-language";
 
 type DashboardStats = {
   cards: {
@@ -31,7 +29,7 @@ type DashboardStats = {
     _id: string;
     name: string;
     brand: string;
-    price: number;
+    price?: number | null;
     views: number;
   }>;
 };
@@ -54,9 +52,31 @@ const fadeUp = {
 };
 
 export default function AdminDashboardPage() {
+  const { language } = useLanguage();
   const [stats, setStats] = useState<DashboardStats>(emptyStats);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const copy = language === "en"
+    ? {
+        loadError: "Unable to load dashboard statistics.", vehicles: "Vehicles", sold: "sold", reserved: "reserved",
+        customerMessages: "Customer messages", messagesHint: "Requests that need a quick follow-up", activity: "Activity",
+        appointments: "appointments recorded", performance: "Performance", performanceHint: "Total views of the most visited vehicles",
+        addVehicle: "Add vehicle", manageVehicles: "Manage vehicles", changePassword: "Change password", daily: "Daily overview",
+        heroTitle: "Everything you need to manage the showroom", heroText: "Track vehicles, customer messages, and views quickly from one clear workspace.",
+        messages: "Messages", quickSummary: "Quick summary", carsInSystem: "vehicles in the system", customerMessage: "customer messages",
+        quickActions: "Quick actions",
+        quickActionsHint: "Your most frequently used tasks, ready to open."
+      }
+    : {
+        loadError: "تعذر تحميل إحصائيات لوحة الإدارة.", vehicles: "المركبات", sold: "مباعة", reserved: "محجوزة",
+        customerMessages: "رسائل العملاء", messagesHint: "استفسارات تحتاج متابعة سريعة", activity: "النشاط",
+        appointments: "موعدا مسجلا", performance: "الأداء", performanceHint: "مجموع مشاهدات المركبات الأكثر زيارة",
+        addVehicle: "إضافة مركبة", manageVehicles: "إدارة المركبات", changePassword: "تغيير كلمة المرور", daily: "لوحة متابعة يومية",
+        heroTitle: "كل ما تحتاجه لإدارة المعرض في شاشة واحدة", heroText: "تابع المركبات، رسائل العملاء، والمشاهدات بسرعة. الواجهة مصممة لتكون واضحة وسهلة أثناء العمل اليومي.",
+        messages: "الرسائل", quickSummary: "ملخص سريع", carsInSystem: "مركبة في النظام", customerMessage: "رسالة عميل",
+        quickActions: "إجراءات سريعة",
+        quickActionsHint: "أكثر المهام استعمالا قريبة منك."
+      };
 
   useEffect(() => {
     api
@@ -64,57 +84,52 @@ export default function AdminDashboardPage() {
       .then(({ data }) => setStats(data))
       .catch((err) => {
         console.error(err);
-        setError(err?.response?.data?.message || "تعذر تحميل إحصائيات لوحة الإدارة.");
+        setError(err?.response?.data?.message || copy.loadError);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [language, copy.loadError]);
 
-  const dashboardCards = useMemo(
-    () => [
+  const dashboardCards = [
       {
-        label: "المركبات",
+        label: copy.vehicles,
         value: stats.cards.totalCars,
-        hint: `${stats.cards.soldCars} مباعة | ${stats.cards.reservedCars} محجوزة`,
+        hint: `${stats.cards.soldCars} ${copy.sold} | ${stats.cards.reservedCars} ${copy.reserved}`,
         href: "/admin/cars",
         icon: CarIcon,
         accent: "bg-brand"
       },
       {
-        label: "رسائل العملاء",
+        label: copy.customerMessages,
         value: stats.cards.inquiries,
-        hint: "استفسارات تحتاج متابعة سريعة",
+        hint: copy.messagesHint,
         href: "/admin/requests",
         icon: MessageSquareText,
         accent: "bg-emerald-500"
       },
       {
-        label: "النشاط",
+        label: copy.activity,
         value: stats.cards.totalUsers,
-        hint: `${stats.cards.appointments} موعدا مسجلا`,
+        hint: `${stats.cards.appointments} ${copy.appointments}`,
         href: "/admin",
         icon: Users,
         accent: "bg-zinc-950"
       },
       {
-        label: "الأداء",
+        label: copy.performance,
         value: stats.topViewed.reduce((total, car) => total + (car.views || 0), 0),
-        hint: "مجموع مشاهدات المركبات الأكثر زيارة",
+        hint: copy.performanceHint,
         href: "/admin/cars",
         icon: TrendingUp,
         accent: "bg-brand-gold"
       }
-    ],
-    [stats]
-  );
+    ];
 
   const quickActions = [
-    { label: "إضافة مركبة", href: "/admin/cars/new", icon: PlusCircle, primary: true },
-    { label: "إدارة المركبات", href: "/admin/cars", icon: CarIcon },
-    { label: "رسائل العملاء", href: "/admin/requests", icon: MessageSquareText },
-    { label: "تغيير كلمة المرور", href: "/admin/settings", icon: Settings }
+    { label: copy.addVehicle, href: "/admin/cars/new", icon: PlusCircle, primary: true },
+    { label: copy.manageVehicles, href: "/admin/cars", icon: CarIcon },
+    { label: copy.customerMessages, href: "/admin/requests", icon: MessageSquareText },
+    { label: copy.changePassword, href: "/admin/settings", icon: Settings }
   ];
-
-  const maxViews = Math.max(...stats.topViewed.map((car) => car.views || 0), 1);
 
   return (
     <motion.div
@@ -132,15 +147,15 @@ export default function AdminDashboardPage() {
           <div className="p-5 sm:p-6 lg:p-7">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600">
               <Clock3 className="h-4 w-4 text-brand" />
-              لوحة متابعة يومية
+              {copy.daily}
             </div>
 
             <h1 className="mt-4 text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">
-              كل ما تحتاجه لإدارة المعرض في شاشة واحدة
+              {copy.heroTitle}
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
-              تابع المركبات، رسائل العملاء، والمشاهدات بسرعة. الواجهة مصممة لتكون واضحة وسهلة أثناء العمل اليومي.
+              {copy.heroText}
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -149,7 +164,7 @@ export default function AdminDashboardPage() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition hover:-translate-y-0.5"
               >
                 <PlusCircle className="h-4 w-4" />
-                إضافة مركبة
+                {copy.addVehicle}
               </Link>
 
               <Link
@@ -157,23 +172,23 @@ export default function AdminDashboardPage() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 px-5 py-3 text-sm font-semibold text-zinc-800 transition hover:-translate-y-0.5 hover:bg-zinc-50"
               >
                 <MessageSquareText className="h-4 w-4" />
-                الرسائل
+                {copy.messages}
               </Link>
             </div>
           </div>
 
           <div className="border-t border-zinc-200/70 bg-zinc-950 p-5 text-white lg:border-r lg:border-t-0 sm:p-6 lg:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-gold">
-              ملخص سريع
+              {copy.quickSummary}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-3xl font-bold">{loading ? "..." : stats.cards.totalCars}</p>
-                <p className="mt-1 text-xs text-zinc-300">مركبة في النظام</p>
+                <p className="mt-1 text-xs text-zinc-300">{copy.carsInSystem}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-3xl font-bold">{loading ? "..." : stats.cards.inquiries}</p>
-                <p className="mt-1 text-xs text-zinc-300">رسالة عميل</p>
+                <p className="mt-1 text-xs text-zinc-300">{copy.customerMessage}</p>
               </div>
             </div>
           </div>
@@ -223,80 +238,17 @@ export default function AdminDashboardPage() {
         })}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
-        <motion.div
+      <motion.section
           variants={fadeUp}
           transition={{ duration: 0.45 }}
           className="rounded-[24px] border border-zinc-200/70 bg-white p-5 shadow-premium sm:p-6"
         >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-zinc-950 sm:text-2xl">
-                أكثر الإعلانات مشاهدة
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                ترتيب سريع للمركبات التي تجلب أكبر اهتمام.
-              </p>
-            </div>
-            <CalendarRange className="h-5 w-5 text-zinc-400" />
-          </div>
-
-          <div className="mt-5 space-y-3">
-            {stats.topViewed.length === 0 ? (
-              <div className="rounded-2xl border border-dashed p-6 text-sm text-zinc-500">
-                لا توجد إحصائيات متاحة حاليا.
-              </div>
-            ) : (
-              stats.topViewed.map((car, index) => {
-                const width = Math.max(12, Math.round(((car.views || 0) / maxViews) * 100));
-
-                return (
-                  <motion.div
-                    key={car._id}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.08 }}
-                    className="rounded-2xl border border-zinc-200/70 bg-zinc-50 p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold text-brand">#{index + 1}</p>
-                        <h3 className="mt-1 font-semibold text-zinc-950">{car.name}</h3>
-                        <p className="text-sm text-zinc-500">
-                          {car.brand} | {currency(car.price)}
-                        </p>
-                      </div>
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-semibold shadow-sm">
-                        <Eye className="h-4 w-4 text-brand" />
-                        {car.views} مشاهدة
-                      </div>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${width}%` }}
-                        transition={{ duration: 0.7, delay: index * 0.08 }}
-                        className="h-full rounded-full bg-gradient-to-l from-brand to-brand-gold"
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        </motion.div>
-
-        <motion.div
-          variants={fadeUp}
-          transition={{ duration: 0.45 }}
-          className="rounded-[24px] border border-zinc-200/70 bg-white p-5 shadow-premium sm:p-6"
-        >
-          <h2 className="text-xl font-bold text-zinc-950 sm:text-2xl">إجراءات سريعة</h2>
+          <h2 className="text-xl font-bold text-zinc-950 sm:text-2xl">{copy.quickActions}</h2>
           <p className="mt-2 text-sm text-zinc-500">
-            أكثر المهام استعمالا قريبة منك.
+            {copy.quickActionsHint}
           </p>
 
-          <div className="mt-5 grid gap-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {quickActions.map((action) => {
               const Icon = action.icon;
 
@@ -319,8 +271,7 @@ export default function AdminDashboardPage() {
               );
             })}
           </div>
-        </motion.div>
-      </section>
+      </motion.section>
     </motion.div>
   );
 }

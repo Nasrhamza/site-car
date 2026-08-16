@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CarFront,
+  BarChart3,
   LayoutDashboard,
   LogOut,
   MessageSquareText,
@@ -15,20 +16,26 @@ import {
 import { clearSession, getStoredUser, isAdminRole, type StoredUser } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/site-language";
 
 const links = [
-  { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/admin/cars", label: "المركبات", icon: CarFront },
-  { href: "/admin/cars/new", label: "إضافة", icon: PlusCircle },
-  { href: "/admin/requests", label: "الإشعارات", icon: MessageSquareText },
-  { href: "/admin/settings", label: "كلمة المرور", icon: Settings }
+  { href: "/admin", en: "Dashboard", ar: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/admin/analytics", en: "Analytics", ar: "التحليلات", icon: BarChart3 },
+  { href: "/admin/cars", en: "Vehicles", ar: "المركبات", icon: CarFront },
+  { href: "/admin/cars/new", en: "Add vehicle", ar: "إضافة", icon: PlusCircle },
+  { href: "/admin/requests", en: "Messages", ar: "الإشعارات", icon: MessageSquareText },
+  { href: "/admin/settings", en: "Password", ar: "كلمة المرور", icon: Settings }
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { language } = useLanguage();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [ready, setReady] = useState(false);
+  const copy = language === "en"
+    ? { loading: "Loading admin dashboard...", title: "Admin dashboard", logout: "Log out" }
+    : { loading: "جار تحميل لوحة الإدارة...", title: "لوحة الإدارة", logout: "تسجيل الخروج" };
 
   useEffect(() => {
     const storedUser = getStoredUser();
@@ -44,22 +51,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname, router]);
 
   if (!ready) {
-    return <div className="container-premium py-16 text-sm text-zinc-500">جار تحميل لوحة الإدارة...</div>;
+    return <div className="container-premium py-16 text-sm text-zinc-500 dark:text-zinc-400">{copy.loading}</div>;
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_45%,#fafafa_100%)]">
+    <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_45%,#fafafa_100%)] dark:bg-none dark:bg-zinc-950">
       <div className="container-premium grid min-w-0 gap-5 py-5 lg:grid-cols-[230px_minmax(0,1fr)]">
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.35 }}
-          className="min-w-0 rounded-[24px] border border-zinc-200/70 bg-white p-3 shadow-premium lg:sticky lg:top-24 lg:h-fit"
+          className="min-w-0 rounded-[24px] border border-zinc-200/70 bg-white p-3 shadow-premium dark:border-white/10 dark:bg-zinc-900 lg:sticky lg:top-24 lg:h-fit"
         >
           <div className="flex items-center gap-3 rounded-[20px] bg-zinc-950 px-4 py-4 text-white lg:flex-col lg:text-center">
             <BrandLogo compact className="h-16 w-16" />
             <div>
-              <h2 className="text-lg font-bold">لوحة الإدارة</h2>
+              <h2 className="text-lg font-bold">{copy.title}</h2>
               <p className="mt-1 max-w-[180px] truncate text-xs text-white/70">
                 {user?.name || user?.email}
               </p>
@@ -69,7 +76,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="mt-3 grid gap-2">
             {links.map((link) => {
               const Icon = link.icon;
-              const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
+              const active = link.href === "/admin"
+                ? pathname === "/admin"
+                : pathname === link.href || pathname?.startsWith(`${link.href}/`);
 
               return (
                 <Link
@@ -79,11 +88,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     "relative inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition",
                     active
                       ? "bg-brand text-white shadow-lg shadow-brand/20"
-                      : "bg-zinc-50 text-zinc-700 hover:bg-zinc-100"
+                      : "bg-zinc-50 text-zinc-700 hover:bg-zinc-100 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  {link.label}
+                  {link[language]}
                   {active && (
                     <motion.span
                       layoutId="admin-active-link"
@@ -101,10 +110,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               clearSession();
               router.replace("/login");
             }}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10"
           >
             <LogOut className="h-4 w-4" />
-            تسجيل الخروج
+            {copy.logout}
           </button>
         </motion.aside>
 

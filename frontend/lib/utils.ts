@@ -16,21 +16,23 @@ export function getApiBaseUrl() {
 }
 
 export function currency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("en-AE", {
     style: "currency",
-    currency: "USD",
+    currency: "AED",
+    currencyDisplay: "code",
     maximumFractionDigits: 0
   }).format(value);
 }
 
-const TND_PER_USD = Number(process.env.NEXT_PUBLIC_TND_PER_USD || 3.1);
+export const DEFAULT_AED_TO_TND_RATE = Number(process.env.NEXT_PUBLIC_AED_TO_TND_FALLBACK || 0.795);
 
-export function currencyTnd(valueInUsd: number) {
-  return new Intl.NumberFormat("fr-FR", {
+export function currencyTnd(valueInAed: number, rate = DEFAULT_AED_TO_TND_RATE) {
+  return new Intl.NumberFormat("fr-TN", {
     style: "currency",
     currency: "TND",
+    currencyDisplay: "code",
     maximumFractionDigits: 0
-  }).format(valueInUsd * TND_PER_USD);
+  }).format(valueInAed * rate);
 }
 
 export function formatCurrency(value: number) {
@@ -61,7 +63,7 @@ export function resolveMediaUrl(url?: string | null) {
 export function buildWhatsAppMessage(car: {
   name: string;
   slug: string;
-  price: number;
+  price?: number | null;
   mileage?: number;
   year?: number;
   reference?: string;
@@ -75,7 +77,7 @@ export function buildWhatsAppMessage(car: {
     typeof car.mileage === "number"
       ? `الكيلومترات: ${car.mileage.toLocaleString("ar-TN")} km`
       : null,
-    `السعر: ${currency(car.price)}`,
+    `السعر: ${Number(car.price) > 0 ? currency(Number(car.price)) : "عند الطلب"}`,
     `المرجع: ${car.reference || car.slug.toUpperCase()}`,
     `الرابط: ${absoluteCarUrl(car.slug)}`,
     "",
@@ -88,7 +90,7 @@ export function buildWhatsAppMessage(car: {
 export function buildWhatsAppLink(car: {
   name: string;
   slug: string;
-  price: number;
+  price?: number | null;
   mileage?: number;
   year?: number;
   reference?: string;

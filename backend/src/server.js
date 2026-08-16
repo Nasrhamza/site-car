@@ -15,6 +15,7 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import Car from "./models/Car.js";
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 const allowedOrigins = env.CLIENT_URLS;
 const socketCorsOrigin = allowedOrigins.length <= 1 ? allowedOrigins[0] : allowedOrigins;
@@ -48,7 +49,12 @@ async function syncWatchers(carId, watchers) {
 
 app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads")));
 app.use(helmet());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 150 }));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: env.NODE_ENV === "development" ? 2000 : 600,
+  standardHeaders: "draft-7",
+  legacyHeaders: false
+}));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "4mb" }));
 app.use(express.urlencoded({ extended: true }));
