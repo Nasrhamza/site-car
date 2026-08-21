@@ -10,12 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [api, web]
+        app: [backend, frontend]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run install:all
-      - run: npm run build --workspace apps/${{ matrix.app }}
+      - run: npm ci
+      - run: npm run build --workspace ${{ matrix.app }}

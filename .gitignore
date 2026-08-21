@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-*
 dist
 build
 .env
@@ -11,3 +12,6 @@ backend/src/uploads
 .codex/
 .codex-logs/
 .codex-*.png
+.idea/
+work/
+*.tsbuildinfo

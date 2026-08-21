@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   ArrowUpLeft,
+  ChevronDown,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -21,6 +22,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/site-language";
+import { ENGINE_CAPACITY_OPTIONS, REGIONAL_SPECS_OPTIONS, VEHICLE_BRANDS, VEHICLE_CATEGORIES, getCategoryDisplayLabel } from "@/lib/company";
 
 function readAdminUser() {
   const user = getStoredUser();
@@ -34,6 +36,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [adminUser, setAdminUser] = useState<StoredUser | null>(null);
+  const [carsMenuOpen, setCarsMenuOpen] = useState(false);
+  const [mobileCarsOpen, setMobileCarsOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const isAdminRoute = pathname.startsWith("/admin");
   const navLinks = [
@@ -59,6 +63,8 @@ export function Header() {
 
   useEffect(() => {
     setOpen(false);
+    setCarsMenuOpen(false);
+    setMobileCarsOpen(false);
   }, [pathname]);
 
   const whatsappHref = buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد مزيداً من المعلومات عن السيارات المتوفرة." : "Hello, I would like more information about the available cars.");
@@ -80,7 +86,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
+    <header onMouseLeave={() => setCarsMenuOpen(false)} className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
       <div className="container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -96,13 +102,21 @@ export function Header() {
           {navLinks.map((item) => {
             const active = pathname === item.href;
 
+            if (item.href === "/catalogue") {
+              return <div key={item.href} className="flex h-16 items-center lg:h-18" onMouseEnter={() => setCarsMenuOpen(true)}>
+                <Link href={item.href} className={cn("nav-animated-link inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300", active && "nav-animated-link-active text-zinc-950 dark:text-white")}>
+                  {item.label}<ChevronDown className={`h-4 w-4 transition ${carsMenuOpen ? "rotate-180" : ""}`} />
+                </Link>
+              </div>;
+            }
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white",
-                  active && "text-zinc-950 dark:text-white"
+                  "nav-animated-link rounded-full px-3 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300",
+                  active && "nav-animated-link-active text-zinc-950 dark:text-white"
                 )}
               >
                 {item.label}
@@ -198,6 +212,24 @@ export function Header() {
       </div>
 
       <AnimatePresence>
+        {carsMenuOpen ? <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }} onMouseEnter={() => setCarsMenuOpen(true)} onMouseLeave={() => setCarsMenuOpen(false)} className="absolute inset-x-0 top-full hidden border-b border-zinc-200 bg-white shadow-2xl lg:block dark:border-white/10 dark:bg-zinc-950">
+          <div className="container-premium grid grid-cols-4 gap-0 py-6">
+            <MegaColumn title={language === "ar" ? "حسب الماركة" : "Browse by make"} links={VEHICLE_BRANDS.slice(0, 9).map((brand) => ({ label: brand, href: `/catalogue?brand=${encodeURIComponent(brand)}` }))} />
+            <MegaColumn title={language === "ar" ? "موديلات مطلوبة" : "Popular models"} links={["Land Cruiser", "Patrol", "Prado", "Camry", "Hilux", "Range Rover", "Cayenne", "X5", "G-Class"].map((model) => ({ label: model, href: `/catalogue?model=${encodeURIComponent(model)}` }))} />
+            <MegaColumn title={language === "ar" ? "نوع المركبة" : "Vehicle type"} links={VEHICLE_CATEGORIES.map((category) => ({ label: getCategoryDisplayLabel(category, language), href: `/catalogue?category=${encodeURIComponent(category)}` }))} />
+            <div className="border-l border-zinc-200 px-6 dark:border-white/10 rtl:border-l-0 rtl:border-r">
+              <p className="text-xs font-black uppercase tracking-[.18em] text-brand">{language === "ar" ? "بحث دقيق" : "Find the right car"}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {ENGINE_CAPACITY_OPTIONS.filter((_item, index) => index % 10 === 0).map((capacity) => <Link key={capacity} href={`/catalogue?engineCapacity=${capacity}`} className="rounded-xl bg-zinc-100 px-3 py-2 text-xs font-bold hover:bg-brand hover:text-white dark:bg-white/5">{capacity.toFixed(1)} L</Link>)}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">{REGIONAL_SPECS_OPTIONS.slice(0, 5).map((spec) => <Link key={spec} href={`/catalogue?regionalSpecs=${encodeURIComponent(spec)}`} className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold hover:border-brand hover:text-brand dark:border-white/10">{spec}</Link>)}</div>
+              <Link href="/catalogue" className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-brand px-4 py-3 text-sm font-extrabold text-white">{language === "ar" ? "عرض كل المركبات" : "View all vehicles"}</Link>
+            </div>
+          </div>
+        </motion.div> : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -208,7 +240,10 @@ export function Header() {
           >
             <div className="container-premium py-4">
               <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
-                {navLinks.map((item) => (
+                {navLinks.map((item) => item.href === "/catalogue" ? <div key={item.href} className="grid gap-1">
+                  <button type="button" onClick={() => setMobileCarsOpen((value) => !value)} className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium dark:text-zinc-200"><span>{item.label}</span><ChevronDown className={`h-4 w-4 transition ${mobileCarsOpen ? "rotate-180" : ""}`} /></button>
+                  <AnimatePresence>{mobileCarsOpen ? <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="grid overflow-hidden rounded-xl bg-zinc-50 p-2 dark:bg-white/5"><Link href="/catalogue" className="rounded-lg px-3 py-2 text-sm font-bold">{language === "ar" ? "كل المركبات" : "All vehicles"}</Link>{VEHICLE_CATEGORIES.slice(0, 5).map((category) => <Link key={category} href={`/catalogue?category=${encodeURIComponent(category)}`} className="rounded-lg px-3 py-2 text-sm">{getCategoryDisplayLabel(category, language)}</Link>)}</motion.div> : null}</AnimatePresence>
+                </div> : (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -248,4 +283,8 @@ export function Header() {
       </AnimatePresence>
     </header>
   );
+}
+
+function MegaColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+  return <div className="border-r border-zinc-200 px-6 dark:border-white/10 rtl:border-l rtl:border-r-0"><p className="text-xs font-black uppercase tracking-[.16em] text-zinc-950 dark:text-white">{title}</p><div className="mt-4 grid gap-1">{links.map((link) => <Link key={`${link.href}-${link.label}`} href={link.href} className="rounded-lg px-2 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-brand dark:text-zinc-300 dark:hover:bg-white/5">{link.label}</Link>)}</div></div>;
 }

@@ -12,6 +12,8 @@ export type CarFront = {
   transmission: string;
   gearbox: string;
   exteriorColor: string;
+  engineCapacity?: number | null;
+  regionalSpecs?: string;
   price?: number | null;
   priceType: string;
   status: string;

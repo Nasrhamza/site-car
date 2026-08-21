@@ -11,9 +11,11 @@ import {
   DEFAULT_VEHICLE_CATEGORY,
   DRIVETRAIN_OPTIONS,
   EXTERIOR_COLOR_OPTIONS,
+  ENGINE_CAPACITY_OPTIONS,
   FUEL_TYPE_OPTIONS,
   GEARBOX_OPTIONS,
   PRODUCT_STATUS_OPTIONS,
+  REGIONAL_SPECS_OPTIONS,
   VEHICLE_BRANDS,
   VEHICLE_CATEGORIES,
   VEHICLE_YEARS,
@@ -39,13 +41,14 @@ type CarForm = {
   gearbox: string;
   transmission: string;
   exteriorColor: string;
+  engineCapacity: string;
+  regionalSpecs: string;
   price: string;
   priceType: string;
   status: string;
   shortDescription: string;
   description: string;
   badgesText: string;
-  equipmentText: string;
 };
 
 const emptyForm: CarForm = {
@@ -59,13 +62,14 @@ const emptyForm: CarForm = {
   gearbox: "",
   transmission: "",
   exteriorColor: "",
+  engineCapacity: "",
+  regionalSpecs: "GCC",
   price: "",
   priceType: "Prix fixe",
   status: PRODUCT_STATUS_OPTIONS[0],
   shortDescription: "",
   description: "",
-  badgesText: "",
-  equipmentText: ""
+  badgesText: ""
 };
 
 export default function EditCarPageClient() {
@@ -99,13 +103,14 @@ export default function EditCarPageClient() {
           gearbox: data?.gearbox || "",
           transmission: data?.transmission || "",
           exteriorColor: data?.exteriorColor || "",
+          engineCapacity: data?.engineCapacity ? String(data.engineCapacity) : "",
+          regionalSpecs: data?.regionalSpecs || "GCC",
           price: String(data?.price || ""),
           priceType: data?.priceType || "Prix fixe",
           status: data?.availability || data?.status || PRODUCT_STATUS_OPTIONS[0],
           shortDescription: data?.shortDescription || "",
           description: data?.description || "",
-          badgesText: Array.isArray(data?.badges) ? data.badges.join(", ") : "",
-          equipmentText: Array.isArray(data?.equipment) ? data.equipment.join(", ") : ""
+          badgesText: Array.isArray(data?.badges) ? data.badges.join(", ") : ""
         });
         setExistingImages(
           Array.isArray(data?.images)
@@ -166,13 +171,14 @@ export default function EditCarPageClient() {
             formData.append("gearbox", form.gearbox);
             formData.append("transmission", form.transmission);
             formData.append("exteriorColor", form.exteriorColor);
+            formData.append("engineCapacity", form.engineCapacity);
+            formData.append("regionalSpecs", form.regionalSpecs);
             formData.append("price", form.price);
             formData.append("priceType", form.priceType);
             formData.append("status", form.status);
             formData.append("shortDescription", form.shortDescription);
             formData.append("description", form.description);
             formData.append("badges", form.badgesText);
-            formData.append("equipment", form.equipmentText);
             formData.append("existingImages", JSON.stringify(existingImages));
 
             selectedFiles.forEach((file) => {
@@ -306,6 +312,22 @@ export default function EditCarPageClient() {
           </label>
         </div>
 
+        <div className="grid min-w-0 gap-4 md:grid-cols-2">
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            Engine capacity
+            <select name="engineCapacity" value={form.engineCapacity} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" required>
+              <option value="">Select engine capacity</option>
+              {ENGINE_CAPACITY_OPTIONS.map((capacity) => <option key={capacity} value={capacity}>{capacity.toFixed(1)} L</option>)}
+            </select>
+          </label>
+          <label className="grid gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
+            Regional specifications
+            <select name="regionalSpecs" value={form.regionalSpecs} onChange={handleChange} className="rounded-2xl border px-4 py-3 text-sm text-zinc-950 dark:border-white/10 dark:bg-transparent dark:text-white" required>
+              {REGIONAL_SPECS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
+        </div>
+
         <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <label className="grid min-w-0 gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-300">
             السعر بالدرهم AED
@@ -366,7 +388,6 @@ export default function EditCarPageClient() {
         </div>
 
         <input name="badgesText" value={form.badgesText} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="الشارات مفصولة بفواصل" />
-        <input name="equipmentText" value={form.equipmentText} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="التجهيزات مفصولة بفواصل" />
         <textarea name="shortDescription" value={form.shortDescription} onChange={handleChange} className="rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="وصف مختصر" />
         <textarea name="description" value={form.description} onChange={handleChange} className="min-h-40 rounded-2xl border px-4 py-3 dark:border-white/10 dark:bg-transparent" placeholder="وصف كامل" />
 

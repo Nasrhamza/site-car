@@ -8,7 +8,8 @@ import {
   GitCompareArrows,
   Heart,
   MessageCircle,
-  ShieldCheck
+  ShieldCheck,
+  Settings2
 } from "lucide-react";
 import { getBadgeLabel, getFuelTypeImage, getFuelTypeLabel, getStatusLabel } from "@/lib/company";
 import { buildWhatsAppLink, cn, currencyTnd, formatCurrency, formatNumber, resolveMediaUrl } from "@/lib/utils";
@@ -37,6 +38,8 @@ type CarFront = {
   fuelType?: string;
   gearbox?: string;
   transmission?: string;
+  engineCapacity?: number | null;
+  regionalSpecs?: string;
   badges?: string[];
   images?: CarImage[];
 };
@@ -92,6 +95,12 @@ export function CarCard({
       icon: Fuel,
       image: fuelTypeImage
     },
+    {
+      label: language === "ar" ? "سعة المحرك" : "Engine",
+      value: car.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "—",
+      icon: Settings2,
+      image: null
+    }
   ];
 
   return (
@@ -184,7 +193,7 @@ export function CarCard({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-zinc-600 dark:text-zinc-300">
+        <div className="mt-4 grid grid-cols-4 gap-2 text-[11px] text-zinc-600 dark:text-zinc-300">
           {specs.map((spec) => {
             const Icon = spec.icon;
 
@@ -207,7 +216,7 @@ export function CarCard({
 
         <div className="mt-3 flex items-center justify-between text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
           <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />{language === "ar" ? "إعلان موثّق" : "Verified listing"}</span>
-          <span>Dubai, UAE</span>
+          <span>{car.regionalSpecs || "Dubai, UAE"}</span>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">

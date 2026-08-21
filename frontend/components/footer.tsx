@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { ArrowRight, MapPin, MessageCircle, ShieldCheck } from "lucide-react";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { BrandLogo } from "@/components/brand-logo";
 import {
   COMPANY_NAME,
+  COMPANY_FACEBOOK_URL,
   COMPANY_WHATSAPP_DISPLAY,
+  DEVELOPER_FACEBOOK_URL,
+  DEVELOPER_WHATSAPP_DISPLAY,
+  DEVELOPER_WHATSAPP_PHONE,
   buildWhatsAppUrl
 } from "@/lib/company";
 import { useLanguage } from "@/lib/site-language";
@@ -20,7 +25,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-zinc-200 bg-white text-zinc-900">
-      <div className="container-premium grid gap-8 py-12 md:grid-cols-4">
+      <div className="container-premium grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <BrandLogo className="h-20 w-20" />
           <p className="mt-4 text-sm leading-7 text-zinc-600">{t.footerText}</p>
@@ -80,6 +85,10 @@ export function Footer() {
               {t.contact}
               <ArrowRight className="h-4 w-4" />
             </a>
+            <a href={COMPANY_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#1877f2]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-3.5 w-3.5" /></span>Facebook ALHADUNICARS</a>
+            <p className="mt-2 border-t border-zinc-200 pt-3 text-xs font-semibold uppercase tracking-[.12em] text-zinc-400">Development contact</p>
+            <a href={`https://wa.me/${DEVELOPER_WHATSAPP_PHONE}?text=${encodeURIComponent("Hello, I need technical support for ALHADUNICARS.")}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#25D366]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#25D366] text-white"><FaWhatsapp className="h-4 w-4" /></span>{DEVELOPER_WHATSAPP_DISPLAY}</a>
+            <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#1877f2]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-3.5 w-3.5" /></span>Facebook developer</a>
           </div>
         </div>
       </div>

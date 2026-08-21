@@ -8,6 +8,10 @@ export const COMPANY_WHATSAPP_PHONE =
   process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "971563543177";
 export const COMPANY_WHATSAPP_DISPLAY = "\u2066+971 56 354 3177\u2069";
 export const COMPANY_LOCATION = "دبي، الإمارات العربية المتحدة";
+export const COMPANY_FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61585371121441";
+export const DEVELOPER_WHATSAPP_PHONE = "21628260802";
+export const DEVELOPER_WHATSAPP_DISPLAY = "+216 28 260 802";
+export const DEVELOPER_FACEBOOK_URL = "https://www.facebook.com/hamza.nasr.307894/";
 
 export const NAV_LINKS = [
   { href: "/", label: "الرئيسية" },
@@ -59,6 +63,23 @@ export const DRIVETRAIN_OPTIONS = [
 export const EXTERIOR_COLOR_OPTIONS = [
   "Noir", "Blanc", "Gris", "Argent", "Bleu", "Rouge", "Vert", "Beige", "Marron",
   "Or", "Orange", "Jaune", "Violet", "Autre"
+] as const;
+
+export const ENGINE_CAPACITY_OPTIONS = Array.from(
+  { length: 51 },
+  (_unused, index) => Number((1 + index * 0.1).toFixed(1))
+);
+
+export const REGIONAL_SPECS_OPTIONS = [
+  "GCC",
+  "European",
+  "American",
+  "Canadian",
+  "Japanese",
+  "Korean",
+  "Chinese",
+  "Australian",
+  "Other"
 ] as const;
 
 const VEHICLE_MODEL_SUGGESTIONS: Record<string, string[]> = {

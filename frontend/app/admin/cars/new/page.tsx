@@ -11,9 +11,11 @@ import {
   DEFAULT_VEHICLE_CATEGORY,
   DRIVETRAIN_OPTIONS,
   EXTERIOR_COLOR_OPTIONS,
+  ENGINE_CAPACITY_OPTIONS,
   FUEL_TYPE_OPTIONS,
   GEARBOX_OPTIONS,
   PRODUCT_STATUS_OPTIONS,
+  REGIONAL_SPECS_OPTIONS,
   VEHICLE_BRANDS,
   VEHICLE_CATEGORIES,
   VEHICLE_YEARS,
@@ -34,12 +36,13 @@ const initialForm = {
   gearbox: "",
   transmission: "",
   exteriorColor: "",
+  engineCapacity: "",
+  regionalSpecs: "GCC",
   price: "",
   priceType: "Prix fixe",
   status: PRODUCT_STATUS_OPTIONS[0],
   description: "",
-  badges: "",
-  equipment: ""
+  badges: ""
 };
 
 const MAX_CAR_IMAGES = 12;
@@ -104,12 +107,13 @@ export default function AddCarPage() {
       formData.append("gearbox", form.gearbox || "");
       formData.append("transmission", form.transmission || "");
       formData.append("exteriorColor", form.exteriorColor || "");
+      formData.append("engineCapacity", form.engineCapacity || "");
+      formData.append("regionalSpecs", form.regionalSpecs || "");
       formData.append("price", String(form.price || ""));
       formData.append("priceType", form.priceType);
       formData.append("status", form.status || "");
       formData.append("description", form.description || "");
       formData.append("badges", form.badges || "");
-      formData.append("equipment", form.equipment || "");
 
       selectedFiles.forEach((file) => {
         formData.append("images", file, file.name);
@@ -304,6 +308,21 @@ export default function AddCarPage() {
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Engine capacity</label>
+            <select name="engineCapacity" value={form.engineCapacity} onChange={handleChange} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent" required>
+              <option value="">Select engine capacity</option>
+              {ENGINE_CAPACITY_OPTIONS.map((capacity) => <option key={capacity} value={capacity}>{capacity.toFixed(1)} L</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">Regional specifications</label>
+            <select name="regionalSpecs" value={form.regionalSpecs} onChange={handleChange} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent" required>
+              {REGIONAL_SPECS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">السعر بالدرهم الإماراتي (AED)</label>
             <input
               type="number"
@@ -412,18 +431,6 @@ export default function AddCarPage() {
               value={form.badges}
               onChange={handleChange}
               placeholder="فحص، تصدير، جاهز"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
-            />
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-zinc-200">التجهيزات</label>
-            <input
-              type="text"
-              name="equipment"
-              value={form.equipment}
-              onChange={handleChange}
-              placeholder="GPS، كاميرا، تكييف..."
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-rose-400 dark:border-white/10 dark:bg-transparent"
             />
           </div>

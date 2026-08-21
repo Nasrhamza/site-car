@@ -128,9 +128,11 @@ function normalizeCarPayload(body) {
   const year = toNumber(body.year);
   const mileage = toNumber(body.mileage);
   const price = toNumber(body.price);
+  const engineCapacity = toNumber(body.engineCapacity);
 
   if (year !== undefined) normalized.year = year;
   if (mileage !== undefined) normalized.mileage = mileage;
+  if (engineCapacity !== undefined) normalized.engineCapacity = engineCapacity;
   if (price !== undefined) {
     normalized.price = price;
   } else {
@@ -207,7 +209,9 @@ function sendCarWriteError(res, error, fallbackMessage) {
       fuelType: "نوع الوقود",
       transmission: "الدفع / النقل",
       gearbox: "علبة السرعة",
-      exteriorColor: "اللون"
+      exteriorColor: "اللون",
+      engineCapacity: "سعة المحرك",
+      regionalSpecs: "المواصفات الإقليمية"
     };
     const fields = Object.keys(error.errors || {}).map((field) => fieldLabels[field] || field);
     const details = fields.length ? `: ${fields.join("، ")}` : "";
@@ -241,6 +245,10 @@ export async function getCars(req, res) {
       fuelType,
       gearbox,
       transmission,
+      engineCapacity,
+      minEngineCapacity,
+      maxEngineCapacity,
+      regionalSpecs,
       sort = "-createdAt"
     } = req.query;
 
@@ -277,6 +285,24 @@ export async function getCars(req, res) {
       }
     }
     if (gearbox) query.gearbox = gearbox;
+    if (regionalSpecs) {
+      const requestedSpecs = String(regionalSpecs).split(",");
+      if (requestedSpecs.includes("Other")) {
+        query.$and = [
+          ...(query.$and || []),
+          { $or: [{ regionalSpecs: { $in: requestedSpecs } }, { regionalSpecs: { $exists: false } }, { regionalSpecs: null }, { regionalSpecs: "" }] }
+        ];
+      } else {
+        query.regionalSpecs = { $in: requestedSpecs };
+      }
+    }
+    if (engineCapacity) query.engineCapacity = Number(engineCapacity);
+    if (minEngineCapacity || maxEngineCapacity) {
+      query.engineCapacity = {
+        ...(minEngineCapacity ? { $gte: Number(minEngineCapacity) } : {}),
+        ...(maxEngineCapacity ? { $lte: Number(maxEngineCapacity) } : {})
+      };
+    }
 
     if (minPrice || maxPrice) {
       query.price = {
@@ -337,8 +363,10 @@ export async function getCarBySlug(req, res) {
     // Increment views without re-validating legacy records. Some demo cars were
     // created before all current required fields existed, and `save()` made
     // their public detail page fail even though the record could be displayed.
-    await Car.updateOne({ _id: car._id }, { $inc: { views: 1 } });
-    car.views = (car.views || 0) + 1;
+    if (req.query.trackView !== "false") {
+      await Car.updateOne({ _id: car._id }, { $inc: { views: 1 } });
+      car.views = (car.views || 0) + 1;
+    }
 
     const similar = await Car.find({
       _id: { $ne: car._id },

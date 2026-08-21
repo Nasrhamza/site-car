@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, MessageCircle, Sparkles } from "lucide-react";
-import { CarCard } from "@/components/car-card";
+import { ArrowRight, Bookmark, MessageCircle, Sparkles } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { useLanguage } from "@/lib/site-language";
+import { currencyTnd, formatCurrency, resolveMediaUrl } from "@/lib/utils";
+import { useAedToTndRate } from "@/hooks/use-exchange-rate";
+import { useGarageStore } from "@/store/favorites";
 
 export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
   const { language, t } = useLanguage();
@@ -51,13 +53,31 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
             {t.noCars}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {cars.map((car: any) => (
-              <CarCard key={car._id || car.id || car.slug} car={car} />
+          <div className="grid gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+            {cars.slice(0, 9).map((car: any) => (
+              <HomeImageCard key={car._id || car.id || car.slug} car={car} />
             ))}
           </div>
         )}
       </div>
     </section>
   );
+}
+
+function HomeImageCard({ car }: { car: any }) {
+  const { language } = useLanguage();
+  const { rate } = useAedToTndRate();
+  const { favorites, toggleFavorite } = useGarageStore();
+  const image = resolveMediaUrl(car?.images?.[0]?.url) || "/guide-import.svg";
+  const saved = favorites.includes(car._id);
+  const priceOnRequest = car?.priceType === "Sur demande" || !(Number(car?.price) > 0);
+
+  return <article className="group relative isolate h-[285px] transition duration-300 hover:-translate-y-1.5">
+    <div aria-hidden className="absolute inset-x-[5%] -bottom-4 -z-20 h-[90%] overflow-hidden rounded-[24px] opacity-55 blur-2xl transition duration-500 group-hover:opacity-75"><img src={image} alt="" className="h-full w-full scale-105 object-cover" /></div>
+    <Link href={`/voitures/${car.slug}`} className="absolute inset-0 -z-10 overflow-hidden rounded-[24px] bg-zinc-900 shadow-xl"><img src={image} alt={car?.images?.[0]?.alt || car.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/45" /></Link>
+    <div className="pointer-events-none flex h-full flex-col justify-between p-5 text-white">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-extrabold">{car.brand}</p><p className="mt-1 text-xs text-white/70">{car.model} · {car.year}</p></div><span className="rounded-full border border-white/20 bg-black/25 px-3 py-1.5 text-xs font-bold backdrop-blur">{car.regionalSpecs || "Dubai"}</span></div>
+      <div className="flex items-end justify-between gap-4"><div className="min-w-0"><h3 className="truncate text-2xl font-black">{car.name}</h3>{priceOnRequest ? <p className="mt-2 text-sm font-bold text-white/85">{language === "ar" ? "السعر عند الطلب" : "Price on request"}</p> : <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1"><p className="text-lg font-black text-white">{formatCurrency(Number(car.price))}</p><p className="text-xs font-bold text-white/65">≈ {currencyTnd(Number(car.price), rate)}</p></div>}</div><button type="button" onClick={() => toggleFavorite(car._id)} aria-label={language === "ar" ? "حفظ" : "Save vehicle"} className={`pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-white transition ${saved ? "bg-white text-brand" : "bg-black/20 text-white hover:bg-white/25"}`}><Bookmark className={`h-5 w-5 ${saved ? "fill-current" : ""}`} /></button></div>
+    </div>
+  </article>;
 }

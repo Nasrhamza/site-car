@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { CarCard } from "@/components/car-card";
 import { SearchFilters } from "@/components/search-filters";
+import { VEHICLE_BRANDS, getVehicleModelSuggestions } from "@/lib/company";
+import { useLanguage } from "@/lib/site-language";
 
 type CatalogueParams = {
   page: number;
@@ -23,6 +25,8 @@ type CatalogueParams = {
   minMileage: string;
   maxMileage: string;
   transmission: string;
+  engineCapacity: string;
+  regionalSpecs: string;
 };
 
 function parseSearchParams(searchParams: ReadonlyURLSearchParams): CatalogueParams {
@@ -41,7 +45,9 @@ function parseSearchParams(searchParams: ReadonlyURLSearchParams): CataloguePara
     yearTo: searchParams.get("yearTo") || "",
     minMileage: searchParams.get("minMileage") || "",
     maxMileage: searchParams.get("maxMileage") || "",
-    transmission: searchParams.get("transmission") || ""
+    transmission: searchParams.get("transmission") || "",
+    engineCapacity: searchParams.get("engineCapacity") || "",
+    regionalSpecs: searchParams.get("regionalSpecs") || ""
   };
 }
 
@@ -56,6 +62,7 @@ const fallbackCars = [
 ];
 
 export default function CataloguePage() {
+  const { language } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -97,6 +104,8 @@ export default function CataloguePage() {
     if (params.minMileage) query.set("minMileage", params.minMileage);
     if (params.maxMileage) query.set("maxMileage", params.maxMileage);
     if (params.transmission) query.set("transmission", params.transmission);
+    if (params.engineCapacity) query.set("engineCapacity", params.engineCapacity);
+    if (params.regionalSpecs) query.set("regionalSpecs", params.regionalSpecs);
 
     const nextUrl = query.toString() ? `${pathname}?${query.toString()}` : pathname;
     router.replace(nextUrl, { scroll: false });
@@ -138,10 +147,7 @@ export default function CataloguePage() {
           setCars([]);
         }
 
-        setError(
-          requestError?.response?.data?.message ||
-            "المعرض غير متاح مؤقتًا. حاول مرة أخرى بعد قليل."
-        );
+        setError(requestError?.response?.data?.message || (language === "ar" ? "المعرض غير متاح مؤقتًا. حاول مرة أخرى بعد قليل." : "The inventory is temporarily unavailable. Please try again shortly."));
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -150,20 +156,23 @@ export default function CataloguePage() {
     return () => {
       mounted = false;
     };
-  }, [params]);
+  }, [params, language]);
 
   const suggestions = useMemo(() => {
     const names = (filterCars.length ? filterCars : cars).flatMap((car) => [car.name, car.brand, car.model]);
     return Array.from(new Set(names)).slice(0, 10);
   }, [cars, filterCars]);
-  const brands = useMemo(() => Array.from(new Set(filterCars.map((car) => car.brand).filter(Boolean))).sort(), [filterCars]);
-  const models = useMemo(() => Array.from(new Set(filterCars.filter((car) => !params.brand || car.brand === params.brand).map((car) => car.model).filter(Boolean))).sort(), [filterCars, params.brand]);
+  const brands = useMemo(() => Array.from(new Set([...VEHICLE_BRANDS, ...filterCars.map((car) => car.brand).filter(Boolean)])).sort(), [filterCars]);
+  const models = useMemo(() => Array.from(new Set([
+    ...getVehicleModelSuggestions(params.brand),
+    ...filterCars.filter((car) => !params.brand || car.brand === params.brand).map((car) => car.model).filter(Boolean)
+  ])).sort(), [filterCars, params.brand]);
 
   return (
     <div className="container-premium section-spacing">
       <div className="mb-10 max-w-3xl">
-        <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">المعرض</p>
-        <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">المركبات المتوفرة لدينا</h1>
+        <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">{language === "ar" ? "المعرض" : "Inventory"}</p>
+        <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">{language === "ar" ? "المركبات المتوفرة" : "Available vehicles"}</h1>
       </div>
 
       <SearchFilters
@@ -179,7 +188,7 @@ export default function CataloguePage() {
 
       {error ? (
         <div className="mt-8 rounded-[28px] border border-amber-300/60 bg-amber-50 p-6 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
-          <p className="font-semibold">الخدمة غير متاحة مؤقتًا</p>
+          <p className="font-semibold">{language === "ar" ? "الخدمة غير متاحة مؤقتًا" : "Service temporarily unavailable"}</p>
           <p className="mt-2 text-sm opacity-90">{error}</p>
         </div>
       ) : null}
@@ -199,7 +208,7 @@ export default function CataloguePage() {
       {!loading && cars.length === 0 && !error && (
         <div className="mt-10">
           <div className="mb-4 text-center text-zinc-500 dark:text-zinc-400">
-            لا توجد مركبات مطابقة للفلاتر الحالية، لذلك نعرض مثالًا بسيطًا حتى تبقى الصفحة مرئية.
+            {language === "ar" ? "لا توجد مركبات مطابقة للفلاتر الحالية." : "No vehicles match the current filters."}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -215,7 +224,7 @@ export default function CataloguePage() {
                 </div>
                 <div className="p-4">
                   <h3 className="text-lg font-semibold text-zinc-950">{car.title}</h3>
-                  <p className="mt-1 text-sm text-zinc-500">أضف السيارات من لوحة التحكم ليظهر المخزون الحقيقي هنا.</p>
+                  <p className="mt-1 text-sm text-zinc-500">{language === "ar" ? "أضف السيارات من لوحة التحكم ليظهر المخزون الحقيقي هنا." : "Add vehicles from the dashboard to display the live inventory here."}</p>
                 </div>
               </article>
             ))}
@@ -229,7 +238,7 @@ export default function CataloguePage() {
             onClick={() => setParams((prev) => ({ ...prev, page: prev.page + 1 }))}
             className="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:-translate-y-0.5"
           >
-            تحميل المزيد
+            {language === "ar" ? "تحميل المزيد" : "Load more"}
           </button>
         </div>
       )}

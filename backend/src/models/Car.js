@@ -43,6 +43,13 @@ const carSchema = new mongoose.Schema({
   drivetrain: String,
   powerHp: Number,
   powerKw: Number,
+  engineCapacity: { type: Number, min: 0.5, max: 10, default: null, index: true },
+  regionalSpecs: {
+    type: String,
+    enum: ["GCC", "European", "American", "Canadian", "Japanese", "Korean", "Chinese", "Australian", "Other"],
+    default: "Other",
+    index: true
+  },
   price: { type: Number, default: null, index: true },
   priceType: {
     type: String,
