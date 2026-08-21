@@ -15,6 +15,7 @@ import {
   FileText,
   Fuel,
   Gauge,
+  Globe2,
   Heart,
   MapPin,
   MessageCircle,
@@ -40,7 +41,6 @@ import {
   getStatusLabel,
   getTransmissionLabel,
   localizeDescription,
-  localizeEquipmentLabel,
   localizeFeatureLabel,
   localizeFeatureValue
 } from "@/lib/company";
@@ -60,6 +60,7 @@ export default function CarDetailsPage() {
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -95,6 +96,10 @@ export default function CarDetailsPage() {
 
   const handleShare = async () => {
     try {
+      if (navigator.share) {
+        await navigator.share({ title: data?.car?.name || "ALHADUNICARS", text: data?.car?.name || "Vehicle", url: window.location.href });
+        return;
+      }
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
@@ -145,9 +150,9 @@ export default function CarDetailsPage() {
   const copy = language === "ar"
     ? {
         inventory: "المعرض", verified: "إعلان موثّق وجاهز للمعاينة", highlights: "أبرز المعلومات",
-        year: "السنة", mileage: "الكيلومترات", fuel: "الوقود", transmission: "علبة السرعة",
+        year: "السنة", mileage: "الكيلومترات", fuel: "الوقود", transmission: "علبة السرعة", engine: "سعة المحرك", regional: "المواصفات الإقليمية",
         category: "الفئة", location: "الموقع", overview: "نبذة عن المركبة",
-        specifications: "المواصفات التفصيلية", equipment: "التجهيزات", shipping: "الشحن والمتابعة",
+        specifications: "المواصفات التفصيلية", shipping: "الشحن والمتابعة",
         shippingText: "نرافقك في المعاينة، الوثائق، التصدير والمتابعة إلى حين الاستلام.",
         documents: "وثائق واضحة وفاتورة رسمية", confidence: "شراء بثقة",
         confidenceText: "معلومات واضحة وتواصل مباشر قبل تأكيد العملية.",
@@ -160,9 +165,9 @@ export default function CarDetailsPage() {
       }
     : {
         inventory: "Inventory", verified: "Verified and ready for inspection", highlights: "Highlights",
-        year: "Model year", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission",
+        year: "Model year", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", engine: "Engine capacity", regional: "Regional specs",
         category: "Category", location: "Location", overview: "Vehicle overview",
-        specifications: "Detailed specifications", equipment: "Equipment", shipping: "Shipping and follow-up",
+        specifications: "Detailed specifications", shipping: "Shipping and follow-up",
         shippingText: "We assist with inspection, documents, export, and follow-up until delivery.",
         documents: "Clear documents and official invoice", confidence: "Buy with confidence",
         confidenceText: "Clear information and direct contact before confirming the purchase.",
@@ -183,26 +188,33 @@ export default function CarDetailsPage() {
         { label: copy.year, value: safeYear }, { label: copy.mileage, value: safeMileage },
         { label: copy.fuel, value: safeFuel }, { label: copy.transmission, value: safeTransmission },
         { label: copy.category, value: safeCategory },
+        { label: copy.engine, value: car?.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "-" },
+        { label: copy.regional, value: car?.regionalSpecs || "-" },
         { label: language === "ar" ? "الحالة" : "Status", value: availability }
       ];
-
-  const detailEquipment = car?.equipment?.length
-    ? car.equipment.map((item: string) => language === "en" ? item : localizeEquipmentLabel(item))
-    : language === "ar"
-      ? ["معاينة بصرية", "وثائق مؤكدة", "صور مفصلة", "إمكانية الشحن والمتابعة"]
-      : ["Visual inspection", "Verified documents", "Detailed photos", "Shipping and follow-up"];
 
   const highlights = [
     { label: copy.year, value: safeYear, icon: CalendarDays, image: null },
     { label: copy.mileage, value: safeMileage, icon: Gauge, image: null },
+    { label: copy.engine, value: car?.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "-", icon: Settings2, image: null },
     { label: copy.fuel, value: safeFuel, icon: Fuel, image: fuelTypeImage },
     { label: copy.transmission, value: safeTransmission, icon: Settings2, image: null },
     { label: copy.category, value: safeCategory, icon: CarFront, image: null },
+    { label: copy.regional, value: car?.regionalSpecs || "-", icon: Globe2, image: null },
     { label: copy.location, value: language === "ar" ? COMPANY_LOCATION : "Dubai, United Arab Emirates", icon: MapPin, image: null }
   ];
 
   const showPreviousImage = () => images.length && setActive((current) => (current - 1 + images.length) % images.length);
   const showNextImage = () => images.length && setActive((current) => (current + 1) % images.length);
+  const handleTouchStart = (event: React.TouchEvent) => setTouchStart({ x: event.touches[0].clientX, y: event.touches[0].clientY });
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    if (!touchStart || !images.length) return;
+    const dx = event.changedTouches[0].clientX - touchStart.x;
+    const dy = event.changedTouches[0].clientY - touchStart.y;
+    setTouchStart(null);
+    if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy)) return;
+    dx < 0 ? showNextImage() : showPreviousImage();
+  };
 
   return (
     <>
@@ -238,7 +250,7 @@ export default function CarDetailsPage() {
 
         <div className="mt-4 grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,.08)]">
-            <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 sm:aspect-video">
+            <div className="relative aspect-[4/3] touch-pan-y overflow-hidden bg-zinc-100 sm:aspect-video" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <AnimatePresence initial={false} mode="sync">
                 <motion.button
                   key={activeImage}
@@ -255,8 +267,8 @@ export default function CarDetailsPage() {
                 </motion.button>
               </AnimatePresence>
               {images.length > 1 ? <>
-                <button type="button" onClick={showPreviousImage} aria-label={copy.previousImage} className="absolute left-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/80 bg-white/90 text-zinc-900 shadow-lg backdrop-blur transition hover:scale-105"><ChevronLeft className="h-5 w-5" /></button>
-                <button type="button" onClick={showNextImage} aria-label={copy.nextImage} className="absolute right-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/80 bg-white/90 text-zinc-900 shadow-lg backdrop-blur transition hover:scale-105"><ChevronRight className="h-5 w-5" /></button>
+                <button type="button" onClick={showPreviousImage} aria-label={copy.previousImage} className="absolute left-3 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/80 bg-white/90 text-zinc-900 shadow-lg backdrop-blur transition hover:scale-105 md:grid"><ChevronLeft className="h-5 w-5" /></button>
+                <button type="button" onClick={showNextImage} aria-label={copy.nextImage} className="absolute right-3 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/80 bg-white/90 text-zinc-900 shadow-lg backdrop-blur transition hover:scale-105 md:grid"><ChevronRight className="h-5 w-5" /></button>
               </> : null}
               <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-zinc-950/85 px-3 py-1 text-xs font-bold text-white backdrop-blur">
                 {Math.min(active + 1, Math.max(images.length, 1))} / {Math.max(images.length, 1)}
@@ -320,7 +332,7 @@ export default function CarDetailsPage() {
 
         <section className="mt-4 rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-extrabold text-zinc-950 sm:text-xl">{copy.highlights}</h2><span className="hidden text-[11px] font-semibold uppercase tracking-[0.25em] text-brand sm:block">ALHADUNICARS</span></div>
-          <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-6">
+          <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-4 xl:grid-cols-8">
             {highlights.map((item) => { const Icon = item.icon; return <div key={item.label} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-3 text-center">{item.image ? <span className="relative mx-auto block h-10 w-14"><Image src={item.image} alt="" fill className="object-contain" sizes="56px" /></span> : <Icon className="mx-auto h-4 w-4 text-brand" />}<p className="mt-2 text-[11px] font-semibold text-zinc-400">{item.label}</p><p className="mt-0.5 truncate text-sm font-bold text-zinc-900" title={String(item.value)}>{item.value}</p></div>; })}
           </div>
         </section>
@@ -331,10 +343,6 @@ export default function CarDetailsPage() {
             <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-2xl font-extrabold text-zinc-950">{copy.specifications}</h2>
               <dl className="mt-6 grid gap-x-8 sm:grid-cols-2">{detailFeatures.map((feature: any, index: number) => <div key={feature.label || index} className="flex items-center justify-between gap-4 border-b border-zinc-100 py-4"><dt className="text-sm text-zinc-500">{feature.label}</dt><dd className="text-sm font-bold text-zinc-900">{feature.value || "-"}</dd></div>)}</dl>
-            </section>
-            <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-2xl font-extrabold text-zinc-950">{copy.equipment}</h2>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">{detailEquipment.map((item: string, index: number) => <div key={item + index} className="flex items-center gap-3 rounded-2xl bg-zinc-50 p-4 text-sm font-semibold text-zinc-800"><CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />{item}</div>)}</div>
             </section>
           </div>
 
@@ -355,11 +363,11 @@ export default function CarDetailsPage() {
       </div>
 
       <AnimatePresence>
-        {lightboxOpen ? <motion.div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 sm:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightboxOpen(false)}>
+        {lightboxOpen ? <motion.div className="fixed inset-0 z-[100] flex touch-pan-y items-center justify-center bg-black/95 p-4 sm:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightboxOpen(false)} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
           <button type="button" onClick={() => setLightboxOpen(false)} aria-label={copy.closeImage} className="absolute right-5 top-5 z-20 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"><X className="h-5 w-5" /></button>
           {images.length > 1 ? <>
-            <button type="button" onClick={(event) => { event.stopPropagation(); showPreviousImage(); }} aria-label={copy.previousImage} className="absolute left-4 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 sm:left-8"><ChevronLeft className="h-6 w-6" /></button>
-            <button type="button" onClick={(event) => { event.stopPropagation(); showNextImage(); }} aria-label={copy.nextImage} className="absolute right-4 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 sm:right-8"><ChevronRight className="h-6 w-6" /></button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); showPreviousImage(); }} aria-label={copy.previousImage} className="absolute left-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 md:grid md:left-8"><ChevronLeft className="h-6 w-6" /></button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); showNextImage(); }} aria-label={copy.nextImage} className="absolute right-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 md:grid md:right-8"><ChevronRight className="h-6 w-6" /></button>
           </> : null}
           <motion.div className="relative h-full w-full max-w-7xl" initial={{ scale: 0.96 }} animate={{ scale: 1 }} exit={{ scale: 0.96 }} onClick={(event) => event.stopPropagation()}><Image src={activeImage} alt={car?.name || "Vehicle"} fill className="object-contain" sizes="100vw" /></motion.div>
           <span className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">{Math.min(active + 1, Math.max(images.length, 1))} / {Math.max(images.length, 1)}</span>

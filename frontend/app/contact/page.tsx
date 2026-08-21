@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { MessageCircle, ShieldCheck, Truck } from "lucide-react";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { api } from "@/lib/api";
-import { COMPANY_WHATSAPP_DISPLAY, buildWhatsAppUrl } from "@/lib/company";
+import { COMPANY_FACEBOOK_URL, COMPANY_WHATSAPP_DISPLAY, DEVELOPER_FACEBOOK_URL, DEVELOPER_WHATSAPP_DISPLAY, DEVELOPER_WHATSAPP_PHONE, buildWhatsAppUrl } from "@/lib/company";
 
 export default function ContactPage() {
   const [feedback, setFeedback] = useState("");
@@ -44,6 +45,14 @@ export default function ContactPage() {
               <MessageCircle className="h-5 w-5" />
               واتساب {COMPANY_WHATSAPP_DISPLAY}
             </a>
+            <a href={COMPANY_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-[28px] border border-blue-200 bg-blue-50 px-5 py-4 font-semibold text-blue-700 transition hover:-translate-y-0.5 hover:bg-blue-100 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-4 w-4" /></span> Facebook ALHADUNICARS
+            </a>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-zinc-200 pt-4 text-sm dark:border-white/10">
+              <span className="font-semibold text-zinc-500">Development contact:</span>
+              <a href={`https://wa.me/${DEVELOPER_WHATSAPP_PHONE}?text=${encodeURIComponent("Hello, I need technical support for ALHADUNICARS.")}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-emerald-600 dark:text-zinc-200"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#25D366] text-white"><FaWhatsapp className="h-4 w-4" /></span>{DEVELOPER_WHATSAPP_DISPLAY}</a>
+              <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#1877f2] dark:text-zinc-200"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-4 w-4" /></span>Facebook</a>
+            </div>
           </div>
         </div>
 
@@ -87,6 +96,7 @@ export default function ContactPage() {
           </div>
         </form>
       </div>
+
     </div>
   );
 }
