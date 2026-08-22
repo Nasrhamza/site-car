@@ -113,7 +113,7 @@ export default function CataloguePage() {
 
   useEffect(() => {
     let mounted = true;
-    api.get("/cars", { params: { limit: 500, sort: "brand" } }).then(({ data }) => {
+    api.get("/cars/filters/options").then(({ data }) => {
       if (mounted) setFilterCars(data.items || []);
     }).catch(() => undefined);
     return () => { mounted = false; };

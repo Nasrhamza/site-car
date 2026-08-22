@@ -1,10 +1,16 @@
+"use client";
+
 import { MessageCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { buildWhatsAppUrl } from "@/lib/company";
 
 export function WhatsAppFloat() {
+  const pathname = usePathname();
   const href = buildWhatsAppUrl(
     "مرحبًا، أريد الاستفسار عن المركبات المتوفرة لديكم."
   );
+
+  if (pathname.startsWith("/voitures/")) return null;
 
   return (
     <a

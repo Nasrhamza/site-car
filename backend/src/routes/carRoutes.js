@@ -5,6 +5,7 @@ import {
   deleteCar,
   getCarById,
   getCarBySlug,
+  getCarFilterOptions,
   getCars,
   getFeaturedCars,
   updateCar
@@ -15,6 +16,7 @@ const router = Router();
 
 router.get("/", getCars);
 router.get("/featured", getFeaturedCars);
+router.get("/filters/options", getCarFilterOptions);
 router.get("/by-id/:id", getCarById);
 router.get("/:slug", getCarBySlug);
 router.post(

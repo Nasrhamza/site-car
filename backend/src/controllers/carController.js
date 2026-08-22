@@ -352,6 +352,21 @@ export async function getCars(req, res) {
   }
 }
 
+export async function getCarFilterOptions(_req, res) {
+  try {
+    const items = await Car.find({})
+      .select("name brand model -_id")
+      .sort({ brand: 1, model: 1 })
+      .lean();
+
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+    res.json({ items });
+  } catch (error) {
+    console.error("getCarFilterOptions error:", error);
+    res.status(500).json({ message: "Erreur lors du chargement des filtres" });
+  }
+}
+
 export async function getCarBySlug(req, res) {
   try {
     const car = await Car.findOne({ slug: req.params.slug });
