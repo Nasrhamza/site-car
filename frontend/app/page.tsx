@@ -1,6 +1,7 @@
-import { Hero } from "@/components/hero";
 import { FeaturedCars } from "@/components/featured-cars";
+import { HomeCategories } from "@/components/home-categories";
 import { HomeFinalCta } from "@/components/home-final-cta";
+import { HomeTrust } from "@/components/home-trust";
 import { MarketplaceValue } from "@/components/marketplace-value";
 import { api } from "@/lib/api";
 
@@ -31,10 +32,11 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero cars={cars} />
       <MarketplaceValue />
+      <HomeCategories cars={cars} />
       <FeaturedCars cars={cars} />
-      <HomeFinalCta />
+      <HomeTrust totalCars={cars.length} />
+      <HomeFinalCta imageUrl={cars[1]?.images?.[0]?.url || cars[0]?.images?.[0]?.url} />
     </>
   );
 }
