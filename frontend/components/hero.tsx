@@ -28,7 +28,7 @@ export function Hero({ cars = [] }: { cars?: HeroCar[] }) {
             <div className="home-photo-rail flex w-max gap-2">
               {railPhotos.map((photo, index) => (
                 <div key={`${photo.id}-${index}`} className="h-20 w-32 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-40">
-                  <img src={photo.src || ""} alt={photo.alt} className="h-full w-full object-cover" loading={index < 4 ? "eager" : "lazy"} />
+                  <img src={photo.src || ""} alt={photo.alt} className="h-full w-full object-cover" loading={index < 2 ? "eager" : "lazy"} decoding="async" fetchPriority={index === 0 ? "high" : "auto"} />
                 </div>
               ))}
             </div>

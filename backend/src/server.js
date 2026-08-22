@@ -47,7 +47,10 @@ async function syncWatchers(carId, watchers) {
   }
 }
 
-app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads"), {
+  immutable: true,
+  maxAge: "30d"
+}));
 app.use(helmet());
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,

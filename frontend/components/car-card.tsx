@@ -121,6 +121,7 @@ export function CarCard({
             alt={imageAlt}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
           />
           <span className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </Link>

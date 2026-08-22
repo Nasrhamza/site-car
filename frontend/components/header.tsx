@@ -37,7 +37,6 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
   const [adminUser, setAdminUser] = useState<StoredUser | null>(null);
   const [carsMenuOpen, setCarsMenuOpen] = useState(false);
-  const [mobileCarsOpen, setMobileCarsOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const isAdminRoute = pathname.startsWith("/admin");
   const navLinks = [
@@ -64,7 +63,6 @@ export function Header() {
   useEffect(() => {
     setOpen(false);
     setCarsMenuOpen(false);
-    setMobileCarsOpen(false);
   }, [pathname]);
 
   const whatsappHref = buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد مزيداً من المعلومات عن السيارات المتوفرة." : "Hello, I would like more information about the available cars.");
@@ -240,10 +238,7 @@ export function Header() {
           >
             <div className="container-premium py-4">
               <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
-                {navLinks.map((item) => item.href === "/catalogue" ? <div key={item.href} className="grid gap-1">
-                  <button type="button" onClick={() => setMobileCarsOpen((value) => !value)} className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium dark:text-zinc-200"><span>{item.label}</span><ChevronDown className={`h-4 w-4 transition ${mobileCarsOpen ? "rotate-180" : ""}`} /></button>
-                  <AnimatePresence>{mobileCarsOpen ? <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="grid overflow-hidden rounded-xl bg-zinc-50 p-2 dark:bg-white/5"><Link href="/catalogue" className="rounded-lg px-3 py-2 text-sm font-bold">{language === "ar" ? "كل المركبات" : "All vehicles"}</Link>{VEHICLE_CATEGORIES.slice(0, 5).map((category) => <Link key={category} href={`/catalogue?category=${encodeURIComponent(category)}`} className="rounded-lg px-3 py-2 text-sm">{getCategoryDisplayLabel(category, language)}</Link>)}</motion.div> : null}</AnimatePresence>
-                </div> : (
+                {navLinks.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}

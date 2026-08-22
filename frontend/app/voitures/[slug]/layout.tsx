@@ -15,14 +15,14 @@ function absoluteMediaUrl(value?: string | null) {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
-    const response = await fetch(`${apiBase()}/cars/${encodeURIComponent(params.slug)}?trackView=false`, { cache: "no-store" });
+    const response = await fetch(`${apiBase()}/cars/${encodeURIComponent(params.slug)}?trackView=false`, { next: { revalidate: 300 } });
     if (!response.ok) throw new Error("Vehicle metadata unavailable");
     const payload = await response.json();
     const car = payload?.car;
     const image = absoluteMediaUrl(car?.images?.[0]?.url);
     const price = Number(car?.price) > 0 ? `AED ${Number(car.price).toLocaleString("en-AE")}` : "Price on request";
     const details = [car?.year, car?.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : null, car?.regionalSpecs, car?.mileage != null ? `${Number(car.mileage).toLocaleString()} km` : null].filter(Boolean).join(" · ");
-    const title = `${car?.name || "Vehicle"} | ALHADUNICARS`;
+    const title = car?.name || "Vehicle";
     const description = `${price}${details ? ` · ${details}` : ""}. Available from ALHADUNICARS in Dubai.`;
     const canonical = `${getSiteUrl()}/voitures/${encodeURIComponent(params.slug)}`;
     const images = image ? [{ url: image, alt: car?.images?.[0]?.alt || car?.name || "Vehicle" }] : [];

@@ -33,7 +33,9 @@ if (apiUrl) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns
+    remotePatterns,
+    formats: ["image/webp"],
+    minimumCacheTTL: 2592000
   },
   async redirects() {
     return [
