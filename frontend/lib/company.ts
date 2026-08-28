@@ -31,6 +31,30 @@ export const VEHICLE_CATEGORIES = [
   "Véhicules légers"
 ] as const;
 
+export const BODY_TYPE_OPTIONS = [
+  "SUV/Crossover",
+  "Sedan",
+  "Pick Up Truck",
+  "Coupe",
+  "Van",
+  "Hatchback",
+  "Convertible",
+  "Truck",
+  "Bus",
+  "Station Wagon",
+  "Other",
+  "Bike",
+  "Sportback",
+  "Limousine",
+  "Buggy"
+] as const;
+
+export const TRIM_OPTIONS = ["Basic Option", "Mid Option", "Full Option"] as const;
+export const STEERING_SIDE_OPTIONS = ["Left hand", "Right hand"] as const;
+export const EXPORT_STATUS_OPTIONS = ["Can be exported", "Local sale only"] as const;
+export const SERVICE_HISTORY_OPTIONS = ["Yes", "Partial", "No"] as const;
+export const SEATING_CAPACITY_OPTIONS = Array.from({ length: 100 }, (_unused, index) => index + 1);
+
 export const VEHICLE_BRANDS = [
   "Abarth", "Acura", "Alfa Romeo", "Alpine", "Aston Martin", "Audi", "BAIC", "Bentley",
   "BMW", "Bugatti", "Buick", "BYD", "Cadillac", "Changan", "Chery", "Chevrolet",

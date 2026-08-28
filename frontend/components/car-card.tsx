@@ -133,7 +133,7 @@ export function CarCard({
                 key={badge}
                 className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold text-zinc-800 shadow-sm"
               >
-                {getBadgeLabel(badge)}
+                {translateVehicleValue(getBadgeLabel(badge), language)}
               </span>
             ))}
             <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm", availabilityStyle)}>

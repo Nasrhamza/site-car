@@ -129,10 +129,16 @@ function normalizeCarPayload(body) {
   const mileage = toNumber(body.mileage);
   const price = toNumber(body.price);
   const engineCapacity = toNumber(body.engineCapacity);
+  const numericFields = ["cylinders", "doors", "seats", "powerHp", "powerKw"];
 
   if (year !== undefined) normalized.year = year;
   if (mileage !== undefined) normalized.mileage = mileage;
   if (engineCapacity !== undefined) normalized.engineCapacity = engineCapacity;
+  numericFields.forEach((field) => {
+    const parsed = toNumber(body[field]);
+    if (parsed !== undefined) normalized[field] = parsed;
+    else if (body[field] === "") normalized[field] = null;
+  });
   if (price !== undefined) {
     normalized.price = price;
   } else {
@@ -149,9 +155,11 @@ function normalizeCarPayload(body) {
 
   const badges = toStringList(body.badges);
   const equipment = toStringList(body.equipment);
+  const safety = toStringList(body.safety);
 
   if (badges !== undefined) normalized.badges = badges;
   if (equipment !== undefined) normalized.equipment = equipment;
+  if (safety !== undefined) normalized.safety = safety;
 
   if (body.priceType !== undefined) {
     normalized.priceType = normalizePriceTypeValue(body.priceType);
@@ -249,6 +257,7 @@ export async function getCars(req, res) {
       minEngineCapacity,
       maxEngineCapacity,
       regionalSpecs,
+      bodyType,
       sort = "-createdAt"
     } = req.query;
 
@@ -296,6 +305,8 @@ export async function getCars(req, res) {
         query.regionalSpecs = { $in: requestedSpecs };
       }
     }
+
+    if (bodyType) query.bodyType = bodyType;
     if (engineCapacity) query.engineCapacity = Number(engineCapacity);
     if (minEngineCapacity || maxEngineCapacity) {
       query.engineCapacity = {
