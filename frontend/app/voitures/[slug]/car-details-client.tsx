@@ -7,12 +7,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
   CalendarDays,
-  CarFront,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Fuel,
   Gauge,
   Globe2,
   Heart,
@@ -33,7 +31,6 @@ import {
   COMPANY_WHATSAPP_PHONE,
   getBadgeLabel,
   getCategoryLabel,
-  getFuelTypeImage,
   getFuelTypeLabel,
   getPriceTypeLabel,
   getStatusLabel,
@@ -94,23 +91,22 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
   const safeMileage = typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("fr-FR")} km` : "-";
   const rawFuel = car?.fuelType || car?.fuel || "Autre";
   const safeFuel = translateVehicleValue(rawFuel, language) || getFuelTypeLabel(rawFuel);
-  const fuelTypeImage = getFuelTypeImage(rawFuel);
   const rawTransmission = car?.gearbox || car?.transmission || "-";
-  const safeTransmission = language === "en" ? rawTransmission : getTransmissionLabel(rawTransmission);
+  const safeTransmission = language === "en" ? translateVehicleValue(rawTransmission, "en") : getTransmissionLabel(rawTransmission);
   const rawCategory = car?.category || "-";
   const safeCategory = translateVehicleValue(rawCategory, language) || getCategoryLabel(rawCategory) || "-";
   const safeDescription = localizeDescription(car?.description, car?.name);
   const safePriceType = language === "en"
-    ? car?.priceType === "Sur demande" ? "Price on request" : car?.priceType || "Fixed price"
+    ? car?.priceType === "Sur demande" ? "Price on request" : car?.priceType === "Negociable" ? "Negotiable" : "Fixed price"
     : getPriceTypeLabel(car?.priceType || "Sur demande");
   const safeReference = car?.slug ? car.slug.toUpperCase() : "-";
 
   const copy = language === "ar"
     ? {
         inventory: "المعرض", verified: "إعلان موثّق وجاهز للمعاينة", highlights: "أبرز المعلومات",
-        year: "السنة", mileage: "الكيلومترات", fuel: "الوقود", transmission: "علبة السرعة", engine: "سعة المحرك", regional: "المواصفات الإقليمية",
+        year: "سنة الصنع", mileage: "الكيلومترات", fuel: "نوع الوقود", transmission: "ناقل الحركة", engine: "سعة المحرك", regional: "المواصفات",
         category: "الفئة", location: "الموقع", overview: "نبذة عن المركبة",
-        specifications: "المواصفات التفصيلية", shipping: "الشحن والمتابعة",
+        specifications: "المواصفات والمزايا", shipping: "الشحن والمتابعة",
         shippingText: "نرافقك في المعاينة، الوثائق، التصدير والمتابعة إلى حين الاستلام.",
         documents: "وثائق واضحة وفاتورة رسمية", confidence: "شراء بثقة",
         confidenceText: "معلومات واضحة وتواصل مباشر قبل تأكيد العملية.",
@@ -123,9 +119,9 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
       }
     : {
         inventory: "Inventory", verified: "Verified and ready for inspection", highlights: "Highlights",
-        year: "Model year", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", engine: "Engine capacity", regional: "Regional specs",
+        year: "Model year", mileage: "Kilométrage", fuel: "Fuel type", transmission: "Transmission", engine: "Engine capacity", regional: "Specs",
         category: "Category", location: "Location", overview: "Vehicle overview",
-        specifications: "Detailed specifications", shipping: "Shipping and follow-up",
+        specifications: "Specs & features", shipping: "Shipping and follow-up",
         shippingText: "We assist with inspection, documents, export, and follow-up until delivery.",
         documents: "Clear documents and official invoice", confidence: "Buy with confidence",
         confidenceText: "Clear information and direct contact before confirming the purchase.",
@@ -137,29 +133,44 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
         closeImage: "Close image"
       };
 
-  const detailFeatures = car?.features?.length
-    ? car.features.map((feature: any) => ({
-        label: language === "en" ? feature?.label : localizeFeatureLabel(feature?.label),
-        value: language === "en" ? translateVehicleValue(feature?.value, language) || feature?.value : localizeFeatureValue(feature?.value)
-      }))
-    : [
-        { label: copy.year, value: safeYear }, { label: copy.mileage, value: safeMileage },
-        { label: copy.fuel, value: safeFuel }, { label: copy.transmission, value: safeTransmission },
-        { label: copy.category, value: safeCategory },
-        { label: copy.engine, value: car?.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "-" },
-        { label: copy.regional, value: car?.regionalSpecs || "-" },
-        { label: language === "ar" ? "الحالة" : "Status", value: availability }
-      ];
+  const text = (en: string, ar: string) => language === "ar" ? ar : en;
+  const publishedDate = car?.createdAt
+    ? new Intl.DateTimeFormat(language === "ar" ? "ar-TN" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(car.createdAt))
+    : "-";
+  const location = car?.location || (language === "ar" ? COMPANY_LOCATION : "Dubai, United Arab Emirates");
+  const coreFeatures = [
+    { label: text("Make", "الماركة"), value: car?.brand },
+    { label: text("Model", "الموديل"), value: car?.model },
+    { label: text("Trim", "التجهيز"), value: car?.trim, optional: true },
+    { label: text("Color", "اللون الخارجي"), value: translateVehicleValue(car?.exteriorColor, language) || car?.exteriorColor },
+    { label: text("Interior color", "اللون الداخلي"), value: translateVehicleValue(car?.interiorColor, language) || car?.interiorColor, optional: true },
+    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "-" },
+    { label: text("Cylinders", "الأسطوانات"), value: car?.cylinders != null ? `${car.cylinders} ${text("Cylinders", "أسطوانات")}` : "-" },
+    { label: text("Horsepower", "قوة المحرك"), value: car?.powerHp != null ? `${car.powerHp} HP` : "-" },
+    { label: copy.transmission, value: safeTransmission },
+    { label: text("Drive type", "نظام الدفع"), value: car?.drivetrain || car?.transmission || "-" },
+    { label: text("Steering side", "جهة المقود"), value: translateVehicleValue(car?.steeringSide, language) || "-" },
+    { label: text("Vehicle type", "نوع الهيكل"), value: car?.bodyType ? translateVehicleValue(car.bodyType, language) : safeCategory },
+    { label: text("Number of doors", "عدد الأبواب"), value: car?.doors != null ? `${car.doors} ${text("Doors", "أبواب")}` : "-" },
+    { label: text("Seating capacity", "عدد المقاعد"), value: car?.seats != null ? `${car.seats} ${text("seats", "مقاعد")}` : "-" },
+    { label: text("Wheel size", "حجم العجلات"), value: car?.wheelSize || "-" },
+    { label: copy.fuel, value: safeFuel },
+    { label: text("Export status", "حالة التصدير"), value: translateVehicleValue(car?.exportStatus || "Can be exported", language) },
+    { label: text("Service history", "سجل الصيانة"), value: translateVehicleValue(car?.serviceHistory, language) || "-" },
+    { label: text("Published on", "تاريخ النشر"), value: publishedDate }
+  ].filter((feature) => !feature.optional || feature.value);
+  const customFeatures = Array.isArray(car?.features) ? car.features.map((feature: any) => ({
+    label: language === "en" ? feature?.label : localizeFeatureLabel(feature?.label),
+    value: language === "en" ? translateVehicleValue(feature?.value, language) || feature?.value : localizeFeatureValue(feature?.value)
+  })).filter((feature: any) => feature.label && !coreFeatures.some((item) => item.label.toLowerCase() === feature.label.toLowerCase())) : [];
+  const detailFeatures = [...coreFeatures, ...customFeatures];
 
   const highlights = [
-    { label: copy.year, value: safeYear, icon: CalendarDays, image: null },
-    { label: copy.mileage, value: safeMileage, icon: Gauge, image: null },
-    { label: copy.engine, value: car?.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "-", icon: Settings2, image: null },
-    { label: copy.fuel, value: safeFuel, icon: Fuel, image: fuelTypeImage },
-    { label: copy.transmission, value: safeTransmission, icon: Settings2, image: null },
-    { label: copy.category, value: safeCategory, icon: CarFront, image: null },
-    { label: copy.regional, value: car?.regionalSpecs || "-", icon: Globe2, image: null },
-    { label: copy.location, value: language === "ar" ? COMPANY_LOCATION : "Dubai, United Arab Emirates", icon: MapPin, image: null }
+    { label: copy.location, value: location, icon: MapPin },
+    { label: copy.year, value: safeYear, icon: CalendarDays },
+    { label: copy.mileage, value: safeMileage, icon: Gauge },
+    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "-", icon: Settings2 },
+    { label: copy.regional, value: car?.regionalSpecs || "-", icon: Globe2 }
   ];
 
   const showPreviousImage = () => images.length && setActive((current) => (current - 1 + images.length) % images.length);
@@ -190,7 +201,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
                 <BadgeCheck className="h-4 w-4" />{copy.verified}
               </span>
               {car?.badges?.map((badge: string) => (
-                <span key={badge} className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-bold text-brand">{getBadgeLabel(badge)}</span>
+                <span key={badge} className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-bold text-brand">{translateVehicleValue(getBadgeLabel(badge), language)}</span>
               ))}
             </div>
             <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-zinc-950 sm:text-3xl lg:text-4xl">{car?.name || "Vehicle"}</h1>
@@ -261,11 +272,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
                     const Icon = item.icon;
                     return <div key={`summary-${item.label}`} className="min-w-0 rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2.5">
                       <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-400">
-                        {item.image ? (
-                          <span className="relative h-7 w-10 shrink-0"><Image src={item.image} alt="" fill className="object-contain" sizes="40px" /></span>
-                        ) : (
-                          <Icon className="h-3.5 w-3.5 shrink-0 text-brand" />
-                        )}
+                        <Icon className="h-3.5 w-3.5 shrink-0 text-brand" />
                         <span className="truncate">{item.label}</span>
                       </div>
                       <p className="mt-1 truncate text-xs font-bold text-zinc-800" title={String(item.value)}>{item.value}</p>
@@ -290,8 +297,8 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
 
         <section className="mt-4 rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-extrabold text-zinc-950 sm:text-xl">{copy.highlights}</h2><span className="hidden text-[11px] font-semibold uppercase tracking-[0.25em] text-brand sm:block">ALHADUNICARS</span></div>
-          <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-4 xl:grid-cols-8">
-            {highlights.map((item) => { const Icon = item.icon; return <div key={item.label} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-3 text-center">{item.image ? <span className="relative mx-auto block h-10 w-14"><Image src={item.image} alt="" fill className="object-contain" sizes="56px" /></span> : <Icon className="mx-auto h-4 w-4 text-brand" />}<p className="mt-2 text-[11px] font-semibold text-zinc-400">{item.label}</p><p className="mt-0.5 truncate text-sm font-bold text-zinc-900" title={String(item.value)}>{item.value}</p></div>; })}
+          <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-5">
+            {highlights.map((item) => { const Icon = item.icon; return <div key={item.label} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-center"><Icon className="mx-auto h-5 w-5 text-zinc-700" /><p className="mt-3 text-xs font-semibold text-zinc-500">{item.label}</p><p className="mt-1 truncate text-sm font-bold text-zinc-900" title={String(item.value)}>{item.value}</p></div>; })}
           </div>
         </section>
 
@@ -302,6 +309,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
               <h2 className="text-2xl font-extrabold text-zinc-950">{copy.specifications}</h2>
               <dl className="mt-6 grid gap-x-8 sm:grid-cols-2">{detailFeatures.map((feature: any, index: number) => <div key={feature.label || index} className="flex min-w-0 items-center justify-between gap-4 border-b border-zinc-100 py-4"><dt className="text-sm text-zinc-500">{feature.label}</dt><dd className="min-w-0 break-words text-right text-sm font-bold text-zinc-900">{feature.value || "-"}</dd></div>)}</dl>
             </section>
+            {Array.isArray(car?.safety) && car.safety.length ? <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"><h2 className="text-2xl font-extrabold text-zinc-950">{text("Safety", "السلامة")}</h2><div className="mt-5 flex flex-wrap gap-2">{car.safety.map((item: string) => <span key={item} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800"><CheckCircle2 className="h-4 w-4" />{item}</span>)}</div></section> : null}
           </div>
 
           <div className="space-y-6">

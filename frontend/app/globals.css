@@ -146,6 +146,82 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* WhatsApp attention cue: a lightweight version of the supplied robot-hand animation. */
+.whatsapp-robot-callout {
+  animation: whatsapp-callout-cycle 7s ease-in-out infinite;
+  transform-origin: right bottom;
+}
+
+.whatsapp-pointer-arrow {
+  overflow: visible;
+  filter: drop-shadow(0 12px 14px rgba(15, 23, 42, 0.18));
+}
+
+.whatsapp-arrow-motion {
+  animation: whatsapp-arrow-point 1.05s cubic-bezier(.2,.8,.2,1) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.whatsapp-floating-button {
+  animation: whatsapp-button-pulse 3.2s ease-in-out infinite;
+}
+
+a[href*="wa.me"]:not(.whatsapp-floating-button) {
+  position: relative;
+}
+
+a[href*="wa.me"]:not(.whatsapp-floating-button)::after {
+  content: "☝";
+  position: absolute;
+  top: -18px;
+  right: -10px;
+  z-index: 5;
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-8px, 8px, 0) rotate(-20deg) scale(.75);
+  transition: opacity 180ms ease, transform 260ms cubic-bezier(.2,.8,.2,1);
+}
+
+a[href*="wa.me"]:not(.whatsapp-floating-button):hover::after,
+a[href*="wa.me"]:not(.whatsapp-floating-button):focus-visible::after {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotate(-10deg) scale(1);
+  animation: whatsapp-inline-point .72s ease-in-out infinite alternate;
+}
+
+@keyframes whatsapp-arrow-point {
+  0%, 100% { transform: translate3d(-9px, 2px, 0) scale(.96); }
+  50% { transform: translate3d(7px, -1px, 0) scale(1.04); }
+}
+
+@keyframes whatsapp-callout-cycle {
+  0%, 12% { opacity: 0; transform: translate3d(18px, 10px, 0) scale(.92); }
+  18%, 72% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  82%, 100% { opacity: 0; transform: translate3d(10px, 4px, 0) scale(.96); }
+}
+
+@keyframes whatsapp-button-pulse {
+  0%, 72%, 100% { box-shadow: 0 14px 36px rgba(37, 211, 102, .35); }
+  82% { box-shadow: 0 14px 36px rgba(37, 211, 102, .35), 0 0 0 10px rgba(37, 211, 102, .12); }
+}
+
+@keyframes whatsapp-inline-point {
+  from { translate: -2px 3px; }
+  to { translate: 2px -3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-robot-callout,
+  .whatsapp-arrow-motion,
+  .whatsapp-floating-button,
+  a[href*="wa.me"]:not(.whatsapp-floating-button)::after {
+    animation: none;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }

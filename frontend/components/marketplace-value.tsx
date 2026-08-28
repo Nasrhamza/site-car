@@ -9,9 +9,9 @@ export function MarketplaceValue() {
   const { language, t } = useLanguage();
   const ar = language === "ar";
   const copy = ar ? {
-    eyebrow: "من دبي إلى وجهتك", title: "سيارتك القادمة، باختيار أوضح وثقة أكبر.", body: "نجمع لك سيارات مختارة في دبي مع معلومات دقيقة، صور واضحة، تواصل مباشر ومتابعة حتى إتمام العملية.", cta: "استكشف السيارات", link: "كيف نعمل", points: ["إعلانات موثقة", "معلومات شفافة", "متابعة التصدير والشحن"]
+    eyebrow: "من دبي إلى جميع أنحاء العالم", title: "نصدّر سيارتك من دبي إلى وجهتك أينما كنت.", body: "سيارات مختارة، معلومات دقيقة، صور واضحة ودعم كامل في الوثائق والتصدير والشحن إلى مختلف دول العالم.", cta: "استكشف السيارات", link: "اطلب عرض شحن", points: ["إعلانات موثقة", "تصدير عالمي", "دعم الشحن والوثائق"]
   } : {
-    eyebrow: "From Dubai to your destination", title: "Your next vehicle, selected with clarity and confidence.", body: "Discover carefully selected vehicles in Dubai with clear information, detailed photos, direct contact, and support through every step.", cta: "Explore vehicles", link: "How it works", points: ["Verified listings", "Clear information", "Export and shipping support"]
+    eyebrow: "From Dubai to the world", title: "We export your next vehicle worldwide.", body: "Explore carefully selected vehicles in Dubai with clear information and end-to-end support for documents, export, and shipping to destinations around the world.", cta: "Explore vehicles", link: "Request shipping quote", points: ["Verified listings", "Worldwide export", "Shipping and document support"]
   };
   const icons = [BadgeCheck, ShieldCheck, Truck];
 
@@ -38,7 +38,7 @@ export function MarketplaceValue() {
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] backdrop-blur"><Globe2 className="h-4 w-4 text-brand" />{copy.eyebrow}</span>
           <h2 className="mt-6 max-w-2xl text-4xl font-black leading-[1.02] tracking-[-.04em] sm:text-6xl">{copy.title}</h2>
           <p className="mt-5 max-w-xl text-sm leading-7 text-white/75 sm:text-lg sm:leading-8">{copy.body}</p>
-        <div className="mt-4 flex flex-wrap gap-3"><Link href="/catalogue" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark">{copy.cta}<ArrowUpRight className="h-4 w-4" /></Link><Link href="/guide" className="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/20">{copy.link}</Link></div>
+        <div className="mt-4 flex flex-wrap gap-3"><Link href="/catalogue" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark">{copy.cta}<ArrowUpRight className="h-4 w-4" /></Link><Link href="/contact" className="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/20">{copy.link}</Link></div>
         <div className="mt-8 hidden gap-3 sm:grid sm:grid-cols-3">{copy.points.map((point, index) => { const Icon = icons[index]; return <div key={point} className="flex items-center gap-2 rounded-2xl border border-white/15 bg-black/25 px-3 py-3 text-xs font-bold backdrop-blur"><Icon className="h-4 w-4 shrink-0 text-emerald-400" />{point}</div>; })}</div>
         </div>
       </div>

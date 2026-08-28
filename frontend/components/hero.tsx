@@ -1,72 +1,70 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, MessageCircle, Search, Sparkles } from "lucide-react";
-import { buildWhatsAppUrl } from "@/lib/company";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { resolveMediaUrl } from "@/lib/utils";
-import { useLanguage } from "@/lib/site-language";
 
-type HeroCar = { _id?: string; slug?: string; name?: string; images?: Array<{ url?: string; alt?: string }> };
+type HeroCar = {
+  _id?: string;
+  slug?: string;
+  name?: string;
+  images?: Array<{ url?: string; alt?: string }>;
+};
 
 export function Hero({ cars = [] }: { cars?: HeroCar[] }) {
-  const { language, t } = useLanguage();
-  const photos = cars
-    .flatMap((car, carIndex) => (car.images || []).map((image, imageIndex) => ({
-      id: `${car._id || car.slug || carIndex}-${imageIndex}`,
-      src: resolveMediaUrl(image.url),
-      alt: image.alt || car.name || "ALHADUNICARS"
-    })))
-    .filter((image) => Boolean(image.src))
-    .slice(0, 10);
-  const railPhotos = [...photos, ...photos];
+  const slides = useMemo(() => cars
+    .map((car, index) => ({
+      id: car._id || car.slug || String(index),
+      src: resolveMediaUrl(car.images?.[0]?.url),
+      alt: car.images?.[0]?.alt || car.name || "ALHADUNICARS vehicle"
+    }))
+    .filter((slide) => Boolean(slide.src))
+    .slice(0, 5), [cars]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeSlide = slides[activeIndex % Math.max(slides.length, 1)];
+
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const timer = window.setInterval(() => setActiveIndex((index) => (index + 1) % slides.length), 5200);
+    return () => window.clearInterval(timer);
+  }, [slides.length]);
 
   return (
-    <section className="border-b border-zinc-200 bg-zinc-950 text-white">
-      <div className="container-premium py-7 sm:py-9">
-        {photos.length > 0 && (
-          <div className="mb-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-2">
-            <div className="home-photo-rail flex w-max gap-2">
-              {railPhotos.map((photo, index) => (
-                <div key={`${photo.id}-${index}`} className="h-20 w-32 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-40">
-                  <img src={photo.src || ""} alt={photo.alt} className="h-full w-full object-cover" loading={index < 2 ? "eager" : "lazy"} decoding="async" fetchPriority={index === 0 ? "high" : "auto"} />
-                </div>
+    <section aria-label="Featured vehicle gallery" className="bg-white pb-12 dark:bg-zinc-950 sm:pb-16">
+      <div className="container-premium">
+        <div className="relative isolate h-[400px] overflow-hidden rounded-[30px] border border-zinc-200 bg-zinc-950 shadow-[0_24px_70px_rgba(15,23,42,.16)] dark:border-white/15 sm:h-[520px]">
+          <AnimatePresence mode="sync">
+            {activeSlide ? (
+              <motion.img
+                key={activeSlide.id}
+                src={activeSlide.src || ""}
+                alt={activeSlide.alt}
+                initial={{ opacity: 0, scale: 1.025 }}
+                animate={{ opacity: 1, scale: 1.055 }}
+                exit={{ opacity: 0 }}
+                transition={{ opacity: { duration: 0.9 }, scale: { duration: 7, ease: "linear" } }}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                fetchPriority={activeIndex === 0 ? "high" : "auto"}
+                decoding="async"
+              />
+            ) : null}
+          </AnimatePresence>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/15" />
+          <div className="hero-grain absolute inset-0 opacity-20" />
+
+          {slides.length > 1 ? (
+            <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2 rounded-full border border-white/20 bg-black/35 px-4 py-3 shadow-lg backdrop-blur-xl">
+              {slides.map((slide, index) => (
+                <button
+                  key={slide.id}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`Show image ${index + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${index === activeIndex ? "w-9 bg-brand" : "w-2 bg-white/50 hover:bg-white"}`}
+                />
               ))}
             </div>
-          </div>
-        )}
-        <form action="/catalogue" method="get" className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/20">
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-            <label className="relative block">
-              <Search className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-              <input
-                name="search"
-                placeholder={t.search}
-                className="h-12 w-full rounded-xl bg-zinc-50 px-4 pr-11 text-sm text-zinc-950 outline-none transition focus:ring-2 focus:ring-brand/40"
-              />
-            </label>
-            <button type="submit" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white transition hover:bg-brand-dark">
-              {t.searchButton}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400"><Sparkles className="h-3.5 w-3.5 text-brand" />{t.heroTag}</div>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{t.heroTitle}</h1>
-            <Link
-              href="/catalogue"
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
-            >
-              {t.inventory}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-300">
-            <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-brand" />{t.featuredTag}</span>
-            <a href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد معرفة السيارات المتوفرة لدى ALHADUNICARS." : "Hello, I would like to check the available cars at ALHADUNICARS.")} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-white transition hover:text-green-300"><MessageCircle className="h-4 w-4 text-green-400" />{t.whatsapp}</a>
-          </div>
+          ) : null}
         </div>
       </div>
     </section>

@@ -1,23 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Grid2X2, List, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
-import { categories } from "@/lib/data";
-import { ENGINE_CAPACITY_OPTIONS, REGIONAL_SPECS_OPTIONS, getCategoryDisplayLabel } from "@/lib/company";
-import { useLanguage } from "@/lib/site-language";
+import { BODY_TYPE_OPTIONS, ENGINE_CAPACITY_OPTIONS, REGIONAL_SPECS_OPTIONS } from "@/lib/company";
+import { translateVehicleValue, useLanguage } from "@/lib/site-language";
 
 type Params = Record<string, any>;
 type PopoverKey = "brand" | "model" | "price" | "year" | "engineCapacity" | "regionalSpecs" | null;
 
 const FUEL_FILTERS = [
-  { value: "Essence", label: "Petrol", ar: "بنزين", image: "/fuel-types/petrol.png" },
-  { value: "Diesel", label: "Diesel", ar: "ديزل", image: "/fuel-types/diesel.png" },
-  { value: "Hybride", label: "Hybrid", ar: "هجين", image: "/fuel-types/hybrid.png" },
-  { value: "Électrique", label: "Electric", ar: "كهربائي", image: "/fuel-types/electric.png" },
-  { value: "PHEV", label: "PHEV", ar: "هجين قابل للشحن", image: "/fuel-types/phev.png" },
-  { value: "REEV", label: "REEV", ar: "كهربائي ممتد المدى", image: "/fuel-types/reev.png" }
+  { value: "Essence", label: "Petrol", ar: "بنزين" },
+  { value: "Diesel", label: "Diesel", ar: "ديزل" },
+  { value: "Hybride", label: "Hybrid", ar: "هجين" },
+  { value: "Électrique", label: "Electric", ar: "كهربائي" },
+  { value: "PHEV", label: "PHEV", ar: "هجين قابل للشحن" },
+  { value: "REEV", label: "REEV", ar: "كهربائي ممتد المدى" }
 ] as const;
 const YEARS = Array.from({ length: 101 }, (_, index) => 2050 - index);
 
@@ -54,7 +52,7 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
   const copy = isArabic ? {
     search: "الماركة، الموديل أو كلمة مفتاحية", filters: "الفلاتر", show: "عرض", cars: "مركبة", make: "الماركة", model: "الموديل", any: "الكل", price: "السعر (AED)", year: "السنة", engine: "سعة المحرك", regional: "المواصفات", reset: "إعادة ضبط", min: "الأدنى", max: "الأقصى", findMake: "ابحث عن ماركة", findModel: "ابحث عن موديل", advanced: "فلاتر متقدمة", mainFilters: "الفلاتر الأساسية", mileage: "الكيلومترات", fuel: "نوع الوقود", body: "نوع المركبة", transmission: "علبة السرعة", automatic: "أوتوماتيك", manual: "يدوي", sort: "الترتيب", newest: "الأحدث", priceLow: "السعر: الأقل", priceHigh: "السعر: الأعلى", mostViewed: "الأكثر مشاهدة"
   } : {
-    search: "Make, model, trim, or keyword", filters: "Filters", show: "Show", cars: "cars", make: "Make", model: "Model", any: "Any", price: "Price (AED)", year: "Year", engine: "Engine capacity", regional: "Regional specs", reset: "Reset", min: "Min", max: "Max", findMake: "Search make", findModel: "Search model", advanced: "Advanced filters", mainFilters: "Main filters", mileage: "Mileage", fuel: "Fuel type", body: "Body type", transmission: "Transmission", automatic: "Automatic", manual: "Manual", sort: "Sort results", newest: "Newest", priceLow: "Price: low to high", priceHigh: "Price: high to low", mostViewed: "Most viewed"
+    search: "Make, model, trim, or keyword", filters: "Filters", show: "Show", cars: "cars", make: "Make", model: "Model", any: "Any", price: "Price (AED)", year: "Year", engine: "Engine capacity", regional: "Regional specs", reset: "Reset", min: "Min", max: "Max", findMake: "Search make", findModel: "Search model", advanced: "Advanced filters", mainFilters: "Main filters", mileage: "Kilométrage", fuel: "Fuel type", body: "Body type", transmission: "Transmission", automatic: "Automatic", manual: "Manual", sort: "Sort results", newest: "Newest", priceLow: "Price: low to high", priceHigh: "Price: high to low", mostViewed: "Most viewed"
   };
 
   useEffect(() => setSearch(params.search || ""), [params.search]);
@@ -63,10 +61,10 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
   useEffect(() => { if (!drawerOpen) return; const previous = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = previous; }; }, [drawerOpen]);
 
   const update = (key: string, value: string) => setParams((prev: Params) => ({ ...prev, page: 1, [key]: value }));
-  const activeFilters = useMemo(() => [params.brand, params.model, params.category, params.fuelType, params.minPrice, params.maxPrice, params.yearFrom, params.yearTo, params.minMileage, params.maxMileage, params.transmission, params.engineCapacity, params.regionalSpecs].filter(Boolean).length, [params]);
+  const activeFilters = useMemo(() => [params.brand, params.model, params.bodyType, params.fuelType, params.minPrice, params.maxPrice, params.yearFrom, params.yearTo, params.minMileage, params.maxMileage, params.transmission, params.engineCapacity, params.regionalSpecs].filter(Boolean).length, [params]);
   const filteredBrands = useMemo(() => brands.filter((item) => item.toLowerCase().includes(brandSearch.toLowerCase())), [brands, brandSearch]);
   const filteredModels = useMemo(() => models.filter((item) => item.toLowerCase().includes(modelSearch.toLowerCase())), [models, modelSearch]);
-  const reset = () => { setSearch(""); setPopover(null); setParams((prev: Params) => ({ ...prev, page: 1, search: "", brand: "", model: "", category: "", fuelType: "", minPrice: "", maxPrice: "", yearFrom: "", yearTo: "", minMileage: "", maxMileage: "", transmission: "", engineCapacity: "", regionalSpecs: "", sort: "-createdAt" })); };
+  const reset = () => { setSearch(""); setPopover(null); setParams((prev: Params) => ({ ...prev, page: 1, search: "", brand: "", model: "", category: "", bodyType: "", fuelType: "", minPrice: "", maxPrice: "", yearFrom: "", yearTo: "", minMileage: "", maxMileage: "", transmission: "", engineCapacity: "", regionalSpecs: "", sort: "-createdAt" })); };
   const toggle = (key: PopoverKey) => setPopover((current) => current === key ? null : key);
   const selectAndClose = (key: string, value: string) => { update(key, value); setPopover(null); };
   const valueRange = (min: string, max: string) => min || max ? `${min || copy.any} – ${max || copy.any}` : copy.any;
@@ -97,8 +95,8 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
       <div className="space-y-7 py-6">
       <section><h3 className="font-extrabold">{copy.mainFilters}</h3><div className="mt-3 grid grid-cols-2 gap-3"><MobileSelect label={copy.make} value={params.brand || ""} onChange={(value) => update("brand", value)} options={brands} any={copy.any} /><MobileSelect label={copy.model} value={params.model || ""} onChange={(value) => update("model", value)} options={models} any={copy.any} /><div className="col-span-2"><p className="px-1 text-xs font-bold text-zinc-500">{copy.price}</p><RangeFields firstKey="minPrice" secondKey="maxPrice" params={params} update={update} copy={copy} compact /></div><div className="col-span-2"><p className="px-1 text-xs font-bold text-zinc-500">{copy.year}</p><div className="grid grid-cols-2 gap-3 pt-2">{["yearFrom", "yearTo"].map((key, index) => <label key={key} className="rounded-xl border p-3 dark:border-white/10"><span className="text-[10px] font-bold text-zinc-500">{index ? copy.max : copy.min}</span><select value={params[key] || ""} onChange={(event) => update(key, event.target.value)} className="mt-1 w-full bg-transparent text-sm font-bold outline-none"><option value="">{copy.any}</option>{YEARS.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>)}</div></div><MobileSelect label={copy.engine} value={params.engineCapacity || ""} onChange={(value) => update("engineCapacity", value)} options={ENGINE_CAPACITY_OPTIONS.map(String)} optionLabel={(value) => `${Number(value).toFixed(1)} L`} any={copy.any} /><MobileSelect label={copy.regional} value={params.regionalSpecs || ""} onChange={(value) => update("regionalSpecs", value)} options={REGIONAL_SPECS_OPTIONS} any={copy.any} /></div></section>
       <section><h3 className="font-extrabold">{copy.mileage}</h3><RangeFields firstKey="minMileage" secondKey="maxMileage" params={params} update={update} copy={copy} compact /></section>
-      <section><h3 className="font-extrabold">{copy.fuel}</h3><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{FUEL_FILTERS.map((fuel) => { const selected = params.fuelType === fuel.value; return <button key={fuel.value} onClick={() => update("fuelType", selected ? "" : fuel.value)} className={`relative rounded-2xl border p-3 ${selected ? "border-brand bg-brand/5 ring-1 ring-brand" : "border-zinc-200 dark:border-white/10"}`}>{selected ? <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-brand text-white"><Check className="h-3 w-3" /></span> : null}<span className="relative mx-auto block h-14 w-20"><Image src={fuel.image} alt="" fill className="object-contain" sizes="80px" /></span><span className="mt-2 block text-xs font-extrabold">{isArabic ? fuel.ar : fuel.label}</span></button>; })}</div></section>
-      <section><h3 className="font-extrabold">{copy.body}</h3><div className="mt-3 flex flex-wrap gap-2">{categories.map((category) => <button key={category.name} onClick={() => update("category", params.category === category.name ? "" : category.name)} className={`rounded-full border px-3 py-2 text-xs font-bold ${params.category === category.name ? "border-brand bg-brand text-white" : "dark:border-white/10"}`}>{getCategoryDisplayLabel(category.name, language)}</button>)}</div></section>
+      <section><h3 className="font-extrabold">{copy.fuel}</h3><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{FUEL_FILTERS.map((fuel) => { const selected = params.fuelType === fuel.value; return <button key={fuel.value} onClick={() => update("fuelType", selected ? "" : fuel.value)} className={`relative min-h-14 rounded-xl border px-4 py-3 text-sm font-extrabold ${selected ? "border-brand bg-brand text-white ring-1 ring-brand" : "border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-white/5"}`}>{selected ? <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-white text-brand"><Check className="h-3 w-3" /></span> : null}{isArabic ? fuel.ar : fuel.label}</button>; })}</div></section>
+      <section><h3 className="font-extrabold">{copy.body}</h3><div className="mt-3 flex flex-wrap gap-2">{BODY_TYPE_OPTIONS.map((bodyType) => <button key={bodyType} onClick={() => update("bodyType", params.bodyType === bodyType ? "" : bodyType)} className={`rounded-lg border px-3.5 py-2.5 text-sm font-semibold ${params.bodyType === bodyType ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950" : "border-transparent bg-zinc-100 text-zinc-600 hover:border-zinc-300 dark:bg-white/5 dark:text-zinc-300"}`}>{translateVehicleValue(bodyType, language)}</button>)}</div></section>
       <section><h3 className="font-extrabold">{copy.transmission}</h3><div className="mt-3 grid grid-cols-2 gap-3">{[{ value: "Automatique", label: copy.automatic }, { value: "Manuelle", label: copy.manual }].map((option) => <button key={option.value} onClick={() => update("transmission", params.transmission === option.value ? "" : option.value)} className={`rounded-2xl border p-3 font-bold ${params.transmission === option.value ? "border-brand bg-brand text-white" : "dark:border-white/10"}`}>{option.label}</button>)}</div></section>
       <section><h3 className="font-extrabold">{copy.sort}</h3><select value={params.sort || "-createdAt"} onChange={(e) => update("sort", e.target.value)} className="mt-3 h-12 w-full rounded-2xl border bg-transparent px-4 font-bold dark:border-white/10"><option value="-createdAt">{copy.newest}</option><option value="price">{copy.priceLow}</option><option value="-price">{copy.priceHigh}</option><option value="-views">{copy.mostViewed}</option></select></section></div>
       <div className="sticky bottom-0 flex gap-2 border-t bg-white/95 py-4 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95"><button onClick={reset} className="inline-flex h-12 items-center gap-2 rounded-xl border px-3 text-sm font-bold sm:px-4 dark:border-white/10"><RotateCcw className="h-4 w-4" />{copy.reset}</button><button onClick={() => setDrawerOpen(false)} className="h-12 min-w-0 flex-1 truncate rounded-xl bg-brand px-3 font-extrabold text-white">{copy.show} {total.toLocaleString()} {copy.cars}</button></div></motion.aside></motion.div> : null}</AnimatePresence>

@@ -147,17 +147,17 @@ function KpiCard({ label, value, hint, icon: Icon, accent = "brand" }: {
   }[accent];
 
   return (
-    <div className="rounded-[24px] border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900">
+    <div className="rounded-[22px] border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-900">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-400">{label}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">{value}</p>
+          <p className="mt-2 text-2xl font-black tracking-tight text-zinc-950 dark:text-white">{value}</p>
         </div>
-        <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-2xl", accentClass)}>
+        <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", accentClass)}>
           <Icon className="h-5 w-5" />
         </span>
       </div>
-      <p className="mt-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{hint}</p>
+      <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{hint}</p>
     </div>
   );
 }
@@ -198,6 +198,7 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState("");
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [exporting, setExporting] = useState<"pdf" | "excel" | "csv" | "">("");
+  const [activePanel, setActivePanel] = useState<"overview" | "traffic" | "audience" | "visitors">("overview");
 
   const copy = language === "en" ? {
     eyebrow: "LIVE BUSINESS INTELLIGENCE", title: "Visitor analytics", subtitle: "Understand who visits the showroom, where they come from, and which vehicles or pages attract them most.",
@@ -224,6 +225,17 @@ export default function AdminAnalyticsPage() {
     privacyTitle: "الخصوصية والدقة", privacy: "لا يتم تتبع صفحات الإدارة وتسجيل الدخول. تحذف السجلات آليا بعد 180 يوما. تحديد الموقع عبر IP تقريبي وقد يتأثر بالـVPN أو شبكة الهاتف.",
     emptyRecent: "لا توجد جلسات زوار مسجلة بعد.", local: "شبكة محلية"
   };
+  const panels = language === "ar" ? [
+    { id: "overview" as const, label: "نظرة عامة", icon: BarChart3 },
+    { id: "traffic" as const, label: "حركة الزيارات", icon: Activity },
+    { id: "audience" as const, label: "الجمهور والأجهزة", icon: Users },
+    { id: "visitors" as const, label: "جلسات الزوار", icon: Route }
+  ] : [
+    { id: "overview" as const, label: "Overview", icon: BarChart3 },
+    { id: "traffic" as const, label: "Traffic", icon: Activity },
+    { id: "audience" as const, label: "Audience & tech", icon: Users },
+    { id: "visitors" as const, label: "Visitor sessions", icon: Route }
+  ];
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
@@ -429,7 +441,14 @@ export default function AdminAnalyticsPage() {
         {updatedAt ? <p className="relative mt-5 text-xs text-white/45">{copy.lastUpdate}: {updatedAt.toLocaleTimeString(language === "ar" ? "ar-TN" : "en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p> : null}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <nav className="sticky top-20 z-20 overflow-x-auto rounded-2xl border border-zinc-200 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-900/95" aria-label={language === "ar" ? "أقسام التحليلات" : "Analytics sections"}>
+        <div className="flex min-w-max gap-2">
+          {panels.map((panel) => <button key={panel.id} type="button" onClick={() => setActivePanel(panel.id)} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold transition", activePanel === panel.id ? "bg-brand text-white shadow-sm" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-white/10 dark:hover:text-white")}><panel.icon className="h-4 w-4" />{panel.label}</button>)}
+        </div>
+      </nav>
+
+      {activePanel === "overview" ? <>
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard label={copy.pageViews} value={summary.pageViews.toLocaleString()} hint={copy.pagesViewed} icon={Eye} accent="brand" />
         <KpiCard label={copy.unique} value={summary.uniqueVisitors.toLocaleString()} hint={copy.distinctBrowsers} icon={Users} accent="blue" />
         <KpiCard label={copy.sessions} value={summary.sessions.toLocaleString()} hint={copy.sessionsHint} icon={MousePointerClick} accent="zinc" />
@@ -465,7 +484,9 @@ export default function AdminAnalyticsPage() {
           </div>
         ) : <p className="mt-6 rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-400 dark:border-white/10">{copy.noData}</p>}
       </section>
+      </> : null}
 
+      {activePanel === "traffic" ? <>
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.85fr)]">
         <div className="rounded-[28px] border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900 md:p-6">
           <div className="mb-6"><h2 className="text-xl font-black text-zinc-950 dark:text-white">{copy.trend}</h2><p className="mt-1 text-sm text-zinc-500">{copy.trendHint}</p></div>
@@ -503,17 +524,23 @@ export default function AdminAnalyticsPage() {
           <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs text-zinc-500">{data.devices.map((item, index) => <span key={item.name} className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />{item.name} ({item.views})</span>)}</div>
         </div>
       </section>
+      </> : null}
 
+      {activePanel === "audience" ? <>
       <section className="grid gap-5 xl:grid-cols-2">
         <div className="rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"><div className="mb-6 flex items-start gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-brand/10 text-brand"><Globe2 className="h-5 w-5" /></span><div><h2 className="text-xl font-black dark:text-white">{copy.countries}</h2><p className="mt-1 text-xs text-zinc-500">{copy.geographyHint}</p></div></div><RankingList items={data.countries} empty={copy.noData} valueLabel={copy.views} showFlag /></div>
         <div className="rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"><div className="mb-6 flex items-start gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"><MapPin className="h-5 w-5" /></span><div><h2 className="text-xl font-black dark:text-white">{copy.cities}</h2><p className="mt-1 text-xs text-zinc-500">{copy.geographyHint}</p></div></div><RankingList items={data.cities} empty={copy.noData} valueLabel={copy.views} /></div>
       </section>
+      </> : null}
 
+      {activePanel === "traffic" ? <>
       <section className="grid gap-5 xl:grid-cols-2">
         <div className="rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"><div className="mb-6 flex items-center gap-3"><Route className="h-5 w-5 text-brand" /><h2 className="text-xl font-black dark:text-white">{copy.pages}</h2></div><RankingList items={data.pages} empty={copy.noData} valueLabel={copy.views} /></div>
         <div className="rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"><div className="mb-6 flex items-center gap-3"><MousePointerClick className="h-5 w-5 text-brand" /><h2 className="text-xl font-black dark:text-white">{copy.sources}</h2></div><RankingList items={data.referrers.map((item) => ({ ...item, name: item.name === "Direct" ? copy.direct : item.name }))} empty={copy.noData} valueLabel={copy.views} /></div>
       </section>
+      </> : null}
 
+      {activePanel === "audience" ? <>
       <section className="grid gap-5 lg:grid-cols-3">
         {[
           { title: copy.devices, icon: Smartphone, items: data.devices },
@@ -521,7 +548,9 @@ export default function AdminAnalyticsPage() {
           { title: copy.systems, icon: Laptop2, items: data.operatingSystems }
         ].map((group) => <div key={group.title} className="rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"><div className="mb-6 flex items-center gap-3"><group.icon className="h-5 w-5 text-brand" /><h2 className="text-lg font-black dark:text-white">{group.title}</h2></div><RankingList items={group.items} empty={copy.noData} valueLabel={copy.views} /></div>)}
       </section>
+      </> : null}
 
+      {activePanel === "visitors" ? <>
       <section className="overflow-hidden rounded-[28px] border border-zinc-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-900">
         <div className="flex flex-col justify-between gap-3 border-b border-zinc-100 p-6 dark:border-white/10 md:flex-row md:items-end">
           <div><h2 className="text-xl font-black dark:text-white">{copy.recent}</h2><p className="mt-1 text-sm text-zinc-500">{copy.recentHint}</p></div>
@@ -552,6 +581,7 @@ export default function AdminAnalyticsPage() {
         <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600 dark:text-emerald-300" />
         <div><h2 className="font-black">{copy.privacyTitle}</h2><p className="mt-1 text-sm leading-6 text-emerald-800/80 dark:text-emerald-100/70">{copy.privacy}</p></div>
       </section>
+      </> : null}
     </div>
   );
 }

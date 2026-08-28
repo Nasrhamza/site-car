@@ -1,100 +1,77 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, MapPin, MessageCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, Globe2, MapPin, MessageCircle } from "lucide-react";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { BrandLogo } from "@/components/brand-logo";
 import {
-  COMPANY_NAME,
+  BODY_TYPE_OPTIONS,
   COMPANY_FACEBOOK_URL,
+  COMPANY_NAME,
   COMPANY_WHATSAPP_DISPLAY,
-  DEVELOPER_FACEBOOK_URL,
-  DEVELOPER_WHATSAPP_DISPLAY,
-  DEVELOPER_WHATSAPP_PHONE,
   buildWhatsAppUrl
 } from "@/lib/company";
-import { useLanguage } from "@/lib/site-language";
+import { translateVehicleValue, useLanguage } from "@/lib/site-language";
 
 export function Footer() {
-  const { language, t } = useLanguage();
-  const navLinks = [
-    { href: "/", label: t.nav[0] },
-    { href: "/catalogue", label: t.nav[1] },
-    { href: "/contact", label: t.nav[2] }
+  const { language } = useLanguage();
+  const ar = language === "ar";
+  const companyLinks = [
+    { href: "/a-propos", en: "About us", ar: "من نحن" },
+    { href: "/contact", en: "Contact us", ar: "تواصل معنا" },
+    { href: "/guide", en: "Buying & export guide", ar: "دليل الشراء والتصدير" },
+    { href: "/mentions-legales", en: "Legal notice", ar: "البيانات القانونية" },
+    { href: "/confidentialite", en: "Privacy policy", ar: "سياسة الخصوصية" },
+    { href: "/cookies", en: "Cookies", ar: "ملفات الارتباط" }
+  ];
+  const fuelLinks = [
+    { value: "Essence", en: "Petrol", ar: "بنزين" },
+    { value: "Diesel", en: "Diesel", ar: "ديزل" },
+    { value: "Hybride", en: "Hybrid", ar: "هجين" },
+    { value: "Électrique", en: "Electric", ar: "كهربائي" },
+    { value: "PHEV", en: "PHEV", ar: "هجين قابل للشحن" },
+    { value: "REEV", en: "REEV", ar: "كهربائي ممتد المدى" }
   ];
 
   return (
-    <footer className="border-t border-zinc-200 bg-white text-zinc-900">
-      <div className="container-premium grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <BrandLogo className="h-20 w-20" />
-          <p className="mt-4 text-sm leading-7 text-zinc-600">{t.footerText}</p>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            {language === "ar" ? "التنقل" : "Navigation"}
-          </h4>
-          <div className="mt-4 grid gap-2 text-sm text-zinc-700">
-            {navLinks.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-brand">
-                {item.label}
-              </Link>
-            ))}
+    <footer className="border-t border-slate-700 bg-[#203746] text-white">
+      <div className="container-premium py-12 sm:py-14">
+        <div className="grid gap-8 border-b border-white/15 pb-10 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+          <div className="max-w-xl">
+            <div className="flex items-center gap-4"><BrandLogo className="h-16 w-16" /><div><p className="text-lg font-black">{COMPANY_NAME}</p><p className="text-sm text-white/60">{ar ? "سوق سيارات وتصدير عالمي من دبي" : "Dubai vehicle marketplace & worldwide export"}</p></div></div>
+            <p className="mt-5 text-sm leading-7 text-white/70">{ar ? "سيارات مختارة ومعلومات واضحة ودعم مباشر في الوثائق والتصدير والشحن إلى مختلف دول العالم." : "Selected vehicles, clear information, and direct support with documents, export, and worldwide shipping."}</p>
+          </div>
+          <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
+            <p className="flex items-center gap-2 text-sm font-extrabold"><Globe2 className="h-5 w-5 text-brand-gold" />{ar ? "هل تريد شحن سيارة إلى بلدك؟" : "Shipping a vehicle to your country?"}</p>
+            <a href={buildWhatsAppUrl(ar ? "مرحباً، أريد عرض سعر لتصدير وشحن سيارة إلى بلدي." : "Hello, I would like a quote to export and ship a vehicle to my country.")} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-extrabold transition hover:bg-brand-dark">{ar ? "اطلب عرض شحن" : "Request shipping quote"}<ArrowRight className="h-4 w-4 rtl:rotate-180" /></a>
           </div>
         </div>
 
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">{language === "ar" ? "معلومات" : "Information"}</h4>
-          <div className="mt-4 grid gap-2 text-sm text-zinc-700">
-            <Link href="/mentions-legales" className="transition hover:text-brand">
-              {language === "ar" ? "الشروط القانونية" : "Legal notice"}
-            </Link>
-            <Link href="/confidentialite" className="transition hover:text-brand">
-              {language === "ar" ? "الخصوصية" : "Privacy policy"}
-            </Link>
-            <Link href="/cookies" className="transition hover:text-brand">
-              {language === "ar" ? "ملفات الارتباط" : "Cookies"}
-            </Link>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            {t.contact}
-          </h4>
-          <div className="mt-4 grid gap-3 text-sm text-zinc-700">
-            <p className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              {t.location}
-            </p>
-            <p className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp {COMPANY_WHATSAPP_DISPLAY}
-            </p>
-            <p className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" />
-              {language === "ar" ? "معلومات واضحة ومتابعة مباشرة" : "Clear details and direct follow-up"}
-            </p>
-            <a
-              href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد مزيداً من المعلومات عن السيارات المتوفرة." : "Hello, I would like more information about the available cars.")}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-brand"
-            >
-              {t.contact}
-              <ArrowRight className="h-4 w-4" />
-            </a>
-            <a href={COMPANY_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#1877f2]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-3.5 w-3.5" /></span>Facebook ALHADUNICARS</a>
-            <p className="mt-2 border-t border-zinc-200 pt-3 text-xs font-semibold uppercase tracking-[.12em] text-zinc-400">Development contact</p>
-            <a href={`https://wa.me/${DEVELOPER_WHATSAPP_PHONE}?text=${encodeURIComponent("Hello, I need technical support for ALHADUNICARS.")}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#25D366]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#25D366] text-white"><FaWhatsapp className="h-4 w-4" /></span>{DEVELOPER_WHATSAPP_DISPLAY}</a>
-            <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold text-zinc-700 transition hover:text-[#1877f2]"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#1877f2] text-white"><FaFacebookF className="h-3.5 w-3.5" /></span>Facebook developer</a>
-          </div>
+        <div className="grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-5">
+          <FooterColumn title={ar ? "الشركة" : "Company"}>{companyLinks.map((item) => <Link key={item.href} href={item.href}>{ar ? item.ar : item.en}</Link>)}</FooterColumn>
+          <FooterColumn title={ar ? "نوع الهيكل" : "Body type"}>{BODY_TYPE_OPTIONS.slice(0, 8).map((item) => <Link key={item} href={`/catalogue?bodyType=${encodeURIComponent(item)}`}>{translateVehicleValue(item, language)}</Link>)}</FooterColumn>
+          <FooterColumn title={ar ? "نوع الوقود" : "Fuel type"}>{fuelLinks.map((item) => <Link key={item.value} href={`/catalogue?fuelType=${encodeURIComponent(item.value)}`}>{ar ? item.ar : item.en}</Link>)}</FooterColumn>
+          <FooterColumn title={ar ? "روابط سريعة" : "Quick links"}>
+            <Link href="/catalogue">{ar ? "كل السيارات" : "All vehicles"}</Link>
+            <Link href="/catalogue?sort=-createdAt">{ar ? "أحدث السيارات" : "Latest vehicles"}</Link>
+            <Link href="/guide">{ar ? "خطوات التصدير" : "Export process"}</Link>
+            <Link href="/contact">{ar ? "اطلب سيارة" : "Request a vehicle"}</Link>
+          </FooterColumn>
+          <FooterColumn title={ar ? "تواصل معنا" : "Contact us"}>
+            <span className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{ar ? "دبي، الإمارات العربية المتحدة" : "Dubai, United Arab Emirates"}</span>
+            <span className="flex items-center gap-2"><MessageCircle className="h-4 w-4 shrink-0" />{COMPANY_WHATSAPP_DISPLAY}</span>
+            <div className="mt-2 flex gap-2">
+              <a href={COMPANY_FACEBOOK_URL} target="_blank" rel="noreferrer" aria-label="Facebook" className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#1877f2]"><FaFacebookF /></a>
+              <a href={buildWhatsAppUrl(ar ? "مرحباً، أريد معلومات عن السيارات المتوفرة." : "Hello, I would like information about the available vehicles.")} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#25D366]"><FaWhatsapp className="h-5 w-5" /></a>
+            </div>
+          </FooterColumn>
         </div>
       </div>
-      <div className="border-t border-zinc-200 py-4 text-center text-sm text-zinc-500">
-        &copy; {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.
-      </div>
+      <div className="border-t border-white/15 py-5 text-center text-xs text-white/55">&copy; {new Date().getFullYear()} {COMPANY_NAME}. {ar ? "جميع الحقوق محفوظة." : "All rights reserved."}</div>
     </footer>
   );
+}
+
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return <div><h3 className="text-sm font-extrabold text-white">{title}</h3><div className="mt-4 grid gap-2.5 text-sm text-white/65 [&_a]:transition [&_a:hover]:text-white">{children}</div></div>;
 }

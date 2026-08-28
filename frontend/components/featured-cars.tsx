@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Bookmark, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowRight, MessageCircle, Sparkles } from "lucide-react";
+import { CarCard } from "@/components/car-card";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { useLanguage } from "@/lib/site-language";
-import { currencyTnd, formatCurrency, resolveMediaUrl } from "@/lib/utils";
-import { useAedToTndRate } from "@/hooks/use-exchange-rate";
-import { useGarageStore } from "@/store/favorites";
 
 export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
   const { language, t } = useLanguage();
@@ -21,10 +18,10 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
               <Sparkles className="h-3.5 w-3.5 text-brand" />
               {t.featuredTag}
             </span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
               {t.featuredTitle}
             </h2>
-            <p className="mt-3 text-sm leading-7 text-zinc-600 sm:text-base">
+            <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300 sm:text-base">
               {t.featuredText}
             </p>
           </div>
@@ -35,10 +32,14 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
               className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 transition hover:border-brand hover:text-brand"
             >
               {t.inventory}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
             <a
-              href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد قائمة السيارات المتوفرة." : "Hello, I would like the list of available cars.")}
+              href={buildWhatsAppUrl(
+                language === "ar"
+                  ? "مرحباً، أريد قائمة السيارات المتوفرة."
+                  : "Hello, I would like the list of available cars."
+              )}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-green-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-600"
@@ -50,35 +51,17 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
         </div>
 
         {!cars.length ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500 dark:border-white/15 dark:bg-zinc-950">
             {t.noCars}
           </div>
         ) : (
-          <div className="hide-scrollbar -mx-4 flex min-w-0 snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-7 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 xl:grid-cols-3">
-            {cars.slice(0, 9).map((car: any, index: number) => (
-              <HomeImageCard key={car._id || car.id || car.slug} car={car} index={index} />
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {cars.slice(0, 9).map((car) => (
+              <CarCard key={car._id || car.id || car.slug} car={car} />
             ))}
           </div>
         )}
       </div>
     </section>
   );
-}
-
-function HomeImageCard({ car, index }: { car: any; index: number }) {
-  const { language } = useLanguage();
-  const { rate } = useAedToTndRate();
-  const { favorites, toggleFavorite } = useGarageStore();
-  const image = resolveMediaUrl(car?.images?.[0]?.url) || "/guide-import.svg";
-  const saved = favorites.includes(car._id);
-  const priceOnRequest = car?.priceType === "Sur demande" || !(Number(car?.price) > 0);
-
-  return <motion.article initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.55, delay: Math.min(index, 2) * 0.07 }} className="group relative isolate h-[340px] w-[84vw] min-w-0 shrink-0 snap-center transition duration-300 hover:-translate-y-1.5 sm:h-[320px] md:w-full">
-    <div aria-hidden className="absolute inset-x-[5%] -bottom-4 -z-20 h-[90%] overflow-hidden rounded-[24px] opacity-55 blur-2xl transition duration-500 group-hover:opacity-75"><img src={image} alt="" loading="lazy" decoding="async" className="h-full w-full scale-105 object-cover" /></div>
-    <Link href={`/voitures/${car.slug}`} className="absolute inset-0 -z-10 overflow-hidden rounded-[24px] bg-zinc-900 shadow-xl"><img src={image} alt={car?.images?.[0]?.alt || car.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/45" /></Link>
-    <div className="pointer-events-none flex h-full min-w-0 flex-col justify-between p-4 text-white sm:p-5">
-      <div className="flex min-w-0 items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-extrabold">{car.brand}</p><p className="mt-1 truncate text-xs text-white/70">{car.model} · {car.year}</p></div><span className="max-w-[45%] shrink-0 truncate rounded-full border border-white/20 bg-black/25 px-3 py-1.5 text-xs font-bold backdrop-blur">{car.regionalSpecs || "Dubai"}</span></div>
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 sm:gap-4"><div className="min-w-0"><h3 className="line-clamp-2 break-words text-xl font-black leading-tight sm:text-2xl">{car.name}</h3>{priceOnRequest ? <p className="mt-2 text-sm font-bold text-white/85">{language === "ar" ? "السعر عند الطلب" : "Price on request"}</p> : <div className="mt-2 flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1"><p className="text-base font-black text-white sm:text-lg">{formatCurrency(Number(car.price))}</p><p className="text-xs font-bold text-white/65">≈ {currencyTnd(Number(car.price), rate)}</p></div>}</div><button type="button" onClick={() => toggleFavorite(car._id)} aria-label={language === "ar" ? "حفظ" : "Save vehicle"} className={`pointer-events-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-white transition sm:h-11 sm:w-11 ${saved ? "bg-white text-brand" : "bg-black/20 text-white hover:bg-white/25"}`}><Bookmark className={`h-5 w-5 ${saved ? "fill-current" : ""}`} /></button></div>
-    </div>
-  </motion.article>;
 }

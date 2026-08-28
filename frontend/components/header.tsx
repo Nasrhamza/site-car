@@ -91,7 +91,7 @@ export function Header() {
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
             <div className="hidden min-w-0 sm:block">
               <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">ALHADUNICARS</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Dubai car marketplace</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{language === "ar" ? "سوق سيارات وتصدير من دبي" : "Dubai car marketplace"}</p>
             </div>
           </Link>
         </div>

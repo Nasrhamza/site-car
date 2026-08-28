@@ -17,6 +17,7 @@ type CatalogueParams = {
   brand: string;
   model: string;
   category: string;
+  bodyType: string;
   fuelType: string;
   minPrice: string;
   maxPrice: string;
@@ -38,6 +39,7 @@ function parseSearchParams(searchParams: ReadonlyURLSearchParams): CataloguePara
     brand: searchParams.get("brand") || "",
     model: searchParams.get("model") || "",
     category: searchParams.get("category") || "",
+    bodyType: searchParams.get("bodyType") || "",
     fuelType: searchParams.get("fuelType") || "",
     minPrice: searchParams.get("minPrice") || "",
     maxPrice: searchParams.get("maxPrice") || "",
@@ -96,6 +98,7 @@ export default function CataloguePage() {
     if (params.brand) query.set("brand", params.brand);
     if (params.model) query.set("model", params.model);
     if (params.category) query.set("category", params.category);
+    if (params.bodyType) query.set("bodyType", params.bodyType);
     if (params.fuelType) query.set("fuelType", params.fuelType);
     if (params.minPrice) query.set("minPrice", params.minPrice);
     if (params.maxPrice) query.set("maxPrice", params.maxPrice);
