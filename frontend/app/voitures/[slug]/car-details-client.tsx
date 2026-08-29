@@ -119,6 +119,11 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
         confidenceText: "معلومات واضحة وتواصل مباشر قبل تأكيد العملية.",
         directContact: "تواصل مباشر مع فريقنا",
         directContactText: "رد سريع لتأكيد السعر، التوفر، المعاينة وخيارات الشحن.",
+        includedSupport: "الخدمات المتوفرة",
+        availabilityCheck: "تأكيد توفر المركبة قبل الشراء",
+        extraMedia: "صور وفيديو إضافي عند الطلب",
+        exportHelp: "مساعدة في وثائق وإجراءات التصدير",
+        shippingQuote: "عرض شحن مخصص إلى بلدك",
         whatsapp: safePrice ? "اسأل على واتساب" : "اطلب السعر على واتساب", call: "اتصل بنا",
         allIncluded: "السعر شامل كل شيء", reference: "المرجع", similar: "مركبات مشابهة",
         previousImage: "الصورة السابقة", nextImage: "الصورة التالية", openImage: "تكبير الصورة",
@@ -134,6 +139,11 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
         confidenceText: "Clear information and direct contact before confirming the purchase.",
         directContact: "Direct contact with our team",
         directContactText: "Fast answers about price, availability, inspection, and shipping options.",
+        includedSupport: "Support available",
+        availabilityCheck: "Vehicle availability confirmation",
+        extraMedia: "Extra photos and video on request",
+        exportHelp: "Export document assistance",
+        shippingQuote: "A shipping quote for your country",
         whatsapp: safePrice ? "Ask on WhatsApp" : "Ask for the price on WhatsApp", call: "Call us",
         allIncluded: "All costs included", reference: "Reference", similar: "Similar vehicles",
         previousImage: "Previous image", nextImage: "Next image", openImage: "Enlarge image",
@@ -176,9 +186,21 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
     { label: copy.location, value: location, icon: MapPin },
     { label: copy.year, value: safeYear, icon: CalendarDays },
     { label: copy.mileage, value: safeMileage, icon: Gauge },
+    { label: text("Body type", "نوع الهيكل"), value: car?.bodyType ? translateVehicleValue(car.bodyType, language) : safeCategory, icon: Truck },
+    { label: copy.transmission, value: safeTransmission, icon: Settings2 },
+    { label: copy.fuel, value: safeFuel, icon: Settings2 },
     { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "", icon: Settings2 },
-    { label: copy.regional, value: car?.regionalSpecs || "", icon: Globe2 }
-  ].filter((item) => hasDisplayValue(item.value));
+    { label: copy.regional, value: car?.regionalSpecs || "", icon: Globe2 },
+    { label: text("Make", "الماركة"), value: car?.brand, icon: BadgeCheck },
+    { label: text("Model", "الموديل"), value: car?.model, icon: BadgeCheck }
+  ].filter((item) => hasDisplayValue(item.value)).slice(0, 5);
+
+  const sidebarSupport = [
+    { text: copy.availabilityCheck, icon: CheckCircle2, color: "text-emerald-500" },
+    { text: copy.extraMedia, icon: BadgeCheck, color: "text-sky-500" },
+    { text: copy.exportHelp, icon: FileText, color: "text-brand" },
+    { text: copy.shippingQuote, icon: Truck, color: "text-amber-500" }
+  ];
 
   const showPreviousImage = () => images.length && setActive((current) => (current - 1 + images.length) % images.length);
   const showNextImage = () => images.length && setActive((current) => (current + 1) % images.length);
@@ -281,9 +303,14 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
                   <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-600"><MessageCircle className="h-5 w-5" />{copy.whatsapp}</a>
                   <a href={`tel:+${COMPANY_WHATSAPP_PHONE}`} aria-label={copy.call} className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-200 text-zinc-800 transition hover:border-brand hover:text-brand"><Phone className="h-4 w-4" /></a>
                 </div>
-                <div className="mt-3 grid gap-2 border-t border-zinc-100 pt-3 text-xs text-zinc-600 xl:mt-auto">
-                  <p className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-brand" />{copy.documents}</p>
-                  <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />{copy.confidenceText}</p>
+                <div className="mt-5 border-t border-zinc-100 pt-4">
+                  <p className="text-xs font-extrabold uppercase tracking-[.16em] text-zinc-400">{copy.includedSupport}</p>
+                  <div className="mt-3 grid gap-2.5">
+                    {sidebarSupport.map((item) => { const Icon = item.icon; return <div key={item.text} className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50 px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-700"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white shadow-sm"><Icon className={`h-4 w-4 ${item.color}`} /></span><span>{item.text}</span></div>; })}
+                  </div>
+                </div>
+                <div className="mt-auto border-t border-zinc-100 pt-4 text-xs leading-5 text-zinc-500">
+                  {copy.directContactText}
                 </div>
               </div>
             </div>
