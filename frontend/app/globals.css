@@ -146,20 +146,15 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* WhatsApp attention cue: a lightweight version of the supplied robot-hand animation. */
+/* WhatsApp attention cue: animated fingers point directly at each WhatsApp action. */
 .whatsapp-robot-callout {
   animation: whatsapp-callout-cycle 7s ease-in-out infinite;
   transform-origin: right bottom;
 }
 
-.whatsapp-pointer-arrow {
-  overflow: visible;
-  filter: drop-shadow(0 12px 14px rgba(15, 23, 42, 0.18));
-}
-
-.whatsapp-arrow-motion {
-  animation: whatsapp-arrow-point 1.05s cubic-bezier(.2,.8,.2,1) infinite;
-  transform-box: fill-box;
+.whatsapp-pointer-finger {
+  animation: whatsapp-finger-point-right .72s cubic-bezier(.2,.8,.2,1) infinite alternate;
+  filter: drop-shadow(0 9px 8px rgba(15, 23, 42, 0.22));
   transform-origin: center;
 }
 
@@ -172,29 +167,22 @@ a[href*="wa.me"]:not(.whatsapp-floating-button) {
 }
 
 a[href*="wa.me"]:not(.whatsapp-floating-button)::after {
-  content: "☝";
+  content: "👇";
   position: absolute;
-  top: -18px;
-  right: -10px;
+  top: -28px;
+  right: 12px;
   z-index: 5;
-  font-size: 22px;
+  font-size: 25px;
   line-height: 1;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(-8px, 8px, 0) rotate(-20deg) scale(.75);
-  transition: opacity 180ms ease, transform 260ms cubic-bezier(.2,.8,.2,1);
-}
-
-a[href*="wa.me"]:not(.whatsapp-floating-button):hover::after,
-a[href*="wa.me"]:not(.whatsapp-floating-button):focus-visible::after {
   opacity: 1;
-  transform: translate3d(0, 0, 0) rotate(-10deg) scale(1);
-  animation: whatsapp-inline-point .72s ease-in-out infinite alternate;
+  pointer-events: none;
+  animation: whatsapp-inline-point .68s ease-in-out infinite alternate;
+  filter: drop-shadow(0 5px 5px rgba(15, 23, 42, 0.18));
 }
 
-@keyframes whatsapp-arrow-point {
-  0%, 100% { transform: translate3d(-9px, 2px, 0) scale(.96); }
-  50% { transform: translate3d(7px, -1px, 0) scale(1.04); }
+@keyframes whatsapp-finger-point-right {
+  from { transform: translate3d(-8px, 1px, 0) scale(.96) rotate(-5deg); }
+  to { transform: translate3d(6px, 1px, 0) scale(1.08) rotate(2deg); }
 }
 
 @keyframes whatsapp-callout-cycle {
@@ -209,13 +197,13 @@ a[href*="wa.me"]:not(.whatsapp-floating-button):focus-visible::after {
 }
 
 @keyframes whatsapp-inline-point {
-  from { translate: -2px 3px; }
-  to { translate: 2px -3px; }
+  from { transform: translate3d(0, -4px, 0) scale(.94); }
+  to { transform: translate3d(0, 4px, 0) scale(1.08); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .whatsapp-robot-callout,
-  .whatsapp-arrow-motion,
+  .whatsapp-pointer-finger,
   .whatsapp-floating-button,
   a[href*="wa.me"]:not(.whatsapp-floating-button)::after {
     animation: none;

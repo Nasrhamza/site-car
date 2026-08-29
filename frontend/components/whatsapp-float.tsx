@@ -24,7 +24,7 @@ export function WhatsAppFloat() {
           <p className="text-xs font-black text-zinc-950 dark:text-white">{copy.title}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-emerald-700 dark:text-emerald-300">{copy.action}</p>
         </div>
-        <WhatsAppArrow />
+        <WhatsAppPointerFinger />
       </div>
 
       <a
@@ -41,16 +41,10 @@ export function WhatsAppFloat() {
   );
 }
 
-function WhatsAppArrow() {
+function WhatsAppPointerFinger() {
   return (
-    <svg className="whatsapp-pointer-arrow h-20 w-28 shrink-0" viewBox="0 0 150 100" role="presentation">
-      <g className="whatsapp-arrow-motion">
-        <path d="M10 78C48 83 59 31 112 40" fill="none" stroke="white" strokeLinecap="round" strokeWidth="20" opacity=".95" />
-        <path d="M10 78C48 83 59 31 112 40" fill="none" stroke="#25D366" strokeLinecap="round" strokeWidth="11" />
-        <path d="m101 17 39 25-41 22 10-23Z" fill="white" stroke="white" strokeLinejoin="round" strokeWidth="9" />
-        <path d="m101 17 39 25-41 22 10-23Z" fill="#25D366" stroke="#25D366" strokeLinejoin="round" strokeWidth="3" />
-        <circle cx="12" cy="78" r="8" fill="#c1121f" stroke="white" strokeWidth="4" />
-      </g>
-    </svg>
+    <span className="whatsapp-pointer-finger grid h-20 w-20 shrink-0 place-items-center text-5xl" role="presentation" aria-hidden="true">
+      👉
+    </span>
   );
 }
