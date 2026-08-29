@@ -19,8 +19,8 @@ export function WhatsAppFloat() {
 
   return (
     <div className="whatsapp-float-shell fixed bottom-4 right-4 z-50 flex items-end gap-2 sm:bottom-5 sm:right-5">
-      <div className="whatsapp-robot-callout pointer-events-none hidden items-end sm:flex" aria-hidden="true">
-        <div className="mb-4 max-w-[220px] rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-start shadow-xl dark:border-emerald-500/25 dark:bg-zinc-900">
+      <div className="pointer-events-none hidden items-end sm:flex" aria-hidden="true">
+        <div className="whatsapp-robot-callout mb-4 max-w-[220px] rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-start shadow-xl dark:border-emerald-500/25 dark:bg-zinc-900">
           <p className="text-xs font-black text-zinc-950 dark:text-white">{copy.title}</p>
           <p className="mt-1 text-xs font-semibold leading-5 text-emerald-700 dark:text-emerald-300">{copy.action}</p>
         </div>
