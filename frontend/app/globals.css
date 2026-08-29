@@ -152,6 +152,64 @@ a {
   transform-origin: right bottom;
 }
 
+@keyframes export-plane-flight {
+  0%, 8% {
+    left: 1.75rem;
+    transform: translateY(-50%) translateY(8px) rotate(-4deg) scale(.88);
+  }
+  46% {
+    transform: translateY(-50%) translateY(-15px) rotate(2deg) scale(1.04);
+  }
+  88%, 100% {
+    left: calc(100% - 5.25rem);
+    transform: translateY(-50%) translateY(5px) rotate(-2deg) scale(.92);
+  }
+}
+
+@keyframes export-route-fill {
+  0%, 8% { width: 0; opacity: .35; }
+  88%, 100% { width: calc(100% - 2.5rem); opacity: 1; }
+}
+
+@keyframes export-cloud-drift {
+  0%, 100% { transform: translateX(-10px); opacity: .45; }
+  50% { transform: translateX(16px); opacity: .9; }
+}
+
+.export-flight-plane {
+  animation: export-plane-flight 7s cubic-bezier(.45,.05,.25,1) infinite;
+  will-change: left, transform;
+}
+
+.export-flight-progress {
+  animation: export-route-fill 7s cubic-bezier(.45,.05,.25,1) infinite;
+}
+
+.export-flight-cloud {
+  animation: export-cloud-drift 5s ease-in-out infinite;
+}
+
+.export-flight-cloud-delay {
+  animation-delay: -2.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .export-flight-plane {
+    left: calc(50% - 1.75rem);
+    animation: none;
+    transform: translateY(-50%);
+  }
+
+  .export-flight-progress {
+    width: 50%;
+    animation: none;
+  }
+
+  .export-flight-cloud {
+    animation: none;
+  }
+}
+
 .whatsapp-pointer-finger {
   animation: whatsapp-finger-point-right .72s cubic-bezier(.2,.8,.2,1) infinite alternate;
   filter: drop-shadow(0 9px 8px rgba(15, 23, 42, 0.22));

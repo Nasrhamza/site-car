@@ -1,5 +1,6 @@
 import { FeaturedCars } from "@/components/featured-cars";
 import { HomeFinalCta } from "@/components/home-final-cta";
+import { HomeGlobalExport } from "@/components/home-global-export";
 import { HomeTrust } from "@/components/home-trust";
 import { MarketplaceValue } from "@/components/marketplace-value";
 import { api } from "@/lib/api";
@@ -33,6 +34,7 @@ export default async function HomePage() {
     <>
       <MarketplaceValue />
       <FeaturedCars cars={cars} />
+      <HomeGlobalExport />
       <HomeTrust totalCars={cars.length} />
       <HomeFinalCta imageUrl={cars[1]?.images?.[0]?.url || cars[0]?.images?.[0]?.url} />
     </>
