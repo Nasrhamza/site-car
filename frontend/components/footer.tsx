@@ -29,8 +29,8 @@ export function Footer() {
     { value: "Diesel", en: "Diesel", ar: "ديزل" },
     { value: "Hybride", en: "Hybrid", ar: "هجين" },
     { value: "Électrique", en: "Electric", ar: "كهربائي" },
-    { value: "PHEV", en: "PHEV", ar: "هجين قابل للشحن" },
-    { value: "REEV", en: "REEV", ar: "كهربائي ممتد المدى" }
+    { value: "PHEV", en: "PHEV", ar: "PHEV" },
+    { value: "REEV", en: "REEV", ar: "REEV" }
   ];
 
   return (

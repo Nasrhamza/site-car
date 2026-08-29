@@ -138,7 +138,7 @@ export function getVehicleModelSuggestions(brand?: string | null) {
   return VEHICLE_MODEL_SUGGESTIONS[normalizeLookupKey(brand)] || [];
 }
 
-export const DEFAULT_VEHICLE_CATEGORY = "Utilitaires";
+export const DEFAULT_VEHICLE_CATEGORY = "Véhicules légers";
 export const FUEL_TYPE_OPTIONS = [
   "Diesel",
   "Essence",
@@ -238,8 +238,8 @@ export const FUEL_TYPE_LABELS: Record<(typeof FUEL_TYPE_OPTIONS)[number], string
   Diesel: "ديزل",
   Essence: "بنزين",
   Hybride: "هجين",
-  PHEV: "هجين قابل للشحن",
-  REEV: "كهربائي ممتد المدى",
+  PHEV: "PHEV",
+  REEV: "REEV",
   Électrique: "كهربائي",
   GPL: "غاز",
   Autre: "أخرى"
@@ -262,7 +262,8 @@ const BADGE_LABELS: Record<string, string> = {
   Électrique: "كهربائي",
   Electrique: "كهربائي",
   Hybride: "هجين",
-  PHEV: "هجين قابل للشحن",
+  PHEV: "PHEV",
+  REEV: "REEV",
   Diesel: "ديزل",
   Essence: "بنزين"
 };

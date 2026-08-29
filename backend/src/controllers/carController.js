@@ -1,5 +1,6 @@
 import Car from "../models/Car.js";
 import Inquiry from "../models/Inquiry.js";
+import Notification from "../models/Notification.js";
 import { makeSlug } from "../utils/slug.js";
 import { getCategoryAliases, normalizeCategoryValue } from "../utils/category.js";
 import { getFuelTypeAliases, isOtherFuelType, normalizeFuelTypeValue } from "../utils/fuel.js";
@@ -46,6 +47,27 @@ function normalizePriceTypeValue(value) {
   const input = String(value || "").trim().toLowerCase();
   if (input.includes("demande") || input.includes("request")) return "Sur demande";
   return input.includes("negoc") ? "Negociable" : "Prix fixe";
+}
+
+function addQueryClause(query, clause) {
+  query.$and = [...(query.$and || []), clause];
+}
+
+function publicListingClause() {
+  return {
+    $and: [
+      { $or: [{ moderationStatus: "Approved" }, { moderationStatus: { $exists: false } }] },
+      { $or: [{ accountHidden: false }, { accountHidden: { $exists: false } }] }
+    ]
+  };
+}
+
+function isSeller(req) {
+  return req.user?.role === "Vendeur";
+}
+
+function sellerOwnsCar(req, car) {
+  return isSeller(req) && String(car?.owner || "") === String(req.user.id);
 }
 
 function getUploadedFiles(req) {
@@ -120,6 +142,22 @@ function serializeCar(car) {
     availability,
     priceType: normalizePriceTypeValue(payload?.priceType)
   };
+}
+
+function serializePublicCar(car) {
+  const payload = serializeCar(car);
+
+  delete payload.owner;
+  delete payload.sellerPrice;
+  delete payload.serviceFee;
+  delete payload.submittedByRole;
+  delete payload.moderationStatus;
+  delete payload.moderationNote;
+  delete payload.approvedBy;
+  delete payload.accountHidden;
+  delete payload.lastSellerEditAt;
+
+  return payload;
 }
 
 function normalizeCarPayload(body) {
@@ -258,16 +296,38 @@ export async function getCars(req, res) {
       maxEngineCapacity,
       regionalSpecs,
       bodyType,
+      trim,
+      exteriorColor,
+      interiorColor,
+      cylinders,
+      minPowerHp,
+      maxPowerHp,
+      steeringSide,
+      doors,
+      seats,
+      wheelSize,
+      location,
+      exportStatus,
+      serviceHistory,
+      availability,
+      safety,
       sort = "-createdAt"
     } = req.query;
 
     const query = {};
+    addQueryClause(query, publicListingClause());
 
     if (search) {
       query.$or = [
         { name: new RegExp(search, "i") },
         { brand: new RegExp(search, "i") },
-        { model: new RegExp(search, "i") }
+        { model: new RegExp(search, "i") },
+        { trim: new RegExp(search, "i") },
+        { bodyType: new RegExp(search, "i") },
+        { fuelType: new RegExp(search, "i") },
+        { exteriorColor: new RegExp(search, "i") },
+        { interiorColor: new RegExp(search, "i") },
+        { description: new RegExp(search, "i") }
       ];
     }
 
@@ -293,7 +353,7 @@ export async function getCars(req, res) {
         query.fuelType = { $in: getFuelTypeAliases(fuelType) };
       }
     }
-    if (gearbox) query.gearbox = gearbox;
+    if (gearbox) query.gearbox = new RegExp(`^${escapeRegex(gearbox)}$`, "i");
     if (regionalSpecs) {
       const requestedSpecs = String(regionalSpecs).split(",");
       if (requestedSpecs.includes("Other")) {
@@ -306,7 +366,26 @@ export async function getCars(req, res) {
       }
     }
 
-    if (bodyType) query.bodyType = bodyType;
+    if (bodyType) query.bodyType = { $in: String(bodyType).split(",") };
+    if (trim) query.trim = { $in: String(trim).split(",") };
+    if (exteriorColor) query.exteriorColor = { $in: String(exteriorColor).split(",") };
+    if (interiorColor) query.interiorColor = new RegExp(escapeRegex(interiorColor), "i");
+    if (steeringSide) query.steeringSide = steeringSide;
+    if (wheelSize) query.wheelSize = new RegExp(`^${escapeRegex(wheelSize)}$`, "i");
+    if (location) query.location = new RegExp(escapeRegex(location), "i");
+    if (exportStatus) query.exportStatus = exportStatus;
+    if (serviceHistory) query.serviceHistory = serviceHistory;
+    if (availability) query.status = normalizeStatusValue(availability);
+    if (cylinders) query.cylinders = Number(cylinders);
+    if (doors) query.doors = Number(doors);
+    if (seats) query.seats = Number(seats);
+    if (minPowerHp || maxPowerHp) {
+      query.powerHp = {
+        ...(minPowerHp ? { $gte: Number(minPowerHp) } : {}),
+        ...(maxPowerHp ? { $lte: Number(maxPowerHp) } : {})
+      };
+    }
+    if (safety) query.safety = { $all: String(safety).split(",").map((item) => new RegExp(`^${escapeRegex(item.trim())}$`, "i")) };
     if (engineCapacity) query.engineCapacity = Number(engineCapacity);
     if (minEngineCapacity || maxEngineCapacity) {
       query.engineCapacity = {
@@ -338,10 +417,7 @@ export async function getCars(req, res) {
 
     if (transmission) {
       const transmissionPattern = new RegExp(`^${escapeRegex(transmission)}$`, "i");
-      query.$and = [
-        ...(query.$and || []),
-        { $or: [{ gearbox: transmissionPattern }, { transmission: transmissionPattern }] }
-      ];
+      addQueryClause(query, { $or: [{ transmission: transmissionPattern }, { drivetrain: transmissionPattern }] });
     }
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -352,7 +428,7 @@ export async function getCars(req, res) {
     ]);
 
     res.json({
-      items: items.map(serializeCar),
+      items: items.map(serializePublicCar),
       total,
       page: Number(page),
       pages: Math.ceil(total / Number(limit))
@@ -365,8 +441,8 @@ export async function getCars(req, res) {
 
 export async function getCarFilterOptions(_req, res) {
   try {
-    const items = await Car.find({})
-      .select("name brand model -_id")
+    const items = await Car.find(publicListingClause())
+      .select("name brand model bodyType trim fuelType gearbox transmission drivetrain exteriorColor interiorColor cylinders doors seats steeringSide wheelSize location exportStatus serviceHistory powerHp engineCapacity regionalSpecs status availability safety -_id")
       .sort({ brand: 1, model: 1 })
       .lean();
 
@@ -380,7 +456,7 @@ export async function getCarFilterOptions(_req, res) {
 
 export async function getCarBySlug(req, res) {
   try {
-    const car = await Car.findOne({ slug: req.params.slug });
+    const car = await Car.findOne({ slug: req.params.slug, ...publicListingClause() });
 
     if (!car) {
       return res.status(404).json({ message: "Vehicule introuvable" });
@@ -396,12 +472,13 @@ export async function getCarBySlug(req, res) {
 
     const similar = await Car.find({
       _id: { $ne: car._id },
-      $or: [{ category: { $in: getCategoryAliases(car.category) } }, { brand: car.brand }]
+      $or: [{ category: { $in: getCategoryAliases(car.category) } }, { brand: car.brand }],
+      ...publicListingClause()
     }).limit(3);
 
     const inquiriesCount = await Inquiry.countDocuments({ car: car._id });
 
-    res.json({ car: serializeCar(car), similar: similar.map(serializeCar), inquiriesCount });
+    res.json({ car: serializePublicCar(car), similar: similar.map(serializePublicCar), inquiriesCount });
   } catch (error) {
     console.error("getCarBySlug error:", error);
     res.status(500).json({ message: "Erreur lors du chargement du vehicule" });
@@ -416,7 +493,11 @@ export async function getCarById(req, res) {
       return res.status(404).json({ message: "Vehicule introuvable" });
     }
 
-    res.json(serializeCar(car));
+    const isPublic = (!car.moderationStatus || car.moderationStatus === "Approved") && !car.accountHidden;
+    const canManage = req.user?.role === "Admin" || sellerOwnsCar(req, car);
+    if (!isPublic && !canManage) return res.status(404).json({ message: "Vehicule introuvable" });
+
+    res.json(canManage ? serializeCar(car) : serializePublicCar(car));
   } catch (error) {
     console.error("getCarById error:", error);
     res.status(500).json({ message: "Erreur lors du chargement du vehicule" });
@@ -432,11 +513,37 @@ export async function createCar(req, res) {
       body.name || `${body.brand || "Vehicule"} ${body.model || ""}`.trim()
     );
 
+    const sellerSubmission = isSeller(req);
+    const sellerPrice = sellerSubmission ? toNumber(req.body?.price) : undefined;
+    const serviceFee = sellerSubmission ? 17000 : 0;
+    if (sellerSubmission) {
+      body.sellerPrice = sellerPrice ?? null;
+      body.serviceFee = serviceFee;
+      body.price = sellerPrice === undefined || body.priceType === "Sur demande" ? null : sellerPrice + serviceFee;
+    }
+
     const car = await Car.create({
       ...body,
       slug,
-      images: uploadedImages.length ? uploadedImages : body.images || []
+      images: uploadedImages.length ? uploadedImages : body.images || [],
+      owner: sellerSubmission ? req.user.id : null,
+      submittedByRole: sellerSubmission ? "Vendeur" : "Admin",
+      moderationStatus: sellerSubmission ? "Pending" : "Approved",
+      approvedAt: sellerSubmission ? null : new Date(),
+      approvedBy: sellerSubmission ? null : req.user.id
     });
+
+    if (sellerSubmission) {
+      await Notification.create({
+        audience: "Admin",
+        type: "SellerCarSubmitted",
+        title: "Nouvelle voiture a valider",
+        message: `${req.user.name || req.user.email} a ajoute ${car.name}`,
+        actor: req.user.id,
+        car: car._id,
+        metadata: { sellerPrice: car.sellerPrice, serviceFee: car.serviceFee, finalPrice: car.price }
+      });
+    }
 
     res.status(201).json(serializeCar(car));
   } catch (error) {
@@ -447,6 +554,12 @@ export async function createCar(req, res) {
 
 export async function updateCar(req, res) {
   try {
+    const existingCar = await Car.findById(req.params.id);
+    if (!existingCar) return res.status(404).json({ message: "Vehicule introuvable" });
+    if (isSeller(req) && !sellerOwnsCar(req, existingCar)) {
+      return res.status(403).json({ message: "Vous pouvez modifier uniquement vos voitures" });
+    }
+
     const updateData = normalizeCarPayload(req.body);
     const existingImages = parseExistingImages(req.body?.existingImages);
     const uploadedImages = buildUploadedImages(
@@ -467,12 +580,40 @@ export async function updateCar(req, res) {
       updateData.images = [...(existingImages || []), ...uploadedImages];
     }
 
+    if (isSeller(req)) {
+      const sellerPrice = toNumber(req.body?.price);
+      updateData.sellerPrice = sellerPrice ?? null;
+      updateData.serviceFee = Number(existingCar.serviceFee ?? 17000);
+      updateData.price = sellerPrice === undefined || updateData.priceType === "Sur demande" ? null : sellerPrice + updateData.serviceFee;
+      updateData.lastSellerEditAt = new Date();
+      delete updateData.owner;
+      delete updateData.submittedByRole;
+      delete updateData.moderationStatus;
+      delete updateData.moderationNote;
+      delete updateData.approvedAt;
+      delete updateData.approvedBy;
+      delete updateData.accountHidden;
+    }
+
     const car = await Car.findByIdAndUpdate(req.params.id, updateData, {
       new: true
     });
 
     if (!car) {
       return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+
+
+    if (isSeller(req)) {
+      await Notification.create({
+        audience: "Admin",
+        type: "SellerCarUpdated",
+        title: "Voiture modifiee par un vendeur",
+        message: `${req.user.name || req.user.email} a modifie ${car.name}`,
+        actor: req.user.id,
+        car: car._id,
+        metadata: { sellerPrice: car.sellerPrice, serviceFee: car.serviceFee, finalPrice: car.price }
+      });
     }
 
     res.json(serializeCar(car));
@@ -484,6 +625,11 @@ export async function updateCar(req, res) {
 
 export async function deleteCar(req, res) {
   try {
+    const existingCar = await Car.findById(req.params.id);
+    if (!existingCar) return res.status(404).json({ message: "Vehicule introuvable" });
+    if (isSeller(req) && !sellerOwnsCar(req, existingCar)) {
+      return res.status(403).json({ message: "Vous pouvez supprimer uniquement vos voitures" });
+    }
     const car = await Car.findByIdAndDelete(req.params.id);
 
     if (!car) {
@@ -499,10 +645,56 @@ export async function deleteCar(req, res) {
 
 export async function getFeaturedCars(req, res) {
   try {
-    const cars = await Car.find({ featured: true, status: "Disponible" }).limit(6);
-    res.json(cars.map(serializeCar));
+    const cars = await Car.find({ featured: true, status: "Disponible", ...publicListingClause() }).limit(6);
+    res.json(cars.map(serializePublicCar));
   } catch (error) {
     console.error("getFeaturedCars error:", error);
     res.status(500).json({ message: "Erreur lors du chargement des vehicules en vedette" });
   }
+}
+
+export async function getManagedCars(req, res) {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 100));
+    const query = isSeller(req) ? { owner: req.user.id } : {};
+    const [items, total] = await Promise.all([
+      Car.find(query).populate("owner", "name showroomName email phone accountStatus").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      Car.countDocuments(query)
+    ]);
+    res.json({ items: items.map(serializeCar), total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error("getManagedCars error:", error);
+    res.status(500).json({ message: "Impossible de charger les voitures gerees" });
+  }
+}
+
+export async function moderateCar(req, res) {
+  const moderationStatus = String(req.body?.moderationStatus || "");
+  if (!["Pending", "Approved", "Rejected", "Hidden"].includes(moderationStatus)) {
+    return res.status(400).json({ message: "Statut de validation invalide" });
+  }
+  const update = {
+    moderationStatus,
+    moderationNote: String(req.body?.moderationNote || "").trim(),
+    ...(moderationStatus === "Approved" ? { approvedAt: new Date(), approvedBy: req.user.id } : {})
+  };
+  const car = await Car.findByIdAndUpdate(req.params.id, update, { new: true }).populate("owner", "name showroomName email");
+  if (!car) return res.status(404).json({ message: "Vehicule introuvable" });
+  res.json({ item: serializeCar(car) });
+}
+
+export async function updateCarPricing(req, res) {
+  const car = await Car.findById(req.params.id);
+  if (!car) return res.status(404).json({ message: "Vehicule introuvable" });
+  const sellerPrice = toNumber(req.body?.sellerPrice);
+  const serviceFee = toNumber(req.body?.serviceFee);
+  if (sellerPrice === undefined || serviceFee === undefined || sellerPrice < 0 || serviceFee < 0) {
+    return res.status(400).json({ message: "Prix vendeur et frais valides requis" });
+  }
+  car.sellerPrice = sellerPrice;
+  car.serviceFee = serviceFee;
+  car.price = car.priceType === "Sur demande" ? null : sellerPrice + serviceFee;
+  await car.save();
+  res.json({ item: serializeCar(car) });
 }

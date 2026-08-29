@@ -43,6 +43,7 @@ export function Header() {
     { href: "/", label: t.nav[0] },
     { href: "/catalogue", label: t.nav[1] },
     { href: "/guide", label: language === "en" ? "Guide" : "الدليل" },
+    { href: "/seller/request-account", label: language === "en" ? "Sell with us" : "اعرض سيارتك معنا" },
     { href: "/contact", label: t.nav[2] }
   ];
 

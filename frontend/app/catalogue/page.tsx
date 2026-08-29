@@ -28,6 +28,21 @@ type CatalogueParams = {
   transmission: string;
   engineCapacity: string;
   regionalSpecs: string;
+  trim: string;
+  exteriorColor: string;
+  interiorColor: string;
+  cylinders: string;
+  minPowerHp: string;
+  maxPowerHp: string;
+  steeringSide: string;
+  doors: string;
+  seats: string;
+  wheelSize: string;
+  location: string;
+  exportStatus: string;
+  serviceHistory: string;
+  availability: string;
+  safety: string;
 };
 
 function parseSearchParams(searchParams: ReadonlyURLSearchParams): CatalogueParams {
@@ -49,7 +64,22 @@ function parseSearchParams(searchParams: ReadonlyURLSearchParams): CataloguePara
     maxMileage: searchParams.get("maxMileage") || "",
     transmission: searchParams.get("transmission") || "",
     engineCapacity: searchParams.get("engineCapacity") || "",
-    regionalSpecs: searchParams.get("regionalSpecs") || ""
+    regionalSpecs: searchParams.get("regionalSpecs") || "",
+    trim: searchParams.get("trim") || "",
+    exteriorColor: searchParams.get("exteriorColor") || "",
+    interiorColor: searchParams.get("interiorColor") || "",
+    cylinders: searchParams.get("cylinders") || "",
+    minPowerHp: searchParams.get("minPowerHp") || "",
+    maxPowerHp: searchParams.get("maxPowerHp") || "",
+    steeringSide: searchParams.get("steeringSide") || "",
+    doors: searchParams.get("doors") || "",
+    seats: searchParams.get("seats") || "",
+    wheelSize: searchParams.get("wheelSize") || "",
+    location: searchParams.get("location") || "",
+    exportStatus: searchParams.get("exportStatus") || "",
+    serviceHistory: searchParams.get("serviceHistory") || "",
+    availability: searchParams.get("availability") || "",
+    safety: searchParams.get("safety") || ""
   };
 }
 
@@ -109,6 +139,21 @@ export default function CataloguePage() {
     if (params.transmission) query.set("transmission", params.transmission);
     if (params.engineCapacity) query.set("engineCapacity", params.engineCapacity);
     if (params.regionalSpecs) query.set("regionalSpecs", params.regionalSpecs);
+    if (params.trim) query.set("trim", params.trim);
+    if (params.exteriorColor) query.set("exteriorColor", params.exteriorColor);
+    if (params.interiorColor) query.set("interiorColor", params.interiorColor);
+    if (params.cylinders) query.set("cylinders", params.cylinders);
+    if (params.minPowerHp) query.set("minPowerHp", params.minPowerHp);
+    if (params.maxPowerHp) query.set("maxPowerHp", params.maxPowerHp);
+    if (params.steeringSide) query.set("steeringSide", params.steeringSide);
+    if (params.doors) query.set("doors", params.doors);
+    if (params.seats) query.set("seats", params.seats);
+    if (params.wheelSize) query.set("wheelSize", params.wheelSize);
+    if (params.location) query.set("location", params.location);
+    if (params.exportStatus) query.set("exportStatus", params.exportStatus);
+    if (params.serviceHistory) query.set("serviceHistory", params.serviceHistory);
+    if (params.availability) query.set("availability", params.availability);
+    if (params.safety) query.set("safety", params.safety);
 
     const nextUrl = query.toString() ? `${pathname}?${query.toString()}` : pathname;
     router.replace(nextUrl, { scroll: false });
@@ -170,6 +215,10 @@ export default function CataloguePage() {
     ...getVehicleModelSuggestions(params.brand),
     ...filterCars.filter((car) => !params.brand || car.brand === params.brand).map((car) => car.model).filter(Boolean)
   ])).sort(), [filterCars, params.brand]);
+  const availableOptions = useMemo(() => {
+    const unique = (field: string) => Array.from(new Set(filterCars.flatMap((car) => Array.isArray(car?.[field]) ? car[field] : [car?.[field]]).filter(Boolean).map(String))).sort();
+    return { interiorColor: unique("interiorColor"), wheelSize: unique("wheelSize"), location: unique("location"), safety: unique("safety") };
+  }, [filterCars]);
 
   return (
     <div className="container-premium section-spacing">
@@ -187,6 +236,7 @@ export default function CataloguePage() {
         suggestions={suggestions}
         brands={brands}
         models={models}
+        availableOptions={availableOptions}
       />
 
       {error ? (

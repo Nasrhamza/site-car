@@ -10,19 +10,24 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareText,
+  Bell,
   PlusCircle,
-  Settings
+  Settings,
+  UsersRound
 } from "lucide-react";
 import { clearSession, getStoredUser, isAdminRole, type StoredUser } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/site-language";
+import { api } from "@/lib/api";
 
 const links = [
   { href: "/admin", en: "Dashboard", ar: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/admin/analytics", en: "Analytics", ar: "التحليلات", icon: BarChart3 },
   { href: "/admin/cars", en: "Vehicles", ar: "المركبات", icon: CarFront },
   { href: "/admin/cars/new", en: "Add vehicle", ar: "إضافة", icon: PlusCircle },
+  { href: "/admin/sellers", en: "Seller accounts", ar: "حسابات البائعين", icon: UsersRound },
+  { href: "/admin/notifications", en: "Notifications", ar: "التنبيهات", icon: Bell },
   { href: "/admin/requests", en: "Messages", ar: "الإشعارات", icon: MessageSquareText },
   { href: "/admin/settings", en: "Password", ar: "كلمة المرور", icon: Settings }
 ];
@@ -33,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { language } = useLanguage();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const copy = language === "en"
     ? { loading: "Loading admin dashboard...", title: "Admin dashboard", logout: "Log out" }
     : { loading: "جار تحميل لوحة الإدارة...", title: "لوحة الإدارة", logout: "تسجيل الخروج" };
@@ -49,6 +55,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setUser(storedUser);
     setReady(true);
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (!ready) return;
+    api.get("/admin/notifications", { params: { limit: 1 } })
+      .then(({ data }) => setUnreadNotifications(Number(data?.unread) || 0))
+      .catch(() => undefined);
+  }, [pathname, ready]);
 
   if (!ready) {
     return <div className="container-premium py-16 text-sm text-zinc-500 dark:text-zinc-400">{copy.loading}</div>;
@@ -93,6 +106,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <Icon className="h-4 w-4" />
                   {link[language]}
+                  {link.href === "/admin/notifications" && unreadNotifications > 0 ? (
+                    <span className="ms-auto inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-black text-brand">
+                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    </span>
+                  ) : null}
                   {active && (
                     <motion.span
                       layoutId="admin-active-link"

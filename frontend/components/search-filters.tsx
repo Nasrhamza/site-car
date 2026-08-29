@@ -3,7 +3,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Grid2X2, List, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
-import { BODY_TYPE_OPTIONS, ENGINE_CAPACITY_OPTIONS, REGIONAL_SPECS_OPTIONS } from "@/lib/company";
+import {
+  BODY_TYPE_OPTIONS,
+  DRIVETRAIN_OPTIONS,
+  ENGINE_CAPACITY_OPTIONS,
+  EXPORT_STATUS_OPTIONS,
+  EXTERIOR_COLOR_OPTIONS,
+  GEARBOX_OPTIONS,
+  PRODUCT_STATUS_OPTIONS,
+  REGIONAL_SPECS_OPTIONS,
+  SERVICE_HISTORY_OPTIONS,
+  STEERING_SIDE_OPTIONS,
+  TRIM_OPTIONS
+} from "@/lib/company";
 import { translateVehicleValue, useLanguage } from "@/lib/site-language";
 
 type Params = Record<string, any>;
@@ -14,10 +26,11 @@ const FUEL_FILTERS = [
   { value: "Diesel", label: "Diesel", ar: "ديزل" },
   { value: "Hybride", label: "Hybrid", ar: "هجين" },
   { value: "Électrique", label: "Electric", ar: "كهربائي" },
-  { value: "PHEV", label: "PHEV", ar: "هجين قابل للشحن" },
-  { value: "REEV", label: "REEV", ar: "كهربائي ممتد المدى" }
+  { value: "PHEV", label: "PHEV", ar: "PHEV" },
+  { value: "REEV", label: "REEV", ar: "REEV" }
 ] as const;
 const YEARS = Array.from({ length: 101 }, (_, index) => 2050 - index);
+const FILTER_KEYS = ["brand", "model", "bodyType", "fuelType", "minPrice", "maxPrice", "yearFrom", "yearTo", "minMileage", "maxMileage", "gearbox", "transmission", "engineCapacity", "regionalSpecs", "trim", "exteriorColor", "interiorColor", "cylinders", "minPowerHp", "maxPowerHp", "steeringSide", "doors", "seats", "wheelSize", "location", "exportStatus", "serviceHistory", "availability", "safety"];
 
 function FieldButton({ label, value, active, onClick }: { label: string; value: string; active?: boolean; onClick: () => void }) {
   return <button type="button" onClick={onClick} className={`flex h-[52px] w-full min-w-0 items-center justify-between gap-2 rounded-xl border px-4 text-left transition ${active ? "border-brand ring-1 ring-brand/20" : "border-zinc-300 hover:border-zinc-500 dark:border-white/15"}`}>
@@ -30,7 +43,7 @@ function DropdownShell({ children, wide = false }: { children: React.ReactNode; 
   return <motion.div initial={{ opacity: 0, y: -8, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: .98 }} transition={{ duration: .16 }} className={`absolute left-0 top-[60px] z-40 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900 ${wide ? "w-[min(460px,calc(100vw-2rem))]" : "w-full min-w-[260px]"}`}>{children}</motion.div>;
 }
 
-export function SearchFilters({ params, setParams, view, setView, total, suggestions = [], brands = [], models = [] }: {
+export function SearchFilters({ params, setParams, view, setView, total, suggestions = [], brands = [], models = [], availableOptions = {} }: {
   params: Params;
   setParams: (value: Params | ((prev: Params) => Params)) => void;
   view: "grid" | "list";
@@ -39,6 +52,7 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
   suggestions?: string[];
   brands?: string[];
   models?: string[];
+  availableOptions?: Record<string, string[]>;
 }) {
   const { language } = useLanguage();
   const isArabic = language === "ar";
@@ -50,9 +64,9 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
   const filterRef = useRef<HTMLDivElement>(null);
 
   const copy = isArabic ? {
-    search: "الماركة، الموديل أو كلمة مفتاحية", filters: "الفلاتر", show: "عرض", cars: "مركبة", make: "الماركة", model: "الموديل", any: "الكل", price: "السعر (AED)", year: "السنة", engine: "سعة المحرك", regional: "المواصفات", reset: "إعادة ضبط", min: "الأدنى", max: "الأقصى", findMake: "ابحث عن ماركة", findModel: "ابحث عن موديل", advanced: "فلاتر متقدمة", mainFilters: "الفلاتر الأساسية", mileage: "الكيلومترات", fuel: "نوع الوقود", body: "نوع المركبة", transmission: "علبة السرعة", automatic: "أوتوماتيك", manual: "يدوي", sort: "الترتيب", newest: "الأحدث", priceLow: "السعر: الأقل", priceHigh: "السعر: الأعلى", mostViewed: "الأكثر مشاهدة"
+    search: "الماركة، الموديل أو كلمة مفتاحية", filters: "الفلاتر", show: "عرض", cars: "مركبة", make: "الماركة", model: "الموديل", any: "الكل", price: "السعر (AED)", year: "السنة", engine: "سعة المحرك", regional: "المواصفات الإقليمية", reset: "إعادة ضبط", min: "الأدنى", max: "الأقصى", findMake: "ابحث عن ماركة", findModel: "ابحث عن موديل", advanced: "فلاتر متقدمة", mainFilters: "الفلاتر الأساسية", mileage: "الكيلومترات", fuel: "نوع الوقود", body: "نوع الهيكل", gearbox: "ناقل الحركة", drive: "نظام الدفع", exterior: "اللون الخارجي", interior: "اللون الداخلي", trim: "التجهيز", cylinders: "الأسطوانات", horsepower: "القوة بالحصان", steering: "جهة المقود", doors: "عدد الأبواب", seats: "عدد المقاعد", wheel: "حجم العجلات", location: "الموقع", exportStatus: "حالة التصدير", service: "سجل الصيانة", availability: "حالة الإعلان", safety: "ميزة سلامة", characteristics: "كل المواصفات", sort: "الترتيب", newest: "الأحدث", priceLow: "السعر: الأقل", priceHigh: "السعر: الأعلى", mostViewed: "الأكثر مشاهدة"
   } : {
-    search: "Make, model, trim, or keyword", filters: "Filters", show: "Show", cars: "cars", make: "Make", model: "Model", any: "Any", price: "Price (AED)", year: "Year", engine: "Engine capacity", regional: "Regional specs", reset: "Reset", min: "Min", max: "Max", findMake: "Search make", findModel: "Search model", advanced: "Advanced filters", mainFilters: "Main filters", mileage: "Kilométrage", fuel: "Fuel type", body: "Body type", transmission: "Transmission", automatic: "Automatic", manual: "Manual", sort: "Sort results", newest: "Newest", priceLow: "Price: low to high", priceHigh: "Price: high to low", mostViewed: "Most viewed"
+    search: "Make, model, trim, or keyword", filters: "Filters", show: "Show", cars: "cars", make: "Make", model: "Model", any: "Any", price: "Price (AED)", year: "Year", engine: "Engine capacity", regional: "Regional specs", reset: "Reset", min: "Min", max: "Max", findMake: "Search make", findModel: "Search model", advanced: "Advanced filters", mainFilters: "Main filters", mileage: "Mileage", fuel: "Fuel type", body: "Body type", gearbox: "Gearbox", drive: "Drive type", exterior: "Exterior color", interior: "Interior color", trim: "Trim", cylinders: "Cylinders", horsepower: "Horsepower", steering: "Steering side", doors: "Doors", seats: "Seats", wheel: "Wheel size", location: "Location", exportStatus: "Export status", service: "Service history", availability: "Listing status", safety: "Safety feature", characteristics: "All characteristics", sort: "Sort results", newest: "Newest", priceLow: "Price: low to high", priceHigh: "Price: high to low", mostViewed: "Most viewed"
   };
 
   useEffect(() => setSearch(params.search || ""), [params.search]);
@@ -61,10 +75,10 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
   useEffect(() => { if (!drawerOpen) return; const previous = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = previous; }; }, [drawerOpen]);
 
   const update = (key: string, value: string) => setParams((prev: Params) => ({ ...prev, page: 1, [key]: value }));
-  const activeFilters = useMemo(() => [params.brand, params.model, params.bodyType, params.fuelType, params.minPrice, params.maxPrice, params.yearFrom, params.yearTo, params.minMileage, params.maxMileage, params.transmission, params.engineCapacity, params.regionalSpecs].filter(Boolean).length, [params]);
+  const activeFilters = useMemo(() => FILTER_KEYS.filter((key) => params[key]).length, [params]);
   const filteredBrands = useMemo(() => brands.filter((item) => item.toLowerCase().includes(brandSearch.toLowerCase())), [brands, brandSearch]);
   const filteredModels = useMemo(() => models.filter((item) => item.toLowerCase().includes(modelSearch.toLowerCase())), [models, modelSearch]);
-  const reset = () => { setSearch(""); setPopover(null); setParams((prev: Params) => ({ ...prev, page: 1, search: "", brand: "", model: "", category: "", bodyType: "", fuelType: "", minPrice: "", maxPrice: "", yearFrom: "", yearTo: "", minMileage: "", maxMileage: "", transmission: "", engineCapacity: "", regionalSpecs: "", sort: "-createdAt" })); };
+  const reset = () => { setSearch(""); setPopover(null); setParams((prev: Params) => ({ ...prev, page: 1, search: "", sort: "-createdAt", ...Object.fromEntries(FILTER_KEYS.map((key) => [key, ""])), category: "" })); };
   const toggle = (key: PopoverKey) => setPopover((current) => current === key ? null : key);
   const selectAndClose = (key: string, value: string) => { update(key, value); setPopover(null); };
   const valueRange = (min: string, max: string) => min || max ? `${min || copy.any} – ${max || copy.any}` : copy.any;
@@ -97,7 +111,24 @@ export function SearchFilters({ params, setParams, view, setView, total, suggest
       <section><h3 className="font-extrabold">{copy.mileage}</h3><RangeFields firstKey="minMileage" secondKey="maxMileage" params={params} update={update} copy={copy} compact /></section>
       <section><h3 className="font-extrabold">{copy.fuel}</h3><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{FUEL_FILTERS.map((fuel) => { const selected = params.fuelType === fuel.value; return <button key={fuel.value} onClick={() => update("fuelType", selected ? "" : fuel.value)} className={`relative min-h-14 rounded-xl border px-4 py-3 text-sm font-extrabold ${selected ? "border-brand bg-brand text-white ring-1 ring-brand" : "border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-white/5"}`}>{selected ? <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-white text-brand"><Check className="h-3 w-3" /></span> : null}{isArabic ? fuel.ar : fuel.label}</button>; })}</div></section>
       <section><h3 className="font-extrabold">{copy.body}</h3><div className="mt-3 flex flex-wrap gap-2">{BODY_TYPE_OPTIONS.map((bodyType) => <button key={bodyType} onClick={() => update("bodyType", params.bodyType === bodyType ? "" : bodyType)} className={`rounded-lg border px-3.5 py-2.5 text-sm font-semibold ${params.bodyType === bodyType ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950" : "border-transparent bg-zinc-100 text-zinc-600 hover:border-zinc-300 dark:bg-white/5 dark:text-zinc-300"}`}>{translateVehicleValue(bodyType, language)}</button>)}</div></section>
-      <section><h3 className="font-extrabold">{copy.transmission}</h3><div className="mt-3 grid grid-cols-2 gap-3">{[{ value: "Automatique", label: copy.automatic }, { value: "Manuelle", label: copy.manual }].map((option) => <button key={option.value} onClick={() => update("transmission", params.transmission === option.value ? "" : option.value)} className={`rounded-2xl border p-3 font-bold ${params.transmission === option.value ? "border-brand bg-brand text-white" : "dark:border-white/10"}`}>{option.label}</button>)}</div></section>
+      <section><h3 className="font-extrabold">{copy.characteristics}</h3><div className="mt-3 grid grid-cols-2 gap-3">
+        <MobileSelect label={copy.trim} value={params.trim || ""} onChange={(value) => update("trim", value)} options={TRIM_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.gearbox} value={params.gearbox || ""} onChange={(value) => update("gearbox", value)} options={GEARBOX_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.drive} value={params.transmission || ""} onChange={(value) => update("transmission", value)} options={DRIVETRAIN_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.exterior} value={params.exteriorColor || ""} onChange={(value) => update("exteriorColor", value)} options={EXTERIOR_COLOR_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.interior} value={params.interiorColor || ""} onChange={(value) => update("interiorColor", value)} options={availableOptions.interiorColor || []} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.cylinders} value={params.cylinders || ""} onChange={(value) => update("cylinders", value)} options={Array.from({ length: 24 }, (_item, index) => String(index + 1))} any={copy.any} />
+        <MobileSelect label={copy.steering} value={params.steeringSide || ""} onChange={(value) => update("steeringSide", value)} options={STEERING_SIDE_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.doors} value={params.doors || ""} onChange={(value) => update("doors", value)} options={Array.from({ length: 20 }, (_item, index) => String(index + 1))} any={copy.any} />
+        <MobileSelect label={copy.seats} value={params.seats || ""} onChange={(value) => update("seats", value)} options={Array.from({ length: 100 }, (_item, index) => String(index + 1))} any={copy.any} />
+        <MobileSelect label={copy.wheel} value={params.wheelSize || ""} onChange={(value) => update("wheelSize", value)} options={availableOptions.wheelSize || []} any={copy.any} />
+        <MobileSelect label={copy.location} value={params.location || ""} onChange={(value) => update("location", value)} options={availableOptions.location || []} any={copy.any} />
+        <MobileSelect label={copy.exportStatus} value={params.exportStatus || ""} onChange={(value) => update("exportStatus", value)} options={EXPORT_STATUS_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.service} value={params.serviceHistory || ""} onChange={(value) => update("serviceHistory", value)} options={SERVICE_HISTORY_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.availability} value={params.availability || ""} onChange={(value) => update("availability", value)} options={PRODUCT_STATUS_OPTIONS} optionLabel={(value) => translateVehicleValue(value, language)} any={copy.any} />
+        <MobileSelect label={copy.safety} value={params.safety || ""} onChange={(value) => update("safety", value)} options={availableOptions.safety || []} any={copy.any} />
+        <div className="col-span-2"><p className="px-1 text-xs font-bold text-zinc-500">{copy.horsepower}</p><RangeFields firstKey="minPowerHp" secondKey="maxPowerHp" params={params} update={update} copy={copy} compact /></div>
+      </div></section>
       <section><h3 className="font-extrabold">{copy.sort}</h3><select value={params.sort || "-createdAt"} onChange={(e) => update("sort", e.target.value)} className="mt-3 h-12 w-full rounded-2xl border bg-transparent px-4 font-bold dark:border-white/10"><option value="-createdAt">{copy.newest}</option><option value="price">{copy.priceLow}</option><option value="-price">{copy.priceHigh}</option><option value="-views">{copy.mostViewed}</option></select></section></div>
       <div className="sticky bottom-0 flex gap-2 border-t bg-white/95 py-4 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95"><button onClick={reset} className="inline-flex h-12 items-center gap-2 rounded-xl border px-3 text-sm font-bold sm:px-4 dark:border-white/10"><RotateCcw className="h-4 w-4" />{copy.reset}</button><button onClick={() => setDrawerOpen(false)} className="h-12 min-w-0 flex-1 truncate rounded-xl bg-brand px-3 font-extrabold text-white">{copy.show} {total.toLocaleString()} {copy.cars}</button></div></motion.aside></motion.div> : null}</AnimatePresence>
   </>;

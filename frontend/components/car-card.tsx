@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Fuel,
   Gauge,
   GitCompareArrows,
   Heart,
@@ -11,7 +10,7 @@ import {
   ShieldCheck,
   Settings2
 } from "lucide-react";
-import { getBadgeLabel, getFuelTypeImage, getFuelTypeLabel, getStatusLabel } from "@/lib/company";
+import { getBadgeLabel, getFuelTypeLabel, getStatusLabel } from "@/lib/company";
 import { buildWhatsAppLink, cn, currencyTnd, formatCurrency, formatNumber, resolveMediaUrl } from "@/lib/utils";
 import { useGarageStore } from "@/store/favorites";
 import { translateVehicleValue, useLanguage } from "@/lib/site-language";
@@ -56,8 +55,6 @@ export function CarCard({
   const { rate: aedToTndRate } = useAedToTndRate();
   const isList = variant === "list";
   const isPriceOnRequest = car.priceType === "Sur demande" || !(Number(car.price) > 0);
-  const fuelTypeImage = getFuelTypeImage(car.fuelType);
-
   const isFavorite = favorites.includes(car._id);
   const isCompared = compare.includes(car._id);
   const availability = translateVehicleValue(car.availability || car.status || "Available", language) || getStatusLabel(car.availability || car.status || "Available");
@@ -91,17 +88,19 @@ export function CarCard({
     },
     {
       label: t.fuel,
-      value: translateVehicleValue(car.fuelType, language) || getFuelTypeLabel(car.fuelType || "Other"),
-      icon: Fuel,
-      image: fuelTypeImage
+      value: car.fuelType
+        ? translateVehicleValue(car.fuelType, language) || getFuelTypeLabel(car.fuelType)
+        : "",
+      icon: null,
+      image: null
     },
     {
       label: language === "ar" ? "سعة المحرك" : "Engine",
-      value: car.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "—",
+      value: car.engineCapacity ? `${Number(car.engineCapacity).toFixed(1)} L` : "",
       icon: Settings2,
       image: null
     }
-  ];
+  ].filter((spec) => String(spec.value || "").trim());
 
   return (
     <article
@@ -205,9 +204,9 @@ export function CarCard({
                     <span className="relative h-7 w-10 overflow-hidden">
                       <Image src={spec.image} alt="" fill className="object-contain" sizes="40px" />
                     </span>
-                  ) : (
+                  ) : Icon ? (
                     <Icon className="h-3.5 w-3.5" />
-                  )}
+                  ) : null}
                 </div>
                 <p className="mt-1 truncate text-center font-semibold text-zinc-950 dark:text-white">{spec.value}</p>
               </div>
@@ -217,7 +216,7 @@ export function CarCard({
 
         <div className="mt-3 flex items-center justify-between text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
           <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />{language === "ar" ? "إعلان موثّق" : "Verified listing"}</span>
-          <span>{car.regionalSpecs || "Dubai, UAE"}</span>
+          {car.regionalSpecs ? <span>{car.regionalSpecs}</span> : null}
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">

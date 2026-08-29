@@ -18,6 +18,19 @@ function normalizeAvailability(value) {
 }
 
 const carSchema = new mongoose.Schema({
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+  submittedByRole: { type: String, enum: ["Admin", "Vendeur"], default: "Admin" },
+  moderationStatus: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected", "Hidden"],
+    default: "Approved",
+    index: true
+  },
+  moderationNote: { type: String, default: "" },
+  approvedAt: Date,
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  accountHidden: { type: Boolean, default: false, index: true },
+  lastSellerEditAt: Date,
   name: { type: String, required: true },
   slug: { type: String, required: true, unique: true, index: true },
   brand: { type: String, required: true, index: true },
@@ -46,8 +59,8 @@ const carSchema = new mongoose.Schema({
   seats: { type: Number, min: 1, max: 100, default: null },
   steeringSide: { type: String, default: "" },
   wheelSize: { type: String, default: "" },
-  location: { type: String, default: "Dubai, United Arab Emirates" },
-  exportStatus: { type: String, default: "Can be exported" },
+  location: { type: String, default: "" },
+  exportStatus: { type: String, default: "" },
   serviceHistory: { type: String, default: "" },
   drivetrain: String,
   powerHp: Number,
@@ -55,11 +68,13 @@ const carSchema = new mongoose.Schema({
   engineCapacity: { type: Number, min: 0.5, max: 10, default: null, index: true },
   regionalSpecs: {
     type: String,
-    enum: ["GCC", "European", "American", "Canadian", "Japanese", "Korean", "Chinese", "Australian", "Other"],
-    default: "Other",
+    enum: ["", "GCC", "European", "American", "Canadian", "Japanese", "Korean", "Chinese", "Australian", "Other"],
+    default: "",
     index: true
   },
   price: { type: Number, default: null, index: true },
+  sellerPrice: { type: Number, default: null },
+  serviceFee: { type: Number, default: 17000, min: 0 },
   priceType: {
     type: String,
     default: "Prix fixe",

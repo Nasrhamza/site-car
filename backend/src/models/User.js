@@ -13,6 +13,19 @@ const userSchema = new mongoose.Schema({
     enum: ["Admin", "Gestionnaire", "Vendeur", "Client"],
     default: "Client"
   },
+  accountStatus: {
+    type: String,
+    enum: ["Pending", "Active", "Suspended", "Banned"],
+    default: "Active",
+    index: true
+  },
+  showroomName: { type: String, trim: true, default: "" },
+  address: { type: String, trim: true, default: "" },
+  adminNotes: { type: String, trim: true, default: "" },
+  approvedAt: Date,
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  lastLoginAt: Date,
+  deletedAt: Date,
   provider: { type: String, default: "credentials" },
   emailVerified: { type: Boolean, default: false },
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Car" }],

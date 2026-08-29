@@ -35,13 +35,18 @@ import {
   getPriceTypeLabel,
   getStatusLabel,
   getTransmissionLabel,
-  localizeDescription,
   localizeFeatureLabel,
   localizeFeatureValue
 } from "@/lib/company";
 import { CarCard } from "@/components/car-card";
 import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import { translateVehicleValue, useLanguage } from "@/lib/site-language";
+
+function hasDisplayValue(value: unknown) {
+  if (value === null || value === undefined) return false;
+  const normalized = String(value).trim();
+  return Boolean(normalized && normalized !== "-" && normalized !== "—");
+}
 
 export default function CarDetailsClient({ initialData }: { initialData: any }) {
   const { favorites, toggleFavorite } = useGarageStore();
@@ -52,9 +57,10 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
-  useEffect(() => setActive(0), [data?.car?._id]);
+  useEffect(() => { setActive(0); setDescriptionExpanded(false); }, [data?.car?._id]);
 
   const whatsappHref = useMemo(() => {
     if (!data?.car) return "#";
@@ -87,15 +93,16 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
   const rawAvailability = car?.availability || car?.status || "Disponible";
   const availability = translateVehicleValue(rawAvailability, language) || getStatusLabel(rawAvailability);
   const safePrice = car?.price || null;
-  const safeYear = car?.year || "-";
-  const safeMileage = typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("fr-FR")} km` : "-";
-  const rawFuel = car?.fuelType || car?.fuel || "Autre";
+  const safeYear = car?.year != null ? String(car.year) : "";
+  const safeMileage = typeof car?.mileage === "number" ? `${car.mileage.toLocaleString("fr-FR")} km` : "";
+  const rawFuel = car?.fuelType || car?.fuel || "";
   const safeFuel = translateVehicleValue(rawFuel, language) || getFuelTypeLabel(rawFuel);
-  const rawTransmission = car?.gearbox || car?.transmission || "-";
+  const rawTransmission = car?.gearbox || "";
   const safeTransmission = language === "en" ? translateVehicleValue(rawTransmission, "en") : getTransmissionLabel(rawTransmission);
-  const rawCategory = car?.category || "-";
-  const safeCategory = translateVehicleValue(rawCategory, language) || getCategoryLabel(rawCategory) || "-";
-  const safeDescription = localizeDescription(car?.description, car?.name);
+  const rawCategory = car?.category || "";
+  const safeCategory = translateVehicleValue(rawCategory, language) || getCategoryLabel(rawCategory) || "";
+  const safeDescription = String(car?.description || "").trim();
+  const descriptionNeedsToggle = safeDescription.length > 360 || safeDescription.split(/\r?\n/).length > 6;
   const safePriceType = language === "en"
     ? car?.priceType === "Sur demande" ? "Price on request" : car?.priceType === "Negociable" ? "Negotiable" : "Fixed price"
     : getPriceTypeLabel(car?.priceType || "Sur demande");
@@ -115,7 +122,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
         whatsapp: safePrice ? "اسأل على واتساب" : "اطلب السعر على واتساب", call: "اتصل بنا",
         allIncluded: "السعر شامل كل شيء", reference: "المرجع", similar: "مركبات مشابهة",
         previousImage: "الصورة السابقة", nextImage: "الصورة التالية", openImage: "تكبير الصورة",
-        closeImage: "إغلاق الصورة"
+        closeImage: "إغلاق الصورة", seeFull: "عرض الوصف الكامل", showLess: "عرض أقل"
       }
     : {
         inventory: "Inventory", verified: "Verified and ready for inspection", highlights: "Highlights",
@@ -130,48 +137,48 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
         whatsapp: safePrice ? "Ask on WhatsApp" : "Ask for the price on WhatsApp", call: "Call us",
         allIncluded: "All costs included", reference: "Reference", similar: "Similar vehicles",
         previousImage: "Previous image", nextImage: "Next image", openImage: "Enlarge image",
-        closeImage: "Close image"
+        closeImage: "Close image", seeFull: "See full description", showLess: "Show less"
       };
 
   const text = (en: string, ar: string) => language === "ar" ? ar : en;
   const publishedDate = car?.createdAt
     ? new Intl.DateTimeFormat(language === "ar" ? "ar-TN" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(car.createdAt))
-    : "-";
-  const location = car?.location || (language === "ar" ? COMPANY_LOCATION : "Dubai, United Arab Emirates");
+    : "";
+  const location = String(car?.location || "").trim();
   const coreFeatures = [
     { label: text("Make", "الماركة"), value: car?.brand },
     { label: text("Model", "الموديل"), value: car?.model },
     { label: text("Trim", "التجهيز"), value: car?.trim, optional: true },
     { label: text("Color", "اللون الخارجي"), value: translateVehicleValue(car?.exteriorColor, language) || car?.exteriorColor },
     { label: text("Interior color", "اللون الداخلي"), value: translateVehicleValue(car?.interiorColor, language) || car?.interiorColor, optional: true },
-    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "-" },
-    { label: text("Cylinders", "الأسطوانات"), value: car?.cylinders != null ? `${car.cylinders} ${text("Cylinders", "أسطوانات")}` : "-" },
-    { label: text("Horsepower", "قوة المحرك"), value: car?.powerHp != null ? `${car.powerHp} HP` : "-" },
+    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "" },
+    { label: text("Cylinders", "الأسطوانات"), value: car?.cylinders != null ? `${car.cylinders} ${text("Cylinders", "أسطوانات")}` : "" },
+    { label: text("Horsepower", "قوة المحرك"), value: car?.powerHp != null ? `${car.powerHp} HP` : "" },
     { label: copy.transmission, value: safeTransmission },
-    { label: text("Drive type", "نظام الدفع"), value: car?.drivetrain || car?.transmission || "-" },
-    { label: text("Steering side", "جهة المقود"), value: translateVehicleValue(car?.steeringSide, language) || "-" },
+    { label: text("Drive type", "نظام الدفع"), value: translateVehicleValue(car?.drivetrain || car?.transmission, language) || car?.drivetrain || car?.transmission || "" },
+    { label: text("Steering side", "جهة المقود"), value: translateVehicleValue(car?.steeringSide, language) || "" },
     { label: text("Vehicle type", "نوع الهيكل"), value: car?.bodyType ? translateVehicleValue(car.bodyType, language) : safeCategory },
-    { label: text("Number of doors", "عدد الأبواب"), value: car?.doors != null ? `${car.doors} ${text("Doors", "أبواب")}` : "-" },
-    { label: text("Seating capacity", "عدد المقاعد"), value: car?.seats != null ? `${car.seats} ${text("seats", "مقاعد")}` : "-" },
-    { label: text("Wheel size", "حجم العجلات"), value: car?.wheelSize || "-" },
+    { label: text("Number of doors", "عدد الأبواب"), value: car?.doors != null ? `${car.doors} ${text("Doors", "أبواب")}` : "" },
+    { label: text("Seating capacity", "عدد المقاعد"), value: car?.seats != null ? `${car.seats} ${text("seats", "مقاعد")}` : "" },
+    { label: text("Wheel size", "حجم العجلات"), value: car?.wheelSize || "" },
     { label: copy.fuel, value: safeFuel },
-    { label: text("Export status", "حالة التصدير"), value: translateVehicleValue(car?.exportStatus || "Can be exported", language) },
-    { label: text("Service history", "سجل الصيانة"), value: translateVehicleValue(car?.serviceHistory, language) || "-" },
+    { label: text("Export status", "حالة التصدير"), value: translateVehicleValue(car?.exportStatus, language) || "" },
+    { label: text("Service history", "سجل الصيانة"), value: translateVehicleValue(car?.serviceHistory, language) || "" },
     { label: text("Published on", "تاريخ النشر"), value: publishedDate }
-  ].filter((feature) => !feature.optional || feature.value);
+  ].filter((feature) => hasDisplayValue(feature.value));
   const customFeatures = Array.isArray(car?.features) ? car.features.map((feature: any) => ({
     label: language === "en" ? feature?.label : localizeFeatureLabel(feature?.label),
     value: language === "en" ? translateVehicleValue(feature?.value, language) || feature?.value : localizeFeatureValue(feature?.value)
-  })).filter((feature: any) => feature.label && !coreFeatures.some((item) => item.label.toLowerCase() === feature.label.toLowerCase())) : [];
+  })).filter((feature: any) => feature.label && hasDisplayValue(feature.value) && !coreFeatures.some((item) => item.label.toLowerCase() === feature.label.toLowerCase())) : [];
   const detailFeatures = [...coreFeatures, ...customFeatures];
 
   const highlights = [
     { label: copy.location, value: location, icon: MapPin },
     { label: copy.year, value: safeYear, icon: CalendarDays },
     { label: copy.mileage, value: safeMileage, icon: Gauge },
-    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "-", icon: Settings2 },
-    { label: copy.regional, value: car?.regionalSpecs || "-", icon: Globe2 }
-  ];
+    { label: copy.engine, value: car?.engineCapacity != null ? `${Number(car.engineCapacity).toFixed(1)} L` : "", icon: Settings2 },
+    { label: copy.regional, value: car?.regionalSpecs || "", icon: Globe2 }
+  ].filter((item) => hasDisplayValue(item.value));
 
   const showPreviousImage = () => images.length && setActive((current) => (current - 1 + images.length) % images.length);
   const showNextImage = () => images.length && setActive((current) => (current + 1) % images.length);
@@ -267,18 +274,6 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
                   {safePrice ? <span className="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{copy.allIncluded}</span> : null}
                 </div>
                 <div className="mt-3 flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-2.5 text-xs text-zinc-500"><span className="shrink-0">{copy.reference}</span><strong className="min-w-0 truncate text-zinc-800" title={safeReference}>{safeReference}</strong></div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {highlights.slice(0, 4).map((item) => {
-                    const Icon = item.icon;
-                    return <div key={`summary-${item.label}`} className="min-w-0 rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2.5">
-                      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-400">
-                        <Icon className="h-3.5 w-3.5 shrink-0 text-brand" />
-                        <span className="truncate">{item.label}</span>
-                      </div>
-                      <p className="mt-1 truncate text-xs font-bold text-zinc-800" title={String(item.value)}>{item.value}</p>
-                    </div>;
-                  })}
-                </div>
               </div>
               <div className="flex flex-1 flex-col p-4">
                 <h2 className="text-base font-bold text-zinc-950">{copy.directContact}</h2>
@@ -295,20 +290,20 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
           </aside>
         </div>
 
-        <section className="mt-4 rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+        {highlights.length ? <section className="mt-4 rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-extrabold text-zinc-950 sm:text-xl">{copy.highlights}</h2><span className="hidden text-[11px] font-semibold uppercase tracking-[0.25em] text-brand sm:block">ALHADUNICARS</span></div>
           <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-5">
             {highlights.map((item) => { const Icon = item.icon; return <div key={item.label} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-center"><Icon className="mx-auto h-5 w-5 text-zinc-700" /><p className="mt-3 text-xs font-semibold text-zinc-500">{item.label}</p><p className="mt-1 truncate text-sm font-bold text-zinc-900" title={String(item.value)}>{item.value}</p></div>; })}
           </div>
-        </section>
+        </section> : null}
 
         <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,.7fr)]">
           <div className="space-y-6">
-            <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"><h2 className="text-2xl font-extrabold text-zinc-950">{copy.overview}</h2><p className="mt-4 max-w-3xl whitespace-pre-line text-base leading-8 text-zinc-600">{safeDescription}</p></section>
-            <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            {safeDescription ? <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"><h2 className="text-2xl font-extrabold text-zinc-950">{copy.overview}</h2><div className={`relative mt-4 max-w-3xl ${descriptionNeedsToggle && !descriptionExpanded ? "max-h-44 overflow-hidden" : ""}`}><p className="whitespace-pre-line text-base leading-8 text-zinc-600">{safeDescription}</p>{descriptionNeedsToggle && !descriptionExpanded ? <span className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" /> : null}</div>{descriptionNeedsToggle ? <button type="button" onClick={() => setDescriptionExpanded((current) => !current)} className="mt-4 rounded-xl border border-zinc-200 px-4 py-2 text-sm font-bold text-brand">{descriptionExpanded ? copy.showLess : copy.seeFull}</button> : null}</section> : null}
+            {detailFeatures.length ? <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-2xl font-extrabold text-zinc-950">{copy.specifications}</h2>
               <dl className="mt-6 grid gap-x-8 sm:grid-cols-2">{detailFeatures.map((feature: any, index: number) => <div key={feature.label || index} className="flex min-w-0 items-center justify-between gap-4 border-b border-zinc-100 py-4"><dt className="text-sm text-zinc-500">{feature.label}</dt><dd className="min-w-0 break-words text-right text-sm font-bold text-zinc-900">{feature.value || "-"}</dd></div>)}</dl>
-            </section>
+            </section> : null}
             {Array.isArray(car?.safety) && car.safety.length ? <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"><h2 className="text-2xl font-extrabold text-zinc-950">{text("Safety", "السلامة")}</h2><div className="mt-5 flex flex-wrap gap-2">{car.safety.map((item: string) => <span key={item} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800"><CheckCircle2 className="h-4 w-4" />{item}</span>)}</div></section> : null}
           </div>
 
