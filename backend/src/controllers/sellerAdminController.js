@@ -133,7 +133,12 @@ export async function deleteSeller(req, res) {
 
 export async function listAdminNotifications(req, res) {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 40));
-  const items = await Notification.find({ audience: "Admin" }).populate("actor", "name showroomName email").populate("car", "name slug").sort({ createdAt: -1 }).limit(limit).lean();
+  const items = await Notification.find({ audience: "Admin" })
+    .populate("actor", "name showroomName email")
+    .populate("car", "name slug brand model year images price priceType moderationStatus availability status")
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
   const unread = await Notification.countDocuments({ audience: "Admin", read: false });
   res.json({ items, unread });
 }
