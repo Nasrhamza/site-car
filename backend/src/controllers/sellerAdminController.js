@@ -148,3 +148,14 @@ export async function markAllNotificationsRead(_req, res) {
   await Notification.updateMany({ audience: "Admin", read: false }, { read: true });
   res.json({ message: "Notifications marquees comme lues" });
 }
+
+export async function deleteAdminNotification(req, res) {
+  const item = await Notification.findOneAndDelete({ _id: req.params.id, audience: "Admin" });
+  if (!item) return res.status(404).json({ message: "Notification introuvable" });
+  res.json({ message: "Notification supprimee", id: item._id });
+}
+
+export async function deleteAllAdminNotifications(_req, res) {
+  const result = await Notification.deleteMany({ audience: "Admin" });
+  res.json({ message: "Notifications supprimees", deleted: result.deletedCount || 0 });
+}

@@ -2,6 +2,8 @@ import { Router } from "express";
 import { getDashboardStats } from "../controllers/adminController.js";
 import {
   createSeller,
+  deleteAdminNotification,
+  deleteAllAdminNotifications,
   deleteSeller,
   impersonateSeller,
   listAdminNotifications,
@@ -26,5 +28,7 @@ router.delete("/sellers/:id", protect, authorize("Admin"), deleteSeller);
 router.get("/notifications", protect, authorize("Admin"), listAdminNotifications);
 router.patch("/notifications/read-all", protect, authorize("Admin"), markAllNotificationsRead);
 router.patch("/notifications/:id/read", protect, authorize("Admin"), markNotificationRead);
+router.delete("/notifications", protect, authorize("Admin"), deleteAllAdminNotifications);
+router.delete("/notifications/:id", protect, authorize("Admin"), deleteAdminNotification);
 
 export default router;

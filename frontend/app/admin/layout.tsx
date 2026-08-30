@@ -63,30 +63,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch(() => undefined);
   }, [pathname, ready]);
 
+  useEffect(() => {
+    const syncCount = (event: Event) => {
+      const unread = Number((event as CustomEvent<{ unread?: number }>).detail?.unread);
+      if (Number.isFinite(unread)) setUnreadNotifications(Math.max(0, unread));
+    };
+    window.addEventListener("admin-notifications-changed", syncCount);
+    return () => window.removeEventListener("admin-notifications-changed", syncCount);
+  }, []);
+
   if (!ready) {
     return <div className="container-premium py-16 text-sm text-zinc-500 dark:text-zinc-400">{copy.loading}</div>;
   }
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_45%,#fafafa_100%)] dark:bg-none dark:bg-zinc-950">
-      <div className="container-premium grid min-w-0 gap-5 py-5 lg:grid-cols-[230px_minmax(0,1fr)]">
+      <div className="container-premium grid min-w-0 gap-6 py-6 lg:grid-cols-[270px_minmax(0,1fr)]">
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.35 }}
-          className="min-w-0 rounded-[24px] border border-zinc-200/70 bg-white p-3 shadow-premium dark:border-white/10 dark:bg-zinc-900 lg:sticky lg:top-24 lg:h-fit"
+          className="min-w-0 rounded-[28px] border border-zinc-200/70 bg-white p-4 shadow-premium dark:border-white/10 dark:bg-zinc-900 lg:sticky lg:top-24 lg:h-fit"
         >
-          <div className="flex items-center gap-3 rounded-[20px] bg-zinc-950 px-4 py-4 text-white lg:flex-col lg:text-center">
-            <BrandLogo compact className="h-16 w-16" />
+          <div className="flex items-center gap-4 rounded-[22px] bg-zinc-950 px-5 py-5 text-white lg:flex-col lg:text-center">
+            <BrandLogo compact className="h-20 w-20" />
             <div>
-              <h2 className="text-lg font-bold">{copy.title}</h2>
-              <p className="mt-1 max-w-[180px] truncate text-xs text-white/70">
+              <h2 className="text-xl font-black">{copy.title}</h2>
+              <p className="mt-1 max-w-[220px] truncate text-sm text-white/70">
                 {user?.name || user?.email}
               </p>
             </div>
           </div>
 
-          <nav className="mt-3 grid gap-2">
+          <nav className="mt-4 grid gap-2.5">
             {links.map((link) => {
               const Icon = link.icon;
               const active = link.href === "/admin"
@@ -98,13 +107,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                    "relative inline-flex min-h-12 items-center gap-3.5 rounded-2xl px-4 py-3 text-base font-bold transition",
                     active
                       ? "bg-brand text-white shadow-lg shadow-brand/20"
                       : "bg-zinc-50 text-zinc-700 hover:bg-zinc-100 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-5 w-5 shrink-0" />
                   {link[language]}
                   {link.href === "/admin/notifications" && unreadNotifications > 0 ? (
                     <span className="ms-auto inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-black text-brand">
@@ -128,7 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               clearSession();
               router.replace("/login");
             }}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10"
+            className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-base font-bold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10"
           >
             <LogOut className="h-4 w-4" />
             {copy.logout}
