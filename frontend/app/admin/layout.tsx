@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_45%,#fafafa_100%)] dark:bg-none dark:bg-zinc-950">
-      <div className="container-premium grid min-w-0 gap-6 py-6 lg:grid-cols-[270px_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full min-w-0 max-w-[1800px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:px-8">
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
