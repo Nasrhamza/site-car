@@ -681,6 +681,23 @@ export async function moderateCar(req, res) {
   };
   const car = await Car.findByIdAndUpdate(req.params.id, update, { new: true }).populate("owner", "name showroomName email");
   if (!car) return res.status(404).json({ message: "Vehicule introuvable" });
+
+  if (car.owner?._id && ["Approved", "Rejected"].includes(moderationStatus)) {
+    const approved = moderationStatus === "Approved";
+    await Notification.create({
+      audience: "Vendeur",
+      recipient: car.owner._id,
+      type: "System",
+      title: approved ? "Vehicle approved" : "Vehicle rejected",
+      message: approved
+        ? `${car.name} has been approved and published.`
+        : `${car.name} was rejected.${update.moderationNote ? ` Reason: ${update.moderationNote}` : ""}`,
+      actor: req.user.id,
+      car: car._id,
+      metadata: { moderationStatus, moderationNote: update.moderationNote }
+    });
+  }
+
   res.json({ item: serializeCar(car) });
 }
 

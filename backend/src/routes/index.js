@@ -9,6 +9,7 @@ import postRoutes from "./postRoutes.js";
 import reviewRoutes from "./reviewRoutes.js";
 import exchangeRateRoutes from "./exchangeRateRoutes.js";
 import analyticsRoutes from "./analyticsRoutes.js";
+import sellerRoutes from "./sellerRoutes.js";
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use("/posts", postRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/exchange-rates", exchangeRateRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/seller", sellerRoutes);
 
 export default router;
