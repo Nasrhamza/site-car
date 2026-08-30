@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { CarCard } from "@/components/car-card";
 import { SearchFilters } from "@/components/search-filters";
-import { VEHICLE_BRANDS, getVehicleModelSuggestions } from "@/lib/company";
+import { VEHICLE_BRANDS, buildWhatsAppUrl, getVehicleModelSuggestions } from "@/lib/company";
 import { useLanguage } from "@/lib/site-language";
 
 type CatalogueParams = {
@@ -86,12 +87,6 @@ function parseSearchParams(searchParams: ReadonlyURLSearchParams): CataloguePara
 function serializeParams(params: CatalogueParams) {
   return JSON.stringify(params);
 }
-
-const fallbackCars = [
-  { title: "Toyota Corolla", image: "/alhaduni-logo.jpg" },
-  { title: "BMW X5", image: "/alhaduni-logo.jpg" },
-  { title: "Mercedes C-Class", image: "/alhaduni-logo.jpg" }
-];
 
 export default function CataloguePage() {
   const { language } = useLanguage();
@@ -259,30 +254,27 @@ export default function CataloguePage() {
       )}
 
       {!loading && cars.length === 0 && !error && (
-        <div className="mt-10">
-          <div className="mb-4 text-center text-zinc-500 dark:text-zinc-400">
-            {language === "ar" ? "لا توجد مركبات مطابقة للفلاتر الحالية." : "No vehicles match the current filters."}
+        <section className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-zinc-900 sm:p-12">
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand/10 text-3xl" aria-hidden="true">
+            🚘
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {fallbackCars.map((car) => (
-              <article key={car.title} className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
-                <div className="relative h-56 bg-zinc-100">
-                  <img
-                    src={car.image}
-                    alt={car.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-zinc-950">{car.title}</h3>
-                  <p className="mt-1 text-sm text-zinc-500">{language === "ar" ? "أضف السيارات من لوحة التحكم ليظهر المخزون الحقيقي هنا." : "Add vehicles from the dashboard to display the live inventory here."}</p>
-                </div>
-              </article>
-            ))}
+          <h2 className="mt-5 text-2xl font-black text-zinc-950 dark:text-white">
+            {language === "ar" ? "هذه المركبة غير متوفرة حالياً" : "This vehicle is not available yet"}
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-zinc-500 dark:text-zinc-400">
+            {language === "ar"
+              ? "هذه المركبة ستتوفر قريباً. يمكنك تجربة بحث آخر أو التواصل معنا للمساعدة."
+              : "This vehicle will be available soon. Try another search or contact us for assistance."}
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Link href="/catalogue" className="rounded-full bg-zinc-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-brand dark:bg-white dark:text-zinc-950">
+              {language === "ar" ? "عرض كل السيارات" : "View all vehicles"}
+            </Link>
+            <a href={buildWhatsAppUrl(language === "ar" ? "مرحباً، أبحث عن مركبة غير متوفرة حالياً." : "Hello, I am looking for a vehicle that is not currently available.")} target="_blank" rel="noreferrer" className="rounded-full bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-600">
+              {language === "ar" ? "تواصل معنا على واتساب" : "Contact us on WhatsApp"}
+            </a>
           </div>
-        </div>
+        </section>
       )}
 
       {meta.page < meta.pages && !loading && !error && (

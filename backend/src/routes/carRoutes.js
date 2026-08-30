@@ -1,4 +1,4 @@
-import upload from "../middleware/upload.js";
+import { uploadVehicleImages } from "../middleware/upload.js";
 import { Router } from "express";
 import {
   createCar,
@@ -27,20 +27,14 @@ router.post(
   "/",
   protect,
   authorize("Admin", "Vendeur"),
-  upload.fields([
-    { name: "images", maxCount: 12 },
-    { name: "image", maxCount: 12 }
-  ]),
+  uploadVehicleImages,
   createCar
 );
 router.put(
   "/:id",
   protect,
   authorize("Admin", "Vendeur"),
-  upload.fields([
-    { name: "images", maxCount: 12 },
-    { name: "image", maxCount: 12 }
-  ]),
+  uploadVehicleImages,
   updateCar
 );
 router.patch("/:id/moderation", protect, authorize("Admin"), moderateCar);

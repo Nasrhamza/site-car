@@ -199,7 +199,7 @@ export function CarCard({
 
             return (
               <div key={spec.label} className="rounded-xl border border-zinc-200 bg-zinc-50 p-2 dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center justify-center gap-1 text-zinc-400">
+                <div className="flex h-7 items-center justify-center gap-1 text-zinc-400">
                   {spec.image ? (
                     <span className="relative h-7 w-10 overflow-hidden">
                       <Image src={spec.image} alt="" fill className="object-contain" sizes="40px" />
@@ -208,7 +208,7 @@ export function CarCard({
                     <Icon className="h-3.5 w-3.5" />
                   ) : null}
                 </div>
-                <p className="mt-1 truncate text-center font-semibold text-zinc-950 dark:text-white">{spec.value}</p>
+                <p className="mt-1 flex min-h-5 items-center justify-center truncate text-center font-semibold text-zinc-950 dark:text-white">{spec.value}</p>
               </div>
             );
           })}
