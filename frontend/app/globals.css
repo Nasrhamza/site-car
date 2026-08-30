@@ -277,6 +277,18 @@ a[href*="wa.me"]:not(.whatsapp-floating-button):focus-visible::after {
 
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
+}
+
+.admin-table-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-color: #c1121f #e4e4e7;
+  scrollbar-width: auto;
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+  background: #e4e4e7;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {

@@ -135,7 +135,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </motion.aside>
 
-        <main className="min-w-0 max-w-full overflow-hidden">{children}</main>
+        <main className="min-w-0 max-w-full overflow-visible">{children}</main>
       </div>
     </div>
   );
