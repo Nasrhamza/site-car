@@ -64,7 +64,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
   if (!ready) return <div className="container-premium py-16 text-sm text-zinc-500">{ar ? "جار تحميل لوحة البائع..." : "Loading seller dashboard..."}</div>;
 
   return <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-    <div className="container-premium grid min-w-0 gap-5 py-5 lg:grid-cols-[230px_minmax(0,1fr)]">
+    <div className="mx-auto grid w-full min-w-0 max-w-[1800px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:px-8">
       <aside className="min-w-0 rounded-[24px] border border-zinc-200 bg-white p-3 shadow-premium dark:border-white/10 dark:bg-zinc-900 lg:sticky lg:top-24 lg:h-fit">
         <div className="flex items-center gap-3 rounded-[20px] bg-zinc-950 px-4 py-4 text-white lg:flex-col lg:text-center">
           <BrandLogo compact className="h-14 w-14" />
@@ -78,7 +78,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         {canReturn ? <button type="button" onClick={() => { if (returnToAdminSession()) { router.replace("/admin/sellers"); router.refresh(); } }} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950"><RotateCcw className="h-4 w-4" />{ar ? "العودة للإدارة" : "Return to admin"}</button> : null}
         <button type="button" onClick={() => { clearSession(); router.replace("/seller/login"); }} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-bold text-red-600"><LogOut className="h-4 w-4" />{ar ? "تسجيل الخروج" : "Log out"}</button>
       </aside>
-      <main className="min-w-0 max-w-full overflow-hidden">{children}</main>
+      <main className="min-w-0 max-w-full overflow-visible">{children}</main>
     </div>
   </div>;
 }
