@@ -19,7 +19,6 @@ import {
 
 type CarImage = { url: string; alt: string };
 
-const MAX_SELLER_CAR_IMAGES = 12;
 const sections: AdminCarFieldsSection[] = ["listing", "specs", "commercial", "description"];
 
 export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" | "seller" }) {
@@ -44,12 +43,12 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
   const isLastStep = activeStep === sections.length - 1;
   const copy = ar ? {
     eyebrow: sellerMode ? "مساحة البائع" : "معرض الإدارة", title: "تعديل المركبة", intro: sellerMode ? "عدّل معلومات سيارتك. التعديل يبقى منشوراً ويصل إشعار للمسؤول." : "تحكّم في كل معلومات المركبة ومواصفاتها وصورها من أربع خطوات واضحة.", loading: "جارٍ التحميل...", loadError: "تعذر تحميل المركبة.",
-    images: "الصور الحالية", imageHint: "احذف أي صورة لا تريد إبقاءها.", noImages: "لا توجد صور حالية لهذا الإعلان.", remove: "حذف الصورة", addImages: "إضافة صور جديدة", newImageHint: sellerMode ? "يمكنك اختيار صور جديدة (حتى 12 صورة إجمالاً)." : "يمكنك إضافة العدد الذي تحتاجه من الصور.",
+    images: "الصور الحالية", imageHint: "احذف أي صورة لا تريد إبقاءها.", noImages: "لا توجد صور حالية لهذا الإعلان.", remove: "حذف الصورة", addImages: "إضافة صور جديدة", newImageHint: "يمكنك إضافة العدد الذي تحتاجه من الصور.",
     save: "حفظ التعديلات", saving: "جارٍ الحفظ...", cancel: "إلغاء", back: "السابق", next: "التالي", step: "الخطوة", saveError: "حدث خطأ أثناء حفظ التعديلات.",
     steps: ["المعلومات الأساسية", "المواصفات", "السعر والحالة", "الوصف والصور"]
   } : {
     eyebrow: sellerMode ? "Seller inventory" : "Admin inventory", title: "Edit vehicle", intro: sellerMode ? "Update your vehicle. Approved listings stay live and the administrator receives a change notification." : "Control every vehicle detail, specification, status, and photo in four clear steps.", loading: "Loading...", loadError: "Unable to load the vehicle.",
-    images: "Current photos", imageHint: "Remove any photo you no longer want to keep.", noImages: "This listing has no current photos.", remove: "Remove photo", addImages: "Add new photos", newImageHint: sellerMode ? "Select new photos (up to 12 photos in total)." : "Add as many new photos as needed.",
+    images: "Current photos", imageHint: "Remove any photo you no longer want to keep.", noImages: "This listing has no current photos.", remove: "Remove photo", addImages: "Add new photos", newImageHint: "Add as many new photos as needed.",
     save: "Save changes", saving: "Saving...", cancel: "Cancel", back: "Back", next: "Next", step: "Step", saveError: "An error occurred while saving the changes.",
     steps: ["Basic information", "Specifications", "Price & status", "Description & photos"]
   };
@@ -90,11 +89,10 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
 
   const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(event.target.files || []);
-    const availableSlots = sellerMode ? Math.max(0, MAX_SELLER_CAR_IMAGES - existingImages.length) : Number.POSITIVE_INFINITY;
     setSelectedFiles((current) => {
       const unique = new Map<string, File>();
       [...current, ...incoming].forEach((file) => unique.set(`${file.name}-${file.size}-${file.lastModified}`, file));
-      return Array.from(unique.values()).slice(0, availableSlots);
+      return Array.from(unique.values());
     });
     event.target.value = "";
   };

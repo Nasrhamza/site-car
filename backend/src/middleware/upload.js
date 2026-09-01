@@ -44,21 +44,6 @@ const upload = multer({
 export function uploadVehicleImages(req, res, next) {
   upload.any()(req, res, (error) => {
     if (!error) {
-      if (req.user?.role === "Vendeur") {
-        let existingCount = 0;
-        try {
-          const existing = JSON.parse(req.body?.existingImages || "[]");
-          existingCount = Array.isArray(existing) ? existing.length : 0;
-        } catch (_parseError) {
-          existingCount = 0;
-        }
-
-        if (existingCount + (req.files?.length || 0) > 12) {
-          (req.files || []).forEach((file) => fs.unlink(file.path, () => undefined));
-          return res.status(400).json({ message: "Seller listings can contain up to 12 vehicle photos." });
-        }
-      }
-
       return next();
     }
 
