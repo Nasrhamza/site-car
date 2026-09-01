@@ -34,16 +34,16 @@ const upload = multer({
       return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname));
     }
 
-    const acceptedTypes = new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/avif",
-      "image/heic",
-      "image/heif"
+    const mimeType = String(file.mimetype || "").toLowerCase();
+    const extension = path.extname(file.originalname || "").toLowerCase();
+    const imageExtensions = new Set([
+      ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".avif", ".heic", ".heif", ".tif", ".tiff", ".bmp", ".gif"
     ]);
 
-    if (!acceptedTypes.has(String(file.mimetype || "").toLowerCase())) {
+    // Mobile browsers sometimes report valid photos as image/jpg, a HEIC
+    // variant, or the generic application/octet-stream. Sharp validates the
+    // actual file contents before anything is kept on the server.
+    if (!mimeType.startsWith("image/") && !(mimeType === "application/octet-stream" && imageExtensions.has(extension))) {
       return cb(new Error("Only vehicle images are accepted."));
     }
 
