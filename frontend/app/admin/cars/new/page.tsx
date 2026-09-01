@@ -2,11 +2,12 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import { useLanguage } from "@/lib/site-language";
 import { AdminCarFields, appendAdminCarFields, emptyAdminCarForm, type AdminCarFieldsSection } from "@/components/admin-car-fields";
+import { reorderItems, SortablePhotoGrid } from "@/components/sortable-photo-grid";
 
 export default function AddCarPage() {
   const router = useRouter();
@@ -100,7 +101,13 @@ export default function AddCarPage() {
         <h2 className="text-base font-extrabold text-zinc-950 dark:text-white">{copy.images}</h2>
         <input type="file" accept="image/*" multiple onChange={handleFilesChange} className="mt-4 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-transparent" />
         <p className="mt-2 text-xs text-zinc-500">{copy.imageHelp}</p>
-        {selectedFiles.length ? <div className="mt-4 grid gap-2 sm:grid-cols-2"><p className="col-span-full text-sm font-bold">{selectedFiles.length} {copy.selected}</p>{selectedFiles.map((file, index) => <div key={`${file.name}-${file.lastModified}`} className="flex min-w-0 items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 text-sm dark:bg-white/5"><span className="truncate">{index + 1}. {file.name}</span><button type="button" onClick={() => setSelectedFiles((current) => current.filter((_file, itemIndex) => itemIndex !== index))} aria-label={`${copy.remove} ${file.name}`} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"><X className="h-4 w-4" /></button></div>)}</div> : null}
+        {selectedFiles.length ? <p className="mt-4 text-sm font-bold">{selectedFiles.length} {copy.selected}</p> : null}
+        <SortablePhotoGrid
+          language={ar ? "ar" : "en"}
+          items={selectedFiles.map((file) => ({ id: `${file.name}-${file.size}-${file.lastModified}`, label: file.name, file }))}
+          onReorder={(from, to) => setSelectedFiles((current) => reorderItems(current, from, to))}
+          onRemove={(index) => setSelectedFiles((current) => current.filter((_file, itemIndex) => itemIndex !== index))}
+        />
       </section> : null}
       </div>
       {errorMessage ? <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">{errorMessage}</div> : null}

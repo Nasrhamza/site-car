@@ -2,6 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { randomUUID } from "crypto";
+import sharp from "sharp";
 
 const uploadDir = path.join(process.cwd(), "src", "uploads");
 
@@ -33,7 +34,16 @@ const upload = multer({
       return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname));
     }
 
-    if (!String(file.mimetype || "").startsWith("image/")) {
+    const acceptedTypes = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/heic",
+      "image/heif"
+    ]);
+
+    if (!acceptedTypes.has(String(file.mimetype || "").toLowerCase())) {
       return cb(new Error("Only vehicle images are accepted."));
     }
 
@@ -42,18 +52,47 @@ const upload = multer({
 });
 
 export function uploadVehicleImages(req, res, next) {
-  upload.any()(req, res, (error) => {
-    if (!error) {
-      return next();
-    }
+  upload.any()(req, res, async (error) => {
+    try {
+      if (error) throw error;
 
-    const message = error instanceof multer.MulterError
-      ? error.code === "LIMIT_FILE_SIZE"
+      for (const file of req.files || []) {
+        const parsed = path.parse(file.path);
+        const optimizedPath = path.join(parsed.dir, `${parsed.name}-optimized.webp`);
+
+        await sharp(file.path)
+          .rotate()
+          .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82, effort: 4 })
+          .toFile(optimizedPath);
+
+        await fs.promises.unlink(file.path);
+        const stats = await fs.promises.stat(optimizedPath);
+        file.filename = path.basename(optimizedPath);
+        file.path = optimizedPath;
+        file.size = stats.size;
+        file.mimetype = "image/webp";
+      }
+
+      return next();
+    } catch (processingError) {
+      await Promise.allSettled(
+        (req.files || []).flatMap((file) => {
+          const parsed = path.parse(file.path);
+          return [file.path, path.join(parsed.dir, `${parsed.name}-optimized.webp`)].map((filePath) =>
+            fs.promises.unlink(filePath)
+          );
+        })
+      );
+
+      const message = processingError instanceof multer.MulterError
+        ? processingError.code === "LIMIT_FILE_SIZE"
           ? "Each vehicle photo must be smaller than 20 MB."
           : "One or more vehicle photos could not be uploaded."
-      : error.message || "The vehicle photos could not be uploaded.";
+        : processingError.message || "The vehicle photos could not be uploaded.";
 
-    return res.status(400).json({ message });
+      return res.status(400).json({ message });
+    }
   });
 }
 

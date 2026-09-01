@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import { currency } from "@/lib/utils";
 import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import { useLanguage } from "@/lib/site-language";
+import { reorderItems, SortablePhotoGrid } from "@/components/sortable-photo-grid";
 import {
   AdminCarFields,
   appendAdminCarFields,
@@ -18,6 +18,9 @@ import {
 } from "@/components/admin-car-fields";
 
 type CarImage = { url: string; alt: string };
+type EditablePhoto =
+  | { id: string; kind: "existing"; image: CarImage }
+  | { id: string; kind: "new"; file: File };
 
 const sections: AdminCarFieldsSection[] = ["listing", "specs", "commercial", "description"];
 
@@ -33,8 +36,7 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const [existingImages, setExistingImages] = useState<CarImage[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [photos, setPhotos] = useState<EditablePhoto[]>([]);
   const [activeStep, setActiveStep] = useState(0);
   const [serviceFee, setServiceFee] = useState(17000);
   const ar = language === "ar";
@@ -69,10 +71,11 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
         badgesText: Array.isArray(data?.badges) ? data.badges.join(", ") : "", description: data?.description || ""
       });
       setServiceFee(Number(data?.serviceFee ?? 17000));
-      setExistingImages(Array.isArray(data?.images) ? data.images.map((image: any) => ({
+      const currentImages: CarImage[] = Array.isArray(data?.images) ? data.images.map((image: any) => ({
         url: String(image?.url || "").trim(),
         alt: String(image?.alt || data?.name || "Vehicle").trim() || "Vehicle"
-      })).filter((image: CarImage) => image.url) : []);
+      })).filter((image: CarImage) => image.url) : [];
+      setPhotos(currentImages.map((image, index) => ({ id: `existing-${index}-${image.url}`, kind: "existing", image })));
     }).catch((requestError) => setError(requestError?.response?.data?.message || copy.loadError)).finally(() => setLoading(false));
   }, [id, copy.loadError, sellerMode]);
 
@@ -89,10 +92,12 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
 
   const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(event.target.files || []);
-    setSelectedFiles((current) => {
-      const unique = new Map<string, File>();
-      [...current, ...incoming].forEach((file) => unique.set(`${file.name}-${file.size}-${file.lastModified}`, file));
-      return Array.from(unique.values());
+    setPhotos((current) => {
+      const existingFileIds = new Set(current.filter((photo): photo is Extract<EditablePhoto, { kind: "new" }> => photo.kind === "new").map((photo) => `${photo.file.name}-${photo.file.size}-${photo.file.lastModified}`));
+      const newPhotos: EditablePhoto[] = incoming
+        .filter((file) => !existingFileIds.has(`${file.name}-${file.size}-${file.lastModified}`))
+        .map((file) => ({ id: `new-${file.name}-${file.size}-${file.lastModified}`, kind: "new", file }));
+      return [...current, ...newPhotos];
     });
     event.target.value = "";
   };
@@ -105,8 +110,15 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
     try {
       const formData = new FormData();
       appendAdminCarFields(formData, form);
+      const existingImages = photos.filter((photo): photo is Extract<EditablePhoto, { kind: "existing" }> => photo.kind === "existing").map((photo) => photo.image);
+      const newFiles = photos.filter((photo): photo is Extract<EditablePhoto, { kind: "new" }> => photo.kind === "new").map((photo) => photo.file);
+      let newIndex = 0;
+      const imageOrder = photos.map((photo) => photo.kind === "existing"
+        ? { type: "existing", url: photo.image.url }
+        : { type: "new", index: newIndex++ });
       formData.append("existingImages", JSON.stringify(existingImages));
-      selectedFiles.forEach((file) => formData.append("images", file, file.name));
+      formData.append("imageOrder", JSON.stringify(imageOrder));
+      newFiles.forEach((file) => formData.append("images", file, file.name));
       await api.put(`/cars/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 10 * 60 * 1000,
@@ -156,17 +168,16 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
         {isLastStep ? <div className="grid gap-5">
           <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[.03] sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-extrabold">{copy.images}</h2><p className="text-xs text-zinc-500">{copy.imageHint}</p></div>
-            {existingImages.length ? <div className="mt-4 grid grid-cols-2 gap-3">{existingImages.map((image, index) => <div key={`${image.url}-${index}`} className="rounded-2xl border border-zinc-200 bg-white p-2 dark:border-white/10 dark:bg-zinc-900">
-              <div className="relative h-28 overflow-hidden rounded-xl"><Image src={resolveMediaUrl(image.url) || image.url} alt={image.alt} fill className="object-cover" sizes="180px" /></div>
-              <button type="button" onClick={() => setExistingImages((current) => current.filter((_image, itemIndex) => itemIndex !== index))} className="mt-2 w-full rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{copy.remove}</button>
-            </div>)}</div> : <p className="mt-4 text-sm text-zinc-500">{copy.noImages}</p>}
-          </section>
-
-          <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[.03] sm:p-5">
-            <h2 className="text-base font-extrabold">{copy.addImages}</h2>
             <input type="file" accept="image/*" multiple onChange={handleFilesChange} className="mt-4 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-transparent" />
-            <p className="mt-2 text-xs text-zinc-500">{selectedFiles.length ? `${selectedFiles.length} ${ar ? "صورة جديدة" : "new photos"}` : copy.newImageHint}</p>
-            {selectedFiles.length ? <div className="mt-3 grid gap-2">{selectedFiles.map((file, index) => <div key={`${file.name}-${file.lastModified}`} className="flex min-w-0 items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 text-sm dark:bg-white/5"><span className="truncate">{index + 1}. {file.name}</span><button type="button" onClick={() => setSelectedFiles((current) => current.filter((_file, itemIndex) => itemIndex !== index))} aria-label={`${copy.remove} ${file.name}`} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"><X className="h-4 w-4" /></button></div>)}</div> : null}
+            <p className="mt-2 text-xs text-zinc-500">{copy.newImageHint} {ar ? "رتّبها بالسحب أو الأسهم؛ الأولى هي الغلاف." : "Drag or use the arrows to order them; the first is the cover."}</p>
+            {photos.length ? <SortablePhotoGrid
+              language={ar ? "ar" : "en"}
+              items={photos.map((photo) => photo.kind === "existing"
+                ? { id: photo.id, label: photo.image.alt, src: resolveMediaUrl(photo.image.url) || photo.image.url }
+                : { id: photo.id, label: photo.file.name, file: photo.file })}
+              onReorder={(from, to) => setPhotos((current) => reorderItems(current, from, to))}
+              onRemove={(index) => setPhotos((current) => current.filter((_photo, itemIndex) => itemIndex !== index))}
+            /> : <p className="mt-4 text-sm text-zinc-500">{copy.noImages}</p>}
           </section>
         </div> : null}
       </div>

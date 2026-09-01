@@ -4,6 +4,7 @@ import Notification from "../models/Notification.js";
 import { makeSlug } from "../utils/slug.js";
 import { getCategoryAliases, normalizeCategoryValue } from "../utils/category.js";
 import { getFuelTypeAliases, isOtherFuelType, normalizeFuelTypeValue } from "../utils/fuel.js";
+import { deleteUploadedImages } from "../utils/uploadedMedia.js";
 
 function toNumber(value) {
   if (value === undefined || value === null || value === "") {
@@ -144,6 +145,47 @@ function serializeCar(car) {
   };
 }
 
+function orderCarImages(existingImages, uploadedImages, rawOrder) {
+  if (!rawOrder) return [...existingImages, ...uploadedImages];
+
+  try {
+    const order = typeof rawOrder === "string" ? JSON.parse(rawOrder) : rawOrder;
+    if (!Array.isArray(order)) return [...existingImages, ...uploadedImages];
+
+    const existingByUrl = new Map(existingImages.map((image) => [image.url, image]));
+    const result = [];
+    const usedExisting = new Set();
+    const usedNew = new Set();
+
+    order.forEach((item) => {
+      if (item?.type === "existing") {
+        const image = existingByUrl.get(String(item.url || ""));
+        if (image && !usedExisting.has(image.url)) {
+          result.push(image);
+          usedExisting.add(image.url);
+        }
+      } else if (item?.type === "new") {
+        const index = Number(item.index);
+        const image = uploadedImages[index];
+        if (image && !usedNew.has(index)) {
+          result.push(image);
+          usedNew.add(index);
+        }
+      }
+    });
+
+    existingImages.forEach((image) => {
+      if (!usedExisting.has(image.url)) result.push(image);
+    });
+    uploadedImages.forEach((image, index) => {
+      if (!usedNew.has(index)) result.push(image);
+    });
+    return result;
+  } catch (_error) {
+    return [...existingImages, ...uploadedImages];
+  }
+}
+
 function serializePublicCar(car) {
   const payload = serializeCar(car);
 
@@ -218,6 +260,7 @@ function normalizeCarPayload(body) {
   }
 
   delete normalized.existingImages;
+  delete normalized.imageOrder;
   delete normalized.imageUrl;
 
   return Object.fromEntries(
@@ -505,10 +548,12 @@ export async function getCarById(req, res) {
 }
 
 export async function createCar(req, res) {
+  let uploadedImages = [];
+  let carPersisted = false;
   try {
     const body = normalizeCarPayload(req.body);
     const slug = await makeUniqueCarSlug(body.brand, body.model, body.year);
-    const uploadedImages = buildUploadedImages(
+    uploadedImages = buildUploadedImages(
       getUploadedFiles(req),
       body.name || `${body.brand || "Vehicule"} ${body.model || ""}`.trim()
     );
@@ -532,6 +577,7 @@ export async function createCar(req, res) {
       approvedAt: sellerSubmission ? null : new Date(),
       approvedBy: sellerSubmission ? null : req.user.id
     });
+    carPersisted = true;
 
     if (sellerSubmission) {
       await Notification.create({
@@ -548,11 +594,14 @@ export async function createCar(req, res) {
     res.status(201).json(serializeCar(car));
   } catch (error) {
     console.error("createCar error:", error);
+    if (!carPersisted) await deleteUploadedImages(uploadedImages);
     sendCarWriteError(res, error, "تعذر إضافة المركبة. حاول مرة أخرى.");
   }
 }
 
 export async function updateCar(req, res) {
+  let uploadedImages = [];
+  let carPersisted = false;
   try {
     const existingCar = await Car.findById(req.params.id);
     if (!existingCar) return res.status(404).json({ message: "Vehicule introuvable" });
@@ -562,7 +611,7 @@ export async function updateCar(req, res) {
 
     const updateData = normalizeCarPayload(req.body);
     const existingImages = parseExistingImages(req.body?.existingImages);
-    const uploadedImages = buildUploadedImages(
+    uploadedImages = buildUploadedImages(
       getUploadedFiles(req),
       req.body?.name || updateData.name || "Vehicule"
     );
@@ -577,7 +626,7 @@ export async function updateCar(req, res) {
     }
 
     if (existingImages !== undefined || uploadedImages.length > 0) {
-      updateData.images = [...(existingImages || []), ...uploadedImages];
+      updateData.images = orderCarImages(existingImages || [], uploadedImages, req.body?.imageOrder);
     }
 
     if (isSeller(req)) {
@@ -600,7 +649,14 @@ export async function updateCar(req, res) {
     });
 
     if (!car) {
+      await deleteUploadedImages(uploadedImages);
       return res.status(404).json({ message: "Vehicule introuvable" });
+    }
+    carPersisted = true;
+
+    if (updateData.images) {
+      const keptUrls = new Set(updateData.images.map((image) => image.url));
+      await deleteUploadedImages((existingCar.images || []).filter((image) => !keptUrls.has(image.url)));
     }
 
 
@@ -619,6 +675,7 @@ export async function updateCar(req, res) {
     res.json(serializeCar(car));
   } catch (error) {
     console.error("updateCar error:", error);
+    if (!carPersisted) await deleteUploadedImages(uploadedImages);
     sendCarWriteError(res, error, "تعذر حفظ التعديلات. حاول مرة أخرى.");
   }
 }
@@ -635,6 +692,8 @@ export async function deleteCar(req, res) {
     if (!car) {
       return res.status(404).json({ message: "Vehicule introuvable" });
     }
+
+    await deleteUploadedImages(car.images || []);
 
     res.json({ message: "Vehicule supprime" });
   } catch (error) {
