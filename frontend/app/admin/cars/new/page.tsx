@@ -8,23 +8,22 @@ import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import { useLanguage } from "@/lib/site-language";
 import { AdminCarFields, appendAdminCarFields, emptyAdminCarForm, type AdminCarFieldsSection } from "@/components/admin-car-fields";
 
-const MAX_CAR_IMAGES = 12;
-
 export default function AddCarPage() {
   const router = useRouter();
   const { language } = useLanguage();
   const { rate, date } = useAedToTndRate();
   const [form, setForm] = useState(emptyAdminCarForm);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [activeStep, setActiveStep] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const ar = language === "ar";
   const copy = ar ? {
-    eyebrow: "معرض الإدارة", title: "إضافة مركبة", intro: "أضف السيارة في أربع خطوات قصيرة. أول صورة ستكون الصورة الرئيسية.", images: "صور المركبة", imageHelp: "يمكنك اختيار حتى 12 صورة. أول صورة ستكون الرئيسية.", selected: "صورة مختارة", remove: "حذف", submit: "إضافة المركبة", saving: "جارٍ الإضافة...", cancel: "إلغاء", back: "السابق", next: "التالي", step: "الخطوة", error: "تعذر إضافة المركبة. تأكد من المعلومات والصور ثم حاول مرة أخرى.", steps: ["المعلومات الأساسية", "المواصفات", "السعر والحالة", "الوصف والصور"]
+    eyebrow: "معرض الإدارة", title: "إضافة مركبة", intro: "أضف السيارة في أربع خطوات قصيرة. أول صورة ستكون الصورة الرئيسية.", images: "صور المركبة", imageHelp: "يمكنك اختيار العدد الذي تحتاجه من الصور. أول صورة ستكون الرئيسية.", selected: "صورة مختارة", remove: "حذف", submit: "إضافة المركبة", saving: "جارٍ الإضافة", cancel: "إلغاء", back: "السابق", next: "التالي", step: "الخطوة", error: "تعذر إضافة المركبة. تأكد من المعلومات والصور ثم حاول مرة أخرى.", steps: ["المعلومات الأساسية", "المواصفات", "السعر والحالة", "الوصف والصور"]
   } : {
-    eyebrow: "Admin inventory", title: "Add vehicle", intro: "Add the vehicle in four short steps. The first photo will be the cover image.", images: "Vehicle photos", imageHelp: "You can select up to 12 photos. The first photo will be the cover image.", selected: "photos selected", remove: "Remove", submit: "Add vehicle", saving: "Adding...", cancel: "Cancel", back: "Back", next: "Next", step: "Step", error: "Unable to add the vehicle. Check the information and photos, then try again.", steps: ["Basic information", "Specifications", "Price & status", "Description & photos"]
+    eyebrow: "Admin inventory", title: "Add vehicle", intro: "Add the vehicle in four short steps. The first photo will be the cover image.", images: "Vehicle photos", imageHelp: "Select as many photos as needed. The first photo will be the cover image.", selected: "photos selected", remove: "Remove", submit: "Add vehicle", saving: "Adding", cancel: "Cancel", back: "Back", next: "Next", step: "Step", error: "Unable to add the vehicle. Check the information and photos, then try again.", steps: ["Basic information", "Specifications", "Price & status", "Description & photos"]
   };
   const sections: AdminCarFieldsSection[] = ["listing", "specs", "commercial", "description"];
   const isLastStep = activeStep === sections.length - 1;
@@ -47,7 +46,7 @@ export default function AddCarPage() {
     setSelectedFiles((current) => {
       const unique = new Map<string, File>();
       [...current, ...incoming].forEach((file) => unique.set(`${file.name}-${file.size}-${file.lastModified}`, file));
-      return Array.from(unique.values()).slice(0, MAX_CAR_IMAGES);
+      return Array.from(unique.values());
     });
     event.target.value = "";
   };
@@ -55,18 +54,27 @@ export default function AddCarPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+    setUploadProgress(0);
     setErrorMessage("");
     try {
       const formData = new FormData();
       appendAdminCarFields(formData, form);
       selectedFiles.forEach((file) => formData.append("images", file, file.name));
-      await api.post("/cars", formData);
+      await api.post("/cars", formData, {
+        timeout: 10 * 60 * 1000,
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            setUploadProgress(Math.min(100, Math.round((progressEvent.loaded * 100) / progressEvent.total)));
+          }
+        }
+      });
       router.push("/admin/cars");
       router.refresh();
     } catch (error: any) {
       setErrorMessage(error?.response?.data?.message || copy.error);
     } finally {
       setLoading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -101,7 +109,7 @@ export default function AddCarPage() {
           {activeStep > 0 ? <button type="button" onClick={goToPreviousStep} className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-bold transition hover:bg-zinc-50 dark:border-white/10 dark:hover:bg-white/5"><ArrowLeft className="h-4 w-4 rtl:rotate-180" />{copy.back}</button> : null}
           <button type="button" onClick={() => router.push("/admin/cars")} className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-bold dark:border-white/10">{copy.cancel}</button>
         </div>
-        {isLastStep ? <button type="submit" disabled={loading} className="rounded-xl bg-brand px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-dark disabled:opacity-60">{loading ? copy.saving : copy.submit}</button> : <button type="button" onClick={goToNextStep} className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-dark">{copy.next}<ArrowRight className="h-4 w-4 rtl:rotate-180" /></button>}
+        {isLastStep ? <button type="submit" disabled={loading} className="min-w-40 rounded-xl bg-brand px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60">{loading ? `${copy.saving}${uploadProgress !== null ? ` ${uploadProgress}%` : "..."}` : copy.submit}</button> : <button type="button" onClick={goToNextStep} className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-dark">{copy.next}<ArrowRight className="h-4 w-4 rtl:rotate-180" /></button>}
       </div>
     </form>
   </section>;

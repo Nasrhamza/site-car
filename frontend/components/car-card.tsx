@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Gauge,
+  Fuel,
   GitCompareArrows,
   Heart,
   MessageCircle,
@@ -91,7 +92,7 @@ export function CarCard({
       value: car.fuelType
         ? translateVehicleValue(car.fuelType, language) || getFuelTypeLabel(car.fuelType)
         : "",
-      icon: null,
+      icon: Fuel,
       image: null
     },
     {
