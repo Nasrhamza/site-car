@@ -291,7 +291,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
                   <span className="text-xs font-semibold text-zinc-400">{safePriceType}</span>
                 </div>
                 <div className="mt-3">
-                  <p className="text-2xl font-black tracking-tight text-brand sm:text-3xl">{safePrice ? currency(safePrice) : language === "ar" ? "السعر عند الطلب" : "Price on request"}</p>
+                  <p className="price-attention text-2xl font-black tracking-tight text-brand sm:text-3xl">{safePrice ? currency(safePrice) : language === "ar" ? "السعر عند الطلب" : "Price on request"}</p>
                   {safePrice ? <p className="mt-1 text-base font-bold text-zinc-700">≈ {currencyTnd(safePrice, aedToTndRate)}</p> : null}
                   {safePrice ? <span className="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{copy.allIncluded}</span> : null}
                 </div>
@@ -353,7 +353,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
       <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-zinc-200 bg-white/95 px-4 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_35px_rgba(15,23,42,.14)] backdrop-blur-xl xl:hidden dark:border-white/10 dark:bg-zinc-950/95">
         <div className="mx-auto grid max-w-2xl grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-brand">{safePrice ? currency(safePrice) : language === "ar" ? "السعر عند الطلب" : "Price on request"}</p>
+            <p className="price-attention max-w-full truncate text-sm font-black text-brand">{safePrice ? currency(safePrice) : language === "ar" ? "السعر عند الطلب" : "Price on request"}</p>
             {safePrice ? <p className="truncate text-[11px] font-bold text-zinc-500">≈ {currencyTnd(safePrice, aedToTndRate)}</p> : null}
           </div>
           <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20"><MessageCircle className="h-5 w-5" /><span className="hidden min-[360px]:inline">WhatsApp</span></a>

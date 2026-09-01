@@ -181,12 +181,12 @@ export function CarCard({
           <div className="shrink-0 text-right">
             <p className="text-xs text-zinc-400">{t.price}</p>
             {isPriceOnRequest ? (
-              <p className="mt-1 text-base font-bold text-brand">
+              <p className="price-attention mt-1 text-base font-bold text-brand">
                 {language === "ar" ? "السعر عند الطلب" : "Price on request"}
               </p>
             ) : (
               <>
-                <p className="mt-1 text-lg font-bold text-brand">{formatCurrency(Number(car.price))}</p>
+                <p className="price-attention mt-1 text-lg font-bold text-brand">{formatCurrency(Number(car.price))}</p>
                 <p className="mt-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">≈ {currencyTnd(Number(car.price), aedToTndRate)}</p>
                 <p className="mt-1 text-[10px] font-medium text-emerald-700">{language === "ar" ? "السعر شامل كل شيء" : "All costs included"}</p>
               </>
