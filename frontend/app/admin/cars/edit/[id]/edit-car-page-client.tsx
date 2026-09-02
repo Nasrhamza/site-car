@@ -141,7 +141,7 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
   if (loading) return <div className="rounded-[28px] border bg-white p-6 shadow-premium dark:border-white/10 dark:bg-zinc-900">{copy.loading}</div>;
   if (error && !form.name) return <div className="rounded-[28px] border bg-white p-6 text-red-600 shadow-premium dark:border-white/10 dark:bg-zinc-900">{error}</div>;
 
-  return <section className="mx-auto w-full max-w-6xl px-1 py-4 sm:px-2 sm:py-6">
+  return <section className="mx-auto w-full max-w-[1500px] px-1 py-4 sm:px-2 sm:py-6">
     <div className="mb-5">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand">{copy.eyebrow}</p>
       <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">{copy.title}</h1>
@@ -161,13 +161,13 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
 
     <form ref={formRef} onSubmit={handleSubmit} className="rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-900 sm:p-6">
       <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">{copy.step} {activeStep + 1} / {sections.length}</p>
-      <div className={isLastStep ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,.85fr)]" : ""}>
+      <div className={isLastStep ? "space-y-5" : ""}>
         <AdminCarFields form={form} setForm={setForm} aedToTndRate={rate} exchangeDate={date} section={sections[activeStep]} />
         {sellerMode && activeStep === 2 && form.priceType !== "Sur demande" ? <div className="mt-5 grid gap-3 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm sm:grid-cols-3 xl:col-span-2"><div><p className="text-zinc-500">Your price</p><p className="mt-1 text-xl font-black">{currency(Number(form.price) || 0)}</p></div><div><p className="text-zinc-500">ALHADUNICARS fees</p><p className="mt-1 text-xl font-black">+ {currency(serviceFee)}</p></div><div><p className="text-zinc-500">Site price</p><p className="mt-1 text-xl font-black text-brand">{currency((Number(form.price) || 0) + serviceFee)}</p></div></div> : null}
 
         {isLastStep ? <div className="grid gap-5">
           <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[.03] sm:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-extrabold">{copy.images}</h2><p className="text-xs text-zinc-500">{copy.imageHint}</p></div>
+            <div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-base font-extrabold">{copy.images}</h2><p className="mt-1 text-xs text-zinc-500">{copy.imageHint}</p></div>{photos.length ? <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-black text-brand">{photos.length} {ar ? "صورة" : "photos"}</span> : null}</div>
             <input type="file" accept="image/*" multiple onChange={handleFilesChange} className="mt-4 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-transparent" />
             <p className="mt-2 text-xs text-zinc-500">{copy.newImageHint} {ar ? "رتّبها بالسحب أو الأسهم؛ الأولى هي الغلاف." : "Drag or use the arrows to order them; the first is the cover."}</p>
             {photos.length ? <SortablePhotoGrid

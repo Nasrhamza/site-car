@@ -22,9 +22,9 @@ export default function AddCarPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const ar = language === "ar";
   const copy = ar ? {
-    eyebrow: "معرض الإدارة", title: "إضافة مركبة", intro: "أضف السيارة في أربع خطوات قصيرة. أول صورة ستكون الصورة الرئيسية.", images: "صور المركبة", imageHelp: "يمكنك اختيار العدد الذي تحتاجه من الصور. أول صورة ستكون الرئيسية.", selected: "صورة مختارة", remove: "حذف", submit: "إضافة المركبة", saving: "جارٍ الإضافة", cancel: "إلغاء", back: "السابق", next: "التالي", step: "الخطوة", error: "تعذر إضافة المركبة. تأكد من المعلومات والصور ثم حاول مرة أخرى.", steps: ["المعلومات الأساسية", "المواصفات", "السعر والحالة", "الوصف والصور"]
+    eyebrow: "معرض الإدارة", title: "إضافة مركبة", intro: "أضف السيارة في أربع خطوات قصيرة. أول صورة ستكون الصورة الرئيسية.", images: "صور المركبة", imageHelp: "رتّب الصور بالسحب أو الأسهم. اضغط على النجمة لاختيار صورة الغلاف.", selected: "صورة مختارة", remove: "حذف", submit: "إضافة المركبة", saving: "جارٍ الإضافة", cancel: "إلغاء", back: "السابق", next: "التالي", step: "الخطوة", error: "تعذر إضافة المركبة. تأكد من المعلومات والصور ثم حاول مرة أخرى.", steps: ["المعلومات الأساسية", "المواصفات", "السعر والحالة", "الوصف والصور"]
   } : {
-    eyebrow: "Admin inventory", title: "Add vehicle", intro: "Add the vehicle in four short steps. The first photo will be the cover image.", images: "Vehicle photos", imageHelp: "Select as many photos as needed. The first photo will be the cover image.", selected: "photos selected", remove: "Remove", submit: "Add vehicle", saving: "Adding", cancel: "Cancel", back: "Back", next: "Next", step: "Step", error: "Unable to add the vehicle. Check the information and photos, then try again.", steps: ["Basic information", "Specifications", "Price & status", "Description & photos"]
+    eyebrow: "Admin inventory", title: "Add vehicle", intro: "Add the vehicle in four short steps. The first photo will be the cover image.", images: "Vehicle photos", imageHelp: "Drag the photos or use the arrows to order them. Use the star to choose the cover.", selected: "photos selected", remove: "Remove", submit: "Add vehicle", saving: "Adding", cancel: "Cancel", back: "Back", next: "Next", step: "Step", error: "Unable to add the vehicle. Check the information and photos, then try again.", steps: ["Basic information", "Specifications", "Price & status", "Description & photos"]
   };
   const sections: AdminCarFieldsSection[] = ["listing", "specs", "commercial", "description"];
   const isLastStep = activeStep === sections.length - 1;
@@ -79,7 +79,7 @@ export default function AddCarPage() {
     }
   };
 
-  return <section className="mx-auto w-full max-w-6xl px-1 py-4 sm:px-2 sm:py-6">
+  return <section className="mx-auto w-full max-w-[1500px] px-1 py-4 sm:px-2 sm:py-6">
     <div className="mb-5"><p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand">{copy.eyebrow}</p><h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">{copy.title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">{copy.intro}</p></div>
 
     <div className="mb-5 overflow-x-auto rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-zinc-900">
@@ -95,7 +95,7 @@ export default function AddCarPage() {
 
     <form ref={formRef} onSubmit={handleSubmit} className="rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-900 sm:p-6">
       <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">{copy.step} {activeStep + 1} / {sections.length}</p>
-      <div className={isLastStep ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(300px,.72fr)]" : ""}>
+      <div className={isLastStep ? "space-y-5" : ""}>
         <AdminCarFields form={form} setForm={setForm} aedToTndRate={rate} exchangeDate={date} section={sections[activeStep]} />
         {isLastStep ? <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[.03] sm:p-5">
         <h2 className="text-base font-extrabold text-zinc-950 dark:text-white">{copy.images}</h2>
