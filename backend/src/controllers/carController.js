@@ -1,6 +1,7 @@
 import Car from "../models/Car.js";
 import Inquiry from "../models/Inquiry.js";
 import Notification from "../models/Notification.js";
+import User from "../models/User.js";
 import { makeSlug } from "../utils/slug.js";
 import { getCategoryAliases, normalizeCategoryValue } from "../utils/category.js";
 import { getFuelTypeAliases, isOtherFuelType, normalizeFuelTypeValue } from "../utils/fuel.js";
@@ -716,12 +717,125 @@ export async function getManagedCars(req, res) {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 100));
-    const query = isSeller(req) ? { owner: req.user.id } : {};
-    const [items, total] = await Promise.all([
-      Car.find(query).populate("owner", "name showroomName email phone accountStatus").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
-      Car.countDocuments(query)
-    ]);
-    res.json({ items: items.map(serializeCar), total, page, pages: Math.ceil(total / limit) });
+    const sellerRequest = isSeller(req);
+    const query = sellerRequest ? { owner: req.user.id } : {};
+
+    if (!sellerRequest) {
+      const search = String(req.query.search || "").trim();
+      const category = String(req.query.category || "").trim();
+      const brand = String(req.query.brand || "").trim();
+      const source = String(req.query.source || "").trim();
+      const owner = String(req.query.owner || "").trim();
+      const moderationStatus = String(req.query.moderationStatus || "").trim();
+      const availability = String(req.query.availability || "").trim();
+      const priceType = String(req.query.priceType || "").trim();
+      const visibility = String(req.query.visibility || "").trim();
+
+      if (search) {
+        const pattern = new RegExp(escapeRegex(search), "i");
+        const matchingOwners = await User.find({
+          role: "Vendeur",
+          $or: [{ name: pattern }, { showroomName: pattern }, { email: pattern }, { phone: pattern }]
+        }).distinct("_id");
+        addQueryClause(query, {
+          $or: [
+            { name: pattern },
+            { brand: pattern },
+            { model: pattern },
+            { trim: pattern },
+            { slug: pattern },
+            ...(matchingOwners.length ? [{ owner: { $in: matchingOwners } }] : [])
+          ]
+        });
+      }
+      if (category) query.category = { $in: getCategoryAliases(category) };
+      if (brand) query.brand = brand;
+      if (source === "admin") addQueryClause(query, { $or: [{ owner: null }, { owner: { $exists: false } }] });
+      if (source === "seller") query.owner = { $ne: null };
+      if (owner && /^[a-f\d]{24}$/i.test(owner)) query.owner = owner;
+      if (["Pending", "Approved", "Rejected", "Hidden"].includes(moderationStatus)) query.moderationStatus = moderationStatus;
+      if (availability) {
+        const normalizedAvailability = normalizeStatusValue(availability);
+        addQueryClause(query, { $or: [{ availability: normalizedAvailability }, { status: normalizedAvailability }] });
+      }
+      if (priceType) query.priceType = normalizePriceTypeValue(priceType);
+      if (visibility === "hidden") {
+        addQueryClause(query, { $or: [{ moderationStatus: "Hidden" }, { accountHidden: true }] });
+      } else if (visibility === "visible") {
+        addQueryClause(query, { moderationStatus: { $ne: "Hidden" }, accountHidden: { $ne: true } });
+      }
+    }
+
+    const sortKey = String(req.query.sort || "newest");
+    const sortOptions = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      nameAsc: { name: 1 },
+      nameDesc: { name: -1 },
+      categoryAsc: { category: 1, name: 1 },
+      yearDesc: { year: -1, createdAt: -1 },
+      yearAsc: { year: 1, createdAt: -1 },
+      priceDesc: { price: -1, createdAt: -1 },
+      priceAsc: { price: 1, createdAt: -1 },
+      mostViewed: { views: -1, createdAt: -1 }
+    };
+    const populateOwner = "name showroomName email phone accountStatus";
+    let items;
+    let total;
+
+    if (!sellerRequest && sortKey === "sellerAsc") {
+      const allItems = await Car.find(query).populate("owner", populateOwner);
+      allItems.sort((left, right) => {
+        const leftName = left.owner?.showroomName || left.owner?.name || "ALHADUNICARS";
+        const rightName = right.owner?.showroomName || right.owner?.name || "ALHADUNICARS";
+        return leftName.localeCompare(rightName, "en", { sensitivity: "base" });
+      });
+      total = allItems.length;
+      items = allItems.slice((page - 1) * limit, page * limit);
+    } else {
+      [items, total] = await Promise.all([
+        Car.find(query)
+          .populate("owner", populateOwner)
+          .sort(sortOptions[sortKey] || sortOptions.newest)
+          .skip((page - 1) * limit)
+          .limit(limit),
+        Car.countDocuments(query)
+      ]);
+    }
+
+    let filters;
+    let counts;
+    if (!sellerRequest) {
+      const [categories, brands, sellerIds, totalCars, adminCars, sellerCars, pendingCars, rejectedCars, hiddenCars] = await Promise.all([
+        Car.distinct("category"),
+        Car.distinct("brand"),
+        Car.distinct("owner", { owner: { $ne: null } }),
+        Car.countDocuments(),
+        Car.countDocuments({ $or: [{ owner: null }, { owner: { $exists: false } }] }),
+        Car.countDocuments({ owner: { $ne: null } }),
+        Car.countDocuments({ moderationStatus: "Pending" }),
+        Car.countDocuments({ moderationStatus: "Rejected" }),
+        Car.countDocuments({ $or: [{ moderationStatus: "Hidden" }, { accountHidden: true }] })
+      ]);
+      const sellers = await User.find({ _id: { $in: sellerIds } })
+        .select("name showroomName email accountStatus")
+        .sort({ showroomName: 1, name: 1 })
+        .lean();
+      filters = {
+        categories: categories.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        brands: brands.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        sellers
+      };
+      counts = { total: totalCars, admin: adminCars, seller: sellerCars, pending: pendingCars, rejected: rejectedCars, hidden: hiddenCars };
+    }
+
+    res.json({
+      items: items.map(serializeCar),
+      total,
+      page,
+      pages: Math.max(1, Math.ceil(total / limit)),
+      ...(filters ? { filters, counts } : {})
+    });
   } catch (error) {
     console.error("getManagedCars error:", error);
     res.status(500).json({ message: "Impossible de charger les voitures gerees" });
