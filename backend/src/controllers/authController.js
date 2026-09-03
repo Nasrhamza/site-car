@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
-import { signAccessToken, signRefreshToken } from "../utils/tokens.js";
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/tokens.js";
 import { sendMail } from "../utils/mailer.js";
 
 function normalizeEmail(email) {
@@ -80,6 +80,22 @@ export async function login(req, res) {
   await user.save();
 
   res.json(buildAuthPayload(user));
+}
+
+export async function refresh(req, res) {
+  try {
+    const token = String(req.body?.refreshToken || "").trim();
+    if (!token) return res.status(401).json({ message: "Session expiree" });
+
+    const payload = verifyRefreshToken(token);
+    const user = await User.findById(payload.id);
+    if (!user || user.deletedAt) return res.status(401).json({ message: "Compte introuvable" });
+    if (inactiveAccountResponse(res, user)) return;
+
+    res.json(buildAuthPayload(user));
+  } catch (_error) {
+    res.status(401).json({ message: "Session expiree" });
+  }
 }
 
 export async function sellerLogin(req, res) {

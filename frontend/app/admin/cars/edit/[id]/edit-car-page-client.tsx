@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, ensureFreshSession } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import { currency } from "@/lib/utils";
 import { useAedToTndRate } from "@/hooks/use-exchange-rate";
@@ -108,6 +108,7 @@ export default function EditCarPageClient({ mode = "admin" }: { mode?: "admin" |
     setUploadProgress(0);
     setError("");
     try {
+      await ensureFreshSession();
       const formData = new FormData();
       appendAdminCarFields(formData, form);
       const existingImages = photos.filter((photo): photo is Extract<EditablePhoto, { kind: "existing" }> => photo.kind === "existing").map((photo) => photo.image);

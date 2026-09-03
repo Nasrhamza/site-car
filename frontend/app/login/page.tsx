@@ -80,7 +80,7 @@ export default function LoginPage() {
                   password: state.password
                 };
                 const { data } = await api.post("/auth/admin/login", payload);
-                setSession(data.accessToken, data.user);
+                setSession(data.accessToken, data.user, data.refreshToken);
                 router.replace(redirectTo);
                 router.refresh();
               } catch (err: any) {

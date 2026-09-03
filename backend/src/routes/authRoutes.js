@@ -5,6 +5,7 @@ import {
   changeOwnPassword,
   login,
   me,
+  refresh,
   register,
   requestSellerAccount,
   sellerLogin
@@ -15,6 +16,7 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/refresh", refresh);
 router.post("/admin/login", adminLogin);
 router.post("/seller/login", sellerLogin);
 router.post("/seller/request", requestSellerAccount);

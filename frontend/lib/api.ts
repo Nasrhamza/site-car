@@ -1,5 +1,5 @@
 import axios, { AxiosHeaders } from "axios";
-import { clearSession, getAccessToken } from "@/lib/auth";
+import { clearSession, getAccessToken, getRefreshToken, setSession } from "@/lib/auth";
 
 const baseURL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -10,6 +10,28 @@ export const api = axios.create({
   baseURL,
   withCredentials: false
 });
+
+let refreshPromise: Promise<string> | null = null;
+
+function refreshAccessToken() {
+  if (refreshPromise) return refreshPromise;
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return Promise.reject(new Error("No refresh token"));
+
+  refreshPromise = axios.post(`${baseURL}/auth/refresh`, { refreshToken })
+    .then(({ data }) => {
+      setSession(data.accessToken, data.user, data.refreshToken);
+      return data.accessToken as string;
+    })
+    .finally(() => { refreshPromise = null; });
+
+  return refreshPromise;
+}
+
+export async function ensureFreshSession() {
+  if (!getRefreshToken()) return getAccessToken();
+  return refreshAccessToken();
+}
 
 api.interceptors.request.use(
   (config) => {
@@ -30,8 +52,23 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (typeof window !== "undefined" && error?.response?.status === 401) {
+  async (error) => {
+    const request = error?.config as (typeof error.config & { _sessionRetry?: boolean }) | undefined;
+    const requestPath = String(request?.url || "").split("?")[0];
+    const isLoginOrRefreshRequest = /\/auth\/(?:login|admin\/login|seller\/login|refresh)$/.test(requestPath);
+
+    if (typeof window !== "undefined" && error?.response?.status === 401 && request && !request._sessionRetry && !isLoginOrRefreshRequest) {
+      request._sessionRetry = true;
+      try {
+        const accessToken = await refreshAccessToken();
+        const headers = AxiosHeaders.from(request.headers);
+        headers.set("Authorization", `Bearer ${accessToken}`);
+        request.headers = headers;
+        return api.request(request);
+      } catch (_refreshError) {
+        clearSession();
+      }
+    } else if (typeof window !== "undefined" && error?.response?.status === 401) {
       clearSession();
     }
 

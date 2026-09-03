@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, ensureFreshSession } from "@/lib/api";
 import { currency } from "@/lib/utils";
 import { useAedToTndRate } from "@/hooks/use-exchange-rate";
 import { AdminCarFields, appendAdminCarFields, emptyAdminCarForm, type AdminCarFieldsSection } from "@/components/admin-car-fields";
@@ -44,6 +44,7 @@ export default function SellerAddCarPage() {
       setError("");
 
       try {
+        await ensureFreshSession();
         const data = new FormData();
         appendAdminCarFields(data, form);
         files.forEach((file) => data.append("images", file, file.name));

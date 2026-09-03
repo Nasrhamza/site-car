@@ -10,8 +10,10 @@ export type StoredUser = {
 };
 
 const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_KEY = "harouHedwaniUser";
 const IMPERSONATION_TOKEN_KEY = "alhaduniAdminReturnToken";
+const IMPERSONATION_REFRESH_TOKEN_KEY = "alhaduniAdminReturnRefreshToken";
 const IMPERSONATION_USER_KEY = "alhaduniAdminReturnUser";
 
 function setRoleSessionCookie(cookieName: string, enabled: boolean) {
@@ -29,9 +31,15 @@ export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
-export function setSession(accessToken: string, user: StoredUser) {
+export function getRefreshToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function setSession(accessToken: string, user: StoredUser, refreshToken?: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
   setRoleSessionCookie(ADMIN_SESSION_COOKIE, isAdminRole(user.role));
   setRoleSessionCookie(SELLER_SESSION_COOKIE, isSellerRole(user.role));
@@ -40,6 +48,7 @@ export function setSession(accessToken: string, user: StoredUser) {
 export function clearSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   setRoleSessionCookie(ADMIN_SESSION_COOKIE, false);
   setRoleSessionCookie(SELLER_SESSION_COOKIE, false);
@@ -66,15 +75,17 @@ export function isSellerRole(role?: string | null) {
   return role === "Vendeur";
 }
 
-export function startSellerImpersonation(accessToken: string, user: StoredUser) {
+export function startSellerImpersonation(accessToken: string, user: StoredUser, refreshToken?: string) {
   if (typeof window === "undefined") return;
   const currentToken = getAccessToken();
+  const currentRefreshToken = getRefreshToken();
   const currentUser = getStoredUser();
   if (currentToken && currentUser && isAdminRole(currentUser.role)) {
     sessionStorage.setItem(IMPERSONATION_TOKEN_KEY, currentToken);
+    if (currentRefreshToken) sessionStorage.setItem(IMPERSONATION_REFRESH_TOKEN_KEY, currentRefreshToken);
     sessionStorage.setItem(IMPERSONATION_USER_KEY, JSON.stringify(currentUser));
   }
-  setSession(accessToken, user);
+  setSession(accessToken, user, refreshToken);
 }
 
 export function hasAdminReturnSession() {
@@ -85,11 +96,13 @@ export function hasAdminReturnSession() {
 export function returnToAdminSession() {
   if (typeof window === "undefined") return false;
   const token = sessionStorage.getItem(IMPERSONATION_TOKEN_KEY);
+  const refreshToken = sessionStorage.getItem(IMPERSONATION_REFRESH_TOKEN_KEY);
   const rawUser = sessionStorage.getItem(IMPERSONATION_USER_KEY);
   if (!token || !rawUser) return false;
   try {
-    setSession(token, JSON.parse(rawUser));
+    setSession(token, JSON.parse(rawUser), refreshToken || undefined);
     sessionStorage.removeItem(IMPERSONATION_TOKEN_KEY);
+    sessionStorage.removeItem(IMPERSONATION_REFRESH_TOKEN_KEY);
     sessionStorage.removeItem(IMPERSONATION_USER_KEY);
     return true;
   } catch {
