@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Globe2, MapPin, MessageCircle } from "lucide-react";
+import { ArrowRight, Code2, Globe2, MapPin, MessageCircle } from "lucide-react";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { BrandLogo } from "@/components/brand-logo";
 import {
@@ -9,6 +9,11 @@ import {
   COMPANY_FACEBOOK_URL,
   COMPANY_NAME,
   COMPANY_WHATSAPP_DISPLAY,
+  DEVELOPER_FACEBOOK_URL,
+  DEVELOPER_NAME,
+  DEVELOPER_NAME_AR,
+  DEVELOPER_WHATSAPP_DISPLAY,
+  DEVELOPER_WHATSAPP_PHONE,
   buildWhatsAppUrl
 } from "@/lib/company";
 import { translateVehicleValue, useLanguage } from "@/lib/site-language";
@@ -67,7 +72,22 @@ export function Footer() {
           </FooterColumn>
         </div>
       </div>
-      <div className="border-t border-white/15 py-5 text-center text-xs text-white/55">&copy; {new Date().getFullYear()} {COMPANY_NAME}. {ar ? "جميع الحقوق محفوظة." : "All rights reserved."}</div>
+      <div className="border-t border-white/15">
+        <div className="container-premium flex flex-col items-center gap-4 py-6 text-center sm:flex-row sm:justify-between sm:text-start">
+          <p className="text-xs text-white/55">&copy; {new Date().getFullYear()} {COMPANY_NAME}. {ar ? "جميع الحقوق محفوظة." : "All rights reserved."}</p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-white/70">
+              <Code2 aria-hidden="true" className="h-4 w-4 text-brand-gold" />
+              <span>{ar ? "تصميم وتطوير" : "Designed & developed by"}</span>
+              <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="font-extrabold text-white transition hover:text-brand-gold">{ar ? DEVELOPER_NAME_AR : DEVELOPER_NAME}</a>
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <a href={`https://wa.me/${DEVELOPER_WHATSAPP_PHONE}`} target="_blank" rel="noopener noreferrer" aria-label={ar ? "تواصل مع المطور عبر واتساب" : "Contact the developer on WhatsApp"} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80 transition hover:border-emerald-400/50 hover:bg-emerald-400/10 hover:text-white"><FaWhatsapp aria-hidden="true" className="h-4 w-4 text-emerald-400" /><span dir="ltr">{DEVELOPER_WHATSAPP_DISPLAY}</span></a>
+              <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label={ar ? "صفحة المطور على فيسبوك" : "Developer Facebook profile"} className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/5 text-white/80 transition hover:border-blue-400/50 hover:bg-blue-400/10 hover:text-white"><FaFacebookF aria-hidden="true" className="h-3.5 w-3.5" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
     </footer>
   );
 }
