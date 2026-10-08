@@ -75,7 +75,8 @@ body {
   .mobile-inventory-section { padding-top: 1.5rem; padding-bottom: 2rem; }
 
   .car-card-grid { border-radius: 1rem; }
-  .car-card-grid .car-card-photo { height: auto; aspect-ratio: 4 / 3; }
+  .car-card-grid .car-card-photo { height: auto; aspect-ratio: 8 / 5; }
+  .car-card-grid .car-card-photo img { object-fit: contain; }
   .car-card-grid .car-card-overlays { inset: 0; padding: .25rem; }
   .car-card-grid .car-card-badges {
     position: absolute;
@@ -85,7 +86,7 @@ body {
   }
   .car-card-grid .car-card-extra-badge { display: none; }
   .car-card-grid .car-card-badges > span { padding: .25rem .5rem; font-size: .625rem; }
-  .car-card-grid .car-card-overlays > div:last-child { margin-inline-start: auto; gap: .125rem; }
+  .car-card-grid .car-card-overlays > div:last-child { display: none; }
   .car-card-grid .car-card-overlays button {
     width: 2.75rem;
     height: 2.75rem;
@@ -122,7 +123,7 @@ body {
     min-height: 2.7em;
     margin-top: 0;
   }
-  .car-card-grid .car-card-price { width: 100%; min-height: 3.25rem; text-align: start; }
+  .car-card-grid .car-card-price { width: 100%; text-align: start; }
   .car-card-grid .car-card-price-label { display: none; }
   .car-card-grid .car-card-primary-price {
     margin-top: 0;
@@ -130,8 +131,9 @@ body {
     line-height: 1.35;
     overflow-wrap: anywhere;
   }
-  .car-card-grid .car-card-price > p:not(.car-card-primary-price) { font-size: .625rem; }
+  .car-card-grid .car-card-price > p:not(.car-card-primary-price) { display: none; }
   .car-card-grid .car-card-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .125rem .25rem; margin-top: .25rem; }
+  .car-card-grid .car-card-specs > div:nth-child(n+3) { display: none; }
   .car-card-grid .car-card-specs > div { display: flex; align-items: center; justify-content: center; gap: .25rem; padding: .25rem 0; border: 0; background: transparent; }
   .car-card-grid .car-card-specs > div > div { height: 1rem; flex-shrink: 0; }
   .car-card-grid .car-card-specs > div:nth-child(-n+2) > div { display: none; }
