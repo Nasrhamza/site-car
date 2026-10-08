@@ -14,13 +14,11 @@ import {
   LayoutDashboard,
   LogIn,
   LogOut,
-  Menu,
   MessageCircle,
   Moon,
   PhoneCall,
   Sun,
-  Store,
-  X
+  Store
 } from "lucide-react";
 import { clearSession, getStoredUser, isAdminRole, isSellerRole, type StoredUser } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
@@ -34,7 +32,6 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
-  const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [sessionUser, setSessionUser] = useState<StoredUser | null>(null);
   const adminUser = sessionUser && isAdminRole(sessionUser.role) ? sessionUser : null;
@@ -65,7 +62,6 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    setOpen(false);
     setCarsMenuOpen(false);
   }, [pathname]);
 
@@ -82,7 +78,6 @@ export function Header() {
   const handleLogout = () => {
     clearSession();
     setSessionUser(null);
-    setOpen(false);
     router.push("/");
     router.refresh();
   };
@@ -199,14 +194,13 @@ export function Header() {
           <AppInstallButton />
 
           <button
-            onClick={() => setOpen((value) => !value)}
+            onClick={toggleTheme}
             type="button"
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
-            aria-label={open ? (language === "ar" ? "إغلاق الخيارات" : "Close options") : (language === "ar" ? "خيارات إضافية" : "More options")}
-            aria-expanded={open}
-            aria-controls="mobile-options"
+            aria-label={isDarkTheme ? (language === "ar" ? "الوضع الفاتح" : "Light mode") : (language === "ar" ? "الوضع الداكن" : "Dark mode")}
+            title={isDarkTheme ? (language === "ar" ? "الوضع الفاتح" : "Light mode") : (language === "ar" ? "الوضع الداكن" : "Dark mode")}
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isDarkTheme ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -240,49 +234,6 @@ export function Header() {
         </motion.div> : null}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            id="mobile-options"
-            className="absolute inset-x-0 top-full max-h-[60dvh] overflow-y-auto border-b border-zinc-200 bg-white shadow-xl lg:hidden dark:border-white/10 dark:bg-zinc-950"
-          >
-            <div className="container-premium py-4">
-              <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
-                <button type="button" onClick={toggleTheme} className="inline-flex items-center gap-3 rounded-xl bg-zinc-100 px-4 py-3 text-sm font-semibold dark:bg-white/5">{isDarkTheme ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}{isDarkTheme ? (language === "ar" ? "الوضع الفاتح" : "Light mode") : (language === "ar" ? "الوضع الداكن" : "Dark mode")}</button>
-                <Link href="/a-propos" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "من نحن" : "About us"}</Link>
-                <Link href="/faq" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "الأسئلة الشائعة" : "FAQ"}</Link>
-                <Link href="/developer" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "مطور الموقع" : "Website developer"}</Link>
-                {!adminUser && !sellerUser ? <Link href="/seller/login" className="inline-flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold dark:border-white/10"><LogIn className="h-5 w-5" />{language === "ar" ? "دخول البائع" : "Seller login"}</Link> : null}
-
-                {(isAdminRoute || sellerUser || adminUser) && <div className="grid gap-2 pt-2">
-                    <Link
-                      href={authHref}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-900 dark:border-white/10 dark:text-white"
-                    >
-                      <AuthIcon className="h-4 w-4" />
-                      {authLabel}
-                    </Link>
-                  </div>}
-
-                {(adminUser || sellerUser) && (
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 px-4 py-3 text-sm font-semibold text-rose-600"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {language === "ar" ? "تسجيل الخروج" : "Log out"}
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }
