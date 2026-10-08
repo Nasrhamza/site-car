@@ -1,13 +1,17 @@
-import { COMPANY_DESCRIPTION, COMPANY_NAME, COMPANY_SHORT_NAME } from "@/lib/company";
+import type { MetadataRoute } from "next";
+import { COMPANY_NAME, COMPANY_SHORT_NAME } from "@/lib/company";
 
-export default function manifest() {
+export default function manifest(): MetadataRoute.Manifest {
   return {
     name: COMPANY_NAME,
     short_name: COMPANY_SHORT_NAME,
-    description: COMPANY_DESCRIPTION,
+    description: "Browse vehicles, contact ALHADUNICARS and manage your inventory. سوق سيارات وتصدير عالمي من دبي.",
+    id: "/",
     start_url: "/",
+    scope: "/",
+    lang: "en",
     display: "standalone",
-    background_color: "#09090b",
+    background_color: "#ffffff",
     theme_color: "#C1121F",
     icons: [
       {

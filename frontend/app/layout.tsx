@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Providers from "@/components/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   description: "A simple Dubai car marketplace. Browse cars and contact the team directly.",
   metadataBase: new URL(getSiteUrl()),
   creator: DEVELOPER_NAME,
+  applicationName: COMPANY_NAME,
+  appleWebApp: {
+    capable: true,
+    title: COMPANY_NAME,
+    statusBarStyle: "default"
+  },
   robots: {
     index: true,
     follow: true,
@@ -49,6 +55,16 @@ export const metadata: Metadata = {
     url: "/",
     siteName: COMPANY_NAME
   }
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" }
+  ]
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

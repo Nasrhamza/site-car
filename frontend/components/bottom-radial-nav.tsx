@@ -42,7 +42,7 @@ export function BottomRadialNav() {
   ];
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-[70] flex justify-center sm:bottom-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[70] hidden justify-center lg:flex">
       <div className="relative h-[66px] w-[240px]">
         <motion.div
           aria-hidden="true"

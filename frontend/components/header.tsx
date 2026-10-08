@@ -1,33 +1,34 @@
 "use client";
 
 import Link from "next/link";
+import { FaWhatsapp } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
-  ArrowUpLeft,
+  BookOpen,
+  CarFront,
   ChevronDown,
+  Home,
   LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
+  MessageCircle,
   Moon,
   PhoneCall,
   Sun,
+  Store,
   X
 } from "lucide-react";
-import { clearSession, getStoredUser, isAdminRole, type StoredUser } from "@/lib/auth";
+import { clearSession, getStoredUser, isAdminRole, isSellerRole, type StoredUser } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
+import { AppInstallButton } from "@/components/app-install-button";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/site-language";
 import { ENGINE_CAPACITY_OPTIONS, REGIONAL_SPECS_OPTIONS, VEHICLE_BRANDS, VEHICLE_CATEGORIES, getCategoryDisplayLabel } from "@/lib/company";
-
-function readAdminUser() {
-  const user = getStoredUser();
-  return user && isAdminRole(user.role) ? user : null;
-}
 
 export function Header() {
   const pathname = usePathname();
@@ -35,21 +36,23 @@ export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [adminUser, setAdminUser] = useState<StoredUser | null>(null);
+  const [sessionUser, setSessionUser] = useState<StoredUser | null>(null);
+  const adminUser = sessionUser && isAdminRole(sessionUser.role) ? sessionUser : null;
+  const sellerUser = sessionUser && isSellerRole(sessionUser.role) ? sessionUser : null;
   const [carsMenuOpen, setCarsMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const isAdminRoute = pathname.startsWith("/admin");
   const navLinks = [
-    { href: "/", label: t.nav[0] },
-    { href: "/catalogue", label: t.nav[1] },
-    { href: "/guide", label: language === "en" ? "Guide" : "الدليل" },
-    { href: "/seller/request-account", label: language === "en" ? "Sell with us" : "اعرض سيارتك معنا" },
-    { href: "/contact", label: t.nav[2] }
+    { href: "/", label: t.nav[0], mobileLabel: language === "ar" ? "الرئيسية" : "Home", icon: Home },
+    { href: "/catalogue", label: t.nav[1], mobileLabel: language === "ar" ? "السيارات" : "Cars", icon: CarFront },
+    { href: "/guide", label: language === "en" ? "Guide" : "الدليل", mobileLabel: language === "ar" ? "الدليل" : "Guide", icon: BookOpen },
+    { href: "/seller/request-account", label: language === "en" ? "Sell with us" : "اعرض سيارتك معنا", mobileLabel: language === "ar" ? "بيع سيارتك" : "Sell", icon: Store },
+    { href: "/contact", label: t.nav[2], mobileLabel: language === "ar" ? "تواصل" : "Contact", icon: MessageCircle }
   ];
 
   useEffect(() => {
     const syncSession = () => {
-      setAdminUser(readAdminUser());
+      setSessionUser(getStoredUser());
     };
 
     syncSession();
@@ -67,9 +70,9 @@ export function Header() {
   }, [pathname]);
 
   const whatsappHref = buildWhatsAppUrl(language === "ar" ? "مرحباً، أريد مزيداً من المعلومات عن السيارات المتوفرة." : "Hello, I would like more information about the available cars.");
-  const authHref = adminUser ? "/admin" : "/login";
-  const authLabel = adminUser ? "Dashboard" : "Sign in";
-  const AuthIcon = adminUser ? LayoutDashboard : LogIn;
+  const authHref = adminUser ? "/admin" : sellerUser ? "/seller" : "/login";
+  const authLabel = adminUser || sellerUser ? (language === "ar" ? "لوحة الإدارة" : "Dashboard") : (language === "ar" ? "تسجيل الدخول" : "Sign in");
+  const AuthIcon = adminUser || sellerUser ? LayoutDashboard : LogIn;
   const isDarkTheme = mounted && resolvedTheme === "dark";
 
   const toggleTheme = () => {
@@ -78,15 +81,15 @@ export function Header() {
 
   const handleLogout = () => {
     clearSession();
-    setAdminUser(null);
+    setSessionUser(null);
     setOpen(false);
     router.push("/");
     router.refresh();
   };
 
   return (
-    <header onMouseLeave={() => setCarsMenuOpen(false)} className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
-      <div className="container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
+    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
+      <div className="app-header-content container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
@@ -172,43 +175,52 @@ export function Header() {
           </a>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <a
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white"
+            aria-label={t.whatsapp}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand text-sm font-semibold text-white sm:w-auto sm:px-4"
           >
-            <PhoneCall className="h-4 w-4" />
-            {t.whatsapp}
+            <FaWhatsapp aria-hidden="true" className="h-5 w-5" />
+            <span className="hidden sm:inline">{t.whatsapp}</span>
           </a>
 
           <button
               type="button"
               onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold text-zinc-700 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
-              aria-label="Change language"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-zinc-200 bg-white text-xs font-bold text-zinc-700 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
+              aria-label={language === "ar" ? "التغيير إلى الإنجليزية" : "Switch to Arabic"}
             >
               {language === "en" ? "العربية" : "EN"}
             </button>
 
-          <button
-            aria-label="Toggle theme"
-            onClick={toggleTheme}
-            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-700 transition dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200"
-          >
-            {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
+          <AppInstallButton />
 
           <button
             onClick={() => setOpen((value) => !value)}
-            className="rounded-full border border-zinc-200 bg-white p-2.5 text-zinc-900 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
-            aria-label="Open menu"
+            type="button"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            aria-label={open ? (language === "ar" ? "إغلاق الخيارات" : "Close options") : (language === "ar" ? "خيارات إضافية" : "More options")}
+            aria-expanded={open}
+            aria-controls="mobile-options"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
+
+      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="mobile-app-navigation grid grid-cols-5 gap-1 border-t border-zinc-100 pb-2 pt-1 lg:hidden dark:border-white/5">
+        {navLinks.map((item) => {
+          const accountTab = item.href === "/seller/request-account" && Boolean(adminUser || sellerUser);
+          const href = accountTab ? authHref : item.href;
+          const Icon = accountTab ? LayoutDashboard : item.icon;
+          const label = accountTab ? (language === "ar" ? "حسابي" : "Account") : item.mobileLabel;
+          const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`) || (href === "/catalogue" && (pathname.startsWith("/voitures/") || pathname.startsWith("/categorie/"))) || (href === "/seller/request-account" && pathname === "/seller/login");
+          return <Link key={item.href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand sm:text-xs", active ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-rose-300" : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-white/5")}><Icon aria-hidden="true" className="h-5 w-5 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>;
+        })}
+      </nav>
 
       <AnimatePresence>
         {carsMenuOpen ? <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }} onMouseEnter={() => setCarsMenuOpen(true)} onMouseLeave={() => setCarsMenuOpen(false)} className="absolute inset-x-0 top-full hidden border-b border-zinc-200 bg-white shadow-2xl lg:block dark:border-white/10 dark:bg-zinc-950">
@@ -235,24 +247,18 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="border-t border-zinc-200 bg-white lg:hidden dark:border-white/10 dark:bg-zinc-950"
+            id="mobile-options"
+            className="absolute inset-x-0 top-full max-h-[60dvh] overflow-y-auto border-b border-zinc-200 bg-white shadow-xl lg:hidden dark:border-white/10 dark:bg-zinc-950"
           >
             <div className="container-premium py-4">
               <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
-                {navLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-white/5",
-                      pathname === item.href && "bg-zinc-950 text-white hover:bg-zinc-950"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                <button type="button" onClick={toggleTheme} className="inline-flex items-center gap-3 rounded-xl bg-zinc-100 px-4 py-3 text-sm font-semibold dark:bg-white/5">{isDarkTheme ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}{isDarkTheme ? (language === "ar" ? "الوضع الفاتح" : "Light mode") : (language === "ar" ? "الوضع الداكن" : "Dark mode")}</button>
+                <Link href="/a-propos" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "من نحن" : "About us"}</Link>
+                <Link href="/faq" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "الأسئلة الشائعة" : "FAQ"}</Link>
+                <Link href="/developer" className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-white/5">{language === "ar" ? "مطور الموقع" : "Website developer"}</Link>
+                {!adminUser && !sellerUser ? <Link href="/seller/login" className="inline-flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold dark:border-white/10"><LogIn className="h-5 w-5" />{language === "ar" ? "دخول البائع" : "Seller login"}</Link> : null}
 
-                {isAdminRoute && <div className="grid gap-2 pt-2">
+                {(isAdminRoute || sellerUser || adminUser) && <div className="grid gap-2 pt-2">
                     <Link
                       href={authHref}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-900 dark:border-white/10 dark:text-white"
@@ -262,14 +268,14 @@ export function Header() {
                     </Link>
                   </div>}
 
-                {isAdminRoute && adminUser && (
+                {(adminUser || sellerUser) && (
                   <button
                     type="button"
                     onClick={handleLogout}
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 px-4 py-3 text-sm font-semibold text-rose-600"
                   >
                     <LogOut className="h-4 w-4" />
-                    Logout
+                    {language === "ar" ? "تسجيل الخروج" : "Log out"}
                   </button>
                 )}
               </div>

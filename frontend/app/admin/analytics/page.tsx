@@ -441,7 +441,7 @@ export default function AdminAnalyticsPage() {
         {updatedAt ? <p className="relative mt-5 text-xs text-white/45">{copy.lastUpdate}: {updatedAt.toLocaleTimeString(language === "ar" ? "ar-TN" : "en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p> : null}
       </section>
 
-      <nav className="sticky top-20 z-20 overflow-x-auto rounded-2xl border border-zinc-200 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-900/95" aria-label={language === "ar" ? "أقسام التحليلات" : "Analytics sections"}>
+      <nav className="sticky top-[calc(var(--site-header-offset)+env(safe-area-inset-top))] z-20 overflow-x-auto rounded-2xl border border-zinc-200 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-900/95" aria-label={language === "ar" ? "أقسام التحليلات" : "Analytics sections"}>
         <div className="flex min-w-max gap-2">
           {panels.map((panel) => <button key={panel.id} type="button" onClick={() => setActivePanel(panel.id)} className={cn("inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold transition", activePanel === panel.id ? "bg-brand text-white shadow-sm" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-white/10 dark:hover:text-white")}><panel.icon className="h-4 w-4" />{panel.label}</button>)}
         </div>

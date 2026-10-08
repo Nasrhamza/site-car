@@ -8,10 +8,49 @@
   --brand-red: #c1121f;
   --brand-gold: #d4af37;
   --brand-dark: #111111;
+  --site-header-offset: 8.5rem;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--site-header-offset) + env(safe-area-inset-top));
+}
+
+.mobile-app-header {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mobile-app-navigation {
+  padding-left: max(.5rem, env(safe-area-inset-left));
+  padding-right: max(.5rem, env(safe-area-inset-right));
+}
+
+@media (max-width: 1023px) {
+  .app-header-content {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .mobile-app-header a[href*="wa.me"]::after { display: none; }
+}
+
+@media (display-mode: standalone) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  .whatsapp-float-shell { bottom: calc(1rem + env(safe-area-inset-bottom)); }
+}
+
+.app-install-dialog {
+  max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.app-install-dialog::backdrop {
+  background: rgb(9 9 11 / 65%);
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 1024px) {
+  :root { --site-header-offset: 5rem; }
 }
 
 body {
