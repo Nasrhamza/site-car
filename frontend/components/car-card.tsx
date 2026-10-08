@@ -189,7 +189,7 @@ export function CarCard({
             ) : (
               <>
                 <p className="car-card-primary-price price-attention mt-1 text-lg font-bold text-brand dark:text-rose-400">{formatCurrency(Number(car.price))}</p>
-                <p className="mt-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">≈ {currencyTnd(Number(car.price), aedToTndRate)}</p>
+                <p className="mt-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300"><bdi dir="ltr">≈ {currencyTnd(Number(car.price), aedToTndRate)}</bdi></p>
                 <p className="mt-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">{language === "ar" ? "السعر شامل كل شيء" : "All costs included"}</p>
               </>
             )}
@@ -211,7 +211,7 @@ export function CarCard({
                     <Icon className="h-3.5 w-3.5" />
                   ) : null}
                 </div>
-                <p className="mt-1 flex min-h-5 items-center justify-center truncate text-center font-semibold text-zinc-950 dark:text-white">{spec.value}</p>
+                <p dir="auto" className="mt-1 flex min-h-5 items-center justify-center truncate text-center font-semibold text-zinc-950 dark:text-white">{spec.value}</p>
               </div>
             );
           })}
