@@ -543,3 +543,29 @@ export function getSiteUrl() {
 
   return "https://example.com";
 }
+
+export function getDeveloperSchema() {
+  const profileUrl = `${getSiteUrl()}/developer`;
+  return {
+    "@type": "Person",
+    "@id": `${profileUrl}#person`,
+    name: DEVELOPER_NAME,
+    alternateName: DEVELOPER_NAME_AR,
+    jobTitle: "Web Designer & Developer",
+    description: `Hamza Nasr is the designer and developer of the ${COMPANY_NAME} website. حمزة نصر هو مصمم ومطور موقع ${COMPANY_NAME}.`,
+    url: profileUrl,
+    telephone: `+${DEVELOPER_WHATSAPP_PHONE}`,
+    sameAs: [DEVELOPER_FACEBOOK_URL]
+  };
+}
+
+export function getWebsiteSchema() {
+  return {
+    "@type": "WebSite",
+    "@id": `${getSiteUrl()}/#website`,
+    name: COMPANY_NAME,
+    url: `${getSiteUrl()}/`,
+    inLanguage: ["en", "ar"],
+    creator: getDeveloperSchema()
+  };
+}

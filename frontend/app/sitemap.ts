@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/guide/achat-securise",
     "/contact",
     "/a-propos",
+    "/developer",
     "/categorie/tracteurs",
     "/categorie/camions",
     "/faq"

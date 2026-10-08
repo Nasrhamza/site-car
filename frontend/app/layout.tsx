@@ -10,6 +10,8 @@ import {
   COMPANY_FACEBOOK_URL,
   COMPANY_NAME,
   COMPANY_WHATSAPP_PHONE,
+  DEVELOPER_NAME,
+  getWebsiteSchema,
   getSiteUrl
 } from "@/lib/company";
 
@@ -20,6 +22,7 @@ export const metadata: Metadata = {
   },
   description: "A simple Dubai car marketplace. Browse cars and contact the team directly.",
   metadataBase: new URL(getSiteUrl()),
+  creator: DEVELOPER_NAME,
   robots: {
     index: true,
     follow: true,
@@ -72,7 +75,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c")
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [organizationSchema, getWebsiteSchema()]
+            }).replace(/</g, "\\u003c")
           }}
         />
         <Providers>

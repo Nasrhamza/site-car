@@ -79,7 +79,7 @@ export function Footer() {
             <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-white/70">
               <Code2 aria-hidden="true" className="h-4 w-4 text-brand-gold" />
               <span>{ar ? "تصميم وتطوير" : "Designed & developed by"}</span>
-              <a href={DEVELOPER_FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="font-extrabold text-white transition hover:text-brand-gold">{ar ? DEVELOPER_NAME_AR : DEVELOPER_NAME}</a>
+              <Link href="/developer" className="font-extrabold text-white transition hover:text-brand-gold">{ar ? DEVELOPER_NAME_AR : DEVELOPER_NAME}</Link>
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <a href={`https://wa.me/${DEVELOPER_WHATSAPP_PHONE}`} target="_blank" rel="noopener noreferrer" aria-label={ar ? "تواصل مع المطور عبر واتساب" : "Contact the developer on WhatsApp"} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80 transition hover:border-emerald-400/50 hover:bg-emerald-400/10 hover:text-white"><FaWhatsapp aria-hidden="true" className="h-4 w-4 text-emerald-400" /><span dir="ltr">{DEVELOPER_WHATSAPP_DISPLAY}</span></a>
