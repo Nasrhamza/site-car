@@ -216,10 +216,10 @@ export default function CataloguePage() {
   }, [filterCars]);
 
   return (
-    <div className="container-premium section-spacing">
-      <div className="mb-10 max-w-3xl">
+    <div className="container-premium section-spacing mobile-inventory-section">
+      <div className="mb-5 max-w-3xl sm:mb-10">
         <p className="gradient-text text-sm font-semibold uppercase tracking-[0.3em]">{language === "ar" ? "المعرض" : "Inventory"}</p>
-        <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">{language === "ar" ? "المركبات المتوفرة" : "Available vehicles"}</h1>
+        <h1 className="mt-3 font-serif text-3xl font-bold sm:text-5xl">{language === "ar" ? "المركبات المتوفرة" : "Available vehicles"}</h1>
       </div>
 
       <SearchFilters
@@ -242,13 +242,13 @@ export default function CataloguePage() {
       ) : null}
 
       {loading ? (
-        <div className={`mt-6 grid gap-4 ${view === "grid" ? "sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"}`}>
+        <div className={`mt-5 grid gap-2.5 sm:mt-6 sm:gap-4 ${view === "grid" ? "grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"}`}>
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="h-[360px] animate-pulse rounded-[24px] border bg-zinc-100 dark:bg-white/5" />
           ))}
         </div>
       ) : (
-        <div className={`mt-6 grid gap-4 ${view === "grid" ? "sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"}`}>
+        <div data-car-grid className={`mt-5 grid gap-2.5 sm:mt-6 sm:gap-4 ${view === "grid" ? "grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"}`}>
           {cars.map((car) => <CarCard key={car._id} car={car} variant={view} />)}
         </div>
       )}

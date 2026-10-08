@@ -346,7 +346,7 @@ export default function CarDetailsClient({ initialData }: { initialData: any }) 
 
         {similar?.length > 0 ? <section className="mt-14 border-t border-zinc-200 pt-10">
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.3em] text-brand">ALHADUNICARS</p><h2 className="mt-2 text-3xl font-extrabold text-zinc-950 sm:text-4xl">{copy.similar}</h2></div><Link href="/catalogue" className="hidden rounded-full border border-zinc-200 px-4 py-2 text-sm font-bold sm:inline-flex">{copy.inventory}</Link></div>
-          <div className="mt-7 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{similar.map((item: any) => <CarCard key={item._id} car={item} />)}</div>
+          <div data-car-grid className="mt-7 grid grid-cols-2 gap-2.5 sm:gap-6 xl:grid-cols-3">{similar.map((item: any) => <CarCard key={item._id} car={item} />)}</div>
         </section> : null}
       </div>
 

@@ -70,6 +70,76 @@ body {
   @apply py-12 md:py-16;
 }
 
+/* Compact browsing on phones; list view and desktop retain their larger layout. */
+@media (max-width: 639px) {
+  .mobile-inventory-section { padding-top: 1.5rem; padding-bottom: 2rem; }
+
+  .car-card-grid { border-radius: 1rem; }
+  .car-card-grid .car-card-photo { height: auto; aspect-ratio: 4 / 3; }
+  .car-card-grid .car-card-overlays { inset: 0; padding: .25rem; }
+  .car-card-grid .car-card-badges {
+    position: absolute;
+    bottom: .375rem;
+    inset-inline-start: .375rem;
+    max-width: calc(100% - .75rem);
+  }
+  .car-card-grid .car-card-extra-badge { display: none; }
+  .car-card-grid .car-card-badges > span { padding: .25rem .5rem; font-size: .625rem; }
+  .car-card-grid .car-card-overlays > div:last-child { margin-inline-start: auto; gap: .125rem; }
+  .car-card-grid .car-card-overlays button {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .car-card-grid .car-card-overlays button svg {
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: .4375rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+  }
+  .car-card-grid .car-card-overlays button[aria-pressed="true"] svg { background: #18181b; color: white; }
+  .car-card-grid .car-card-overlays button:first-child[aria-pressed="true"] svg { background: #f43f5e; }
+  .car-card-grid .car-card-content { padding: .625rem; }
+  .car-card-grid .car-card-heading { flex-direction: column; gap: .5rem; }
+  .car-card-grid .car-card-heading > div:first-child { width: 100%; }
+  .car-card-grid .car-card-heading > div:first-child > p { font-size: .625rem; }
+  .car-card-grid h3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: .8125rem;
+    line-height: 1.35;
+    min-height: 2.7em;
+  }
+  .car-card-grid .car-card-price { width: 100%; min-height: 3.75rem; text-align: start; }
+  .car-card-grid .car-card-price-label { display: none; }
+  .car-card-grid .car-card-primary-price {
+    margin-top: 0;
+    font-size: clamp(.8125rem, 3.6vw, 1rem);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .car-card-grid .car-card-price > p:not(.car-card-primary-price) { font-size: .625rem; }
+  .car-card-grid .car-card-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; margin-top: .5rem; }
+  .car-card-grid .car-card-specs > div { border-radius: .5rem; padding: .25rem .125rem; }
+  .car-card-grid .car-card-specs > div > div { height: 1rem; }
+  .car-card-grid .car-card-specs > div > p { margin-top: .125rem; min-height: 1rem; font-size: .625rem; }
+  .car-card-grid .car-card-verification { display: none; }
+  .car-card-grid .car-card-actions { grid-template-columns: minmax(0, 1fr) 2.75rem; gap: .375rem; margin-top: auto; padding-top: .625rem; }
+  .car-card-grid .car-card-actions > a { min-height: 2.75rem; min-width: 0; padding: .5rem; font-size: .75rem; }
+  .car-card-grid .car-card-actions > a:last-child span { display: none; }
+  .car-card-grid .car-card-actions > a:last-child svg { width: 1.25rem; height: 1.25rem; }
+}
+
 .button-glow {
   box-shadow: 0 14px 34px rgba(193, 18, 31, 0.18);
 }

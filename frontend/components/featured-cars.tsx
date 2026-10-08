@@ -10,7 +10,7 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
   const { language, t } = useLanguage();
 
   return (
-    <section className="section-spacing overflow-hidden border-y border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-900">
+    <section className="section-spacing mobile-inventory-section overflow-hidden border-y border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-900">
       <div className="container-premium">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
@@ -55,7 +55,7 @@ export function FeaturedCars({ cars = [] }: { cars?: any[] }) {
             {t.noCars}
           </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div data-car-grid className="grid grid-cols-2 gap-2.5 sm:gap-5 xl:grid-cols-3">
             {cars.slice(0, 9).map((car) => (
               <CarCard key={car._id || car.id || car.slug} car={car} />
             ))}
