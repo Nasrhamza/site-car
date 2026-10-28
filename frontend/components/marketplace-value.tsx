@@ -17,7 +17,7 @@ export function MarketplaceValue() {
 
   return <section className="relative isolate min-h-[480px] overflow-hidden bg-zinc-950 text-white shadow-[0_24px_70px_rgba(15,23,42,.12)] sm:mb-12 sm:min-h-[700px]">
       <div className="absolute inset-0">
-        <Image src="/brand/alhadunicars-marketplace-hero.png" alt="Premium vehicles presented by ALHADUNICARS in Dubai" fill className="object-cover object-center" sizes="(max-width: 1280px) 100vw, 1280px" />
+        <Image src="/brand/alhadunicars-marketplace-hero-2026.webp" alt="Premium vehicles presented by ALHADUNICARS in Dubai" fill priority className="object-cover object-center" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/10 rtl:bg-gradient-to-l" />
       </div>
 
