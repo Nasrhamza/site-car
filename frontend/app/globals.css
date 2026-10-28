@@ -321,62 +321,28 @@ a {
   transform-origin: right bottom;
 }
 
-@keyframes export-plane-flight {
-  0%, 8% {
-    left: 1.75rem;
-    transform: translateY(-50%) translateY(8px) rotate(-4deg) scale(.88);
-  }
-  46% {
-    transform: translateY(-50%) translateY(-15px) rotate(2deg) scale(1.04);
-  }
-  88%, 100% {
-    left: calc(100% - 5.25rem);
-    transform: translateY(-50%) translateY(5px) rotate(-2deg) scale(.92);
-  }
+@keyframes export-globe-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
 }
 
-@keyframes export-route-fill {
-  0%, 8% { width: 0; opacity: .35; }
-  88%, 100% { width: calc(100% - 2.5rem); opacity: 1; }
+@keyframes export-caption-light {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
-@keyframes export-cloud-drift {
-  0%, 100% { transform: translateX(-10px); opacity: .45; }
-  50% { transform: translateX(16px); opacity: .9; }
+.export-world-caption {
+  color: #cffafe;
+  background-image: linear-gradient(110deg, #ffffff 15%, #67e8f9 45%, #22d3ee 60%, #ffffff 85%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.export-flight-plane {
-  animation: export-plane-flight 7s cubic-bezier(.45,.05,.25,1) infinite;
-  will-change: left, transform;
-}
-
-.export-flight-progress {
-  animation: export-route-fill 7s cubic-bezier(.45,.05,.25,1) infinite;
-}
-
-.export-flight-cloud {
-  animation: export-cloud-drift 5s ease-in-out infinite;
-}
-
-.export-flight-cloud-delay {
-  animation-delay: -2.4s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .export-flight-plane {
-    left: calc(50% - 1.75rem);
-    animation: none;
-    transform: translateY(-50%);
-  }
-
-  .export-flight-progress {
-    width: 50%;
-    animation: none;
-  }
-
-  .export-flight-cloud {
-    animation: none;
-  }
+@media (prefers-reduced-motion: no-preference) {
+  .export-globe-float { animation: export-globe-float 8s ease-in-out infinite; }
+  .export-world-caption { animation: export-caption-light 7s ease-in-out infinite; }
 }
 
 .whatsapp-pointer-finger {

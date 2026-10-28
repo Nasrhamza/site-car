@@ -1,12 +1,14 @@
 "use client";
 
-import { ArrowRight, FileCheck2, Globe2, MessageCircle, Plane, Ship } from "lucide-react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { ArrowRight, FileCheck2, Globe2, MessageCircle, Ship } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { buildWhatsAppUrl } from "@/lib/company";
 import { useLanguage } from "@/lib/site-language";
 
 export function HomeGlobalExport() {
   const { language } = useLanguage();
+  const reduceMotion = useReducedMotion();
   const ar = language === "ar";
   const destinations = ar
     ? ["دول الخليج", "أفريقيا", "أوروبا", "آسيا"]
@@ -16,11 +18,11 @@ export function HomeGlobalExport() {
     <section className="overflow-hidden bg-white py-12 transition-colors dark:bg-zinc-950 sm:py-16">
       <div className="container-premium">
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.65 }}
-          className="relative isolate overflow-hidden rounded-[32px] bg-[#203746] px-5 py-7 text-white shadow-[0_28px_80px_rgba(32,55,70,.22)] sm:px-8 sm:py-9 lg:px-10"
+          className="relative isolate overflow-hidden rounded-[32px] bg-gradient-to-br from-[#172f3b] via-[#0b202c] to-[#050c15] px-5 py-7 text-white shadow-[0_28px_80px_rgba(32,55,70,.22)] sm:px-8 sm:py-9 lg:px-10"
         >
           <div className="premium-grid absolute inset-0 -z-10 opacity-30" />
           <div className="absolute -left-20 -top-24 -z-10 h-72 w-72 rounded-full bg-brand/25 blur-[90px]" />
@@ -65,7 +67,7 @@ export function HomeGlobalExport() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-white/40">{ar ? "نقطة الانطلاق" : "Departure"}</p>
-                  <p className="mt-1 text-lg font-black">Dubai</p>
+                  <p className="mt-1 text-lg font-black">{ar ? "دبي" : "Dubai"}</p>
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-emerald-400">
                   <Globe2 className="h-5 w-5" />
@@ -76,16 +78,26 @@ export function HomeGlobalExport() {
                 </div>
               </div>
 
-              <div className="export-flight-route relative mt-7 h-32" aria-label={ar ? "مسار تصدير من دبي إلى العالم" : "Export route from Dubai to the world"}>
-                <div className="absolute inset-x-5 top-1/2 h-px -translate-y-1/2 bg-white/20" />
-                <div className="export-flight-progress absolute left-5 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-gradient-to-r from-brand via-red-400 to-emerald-400" />
-                <span className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-4 border-[#203746] bg-brand shadow-[0_0_0_3px_rgba(255,255,255,.13)]" />
-                <span className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-4 border-[#203746] bg-emerald-400 shadow-[0_0_0_3px_rgba(255,255,255,.13)]" />
-                <div className="export-flight-plane absolute left-7 top-1/2 z-10 grid h-14 w-14 place-items-center rounded-full border border-white/25 bg-white text-[#203746] shadow-[0_16px_32px_rgba(0,0,0,.28)]">
-                  <Plane className="h-7 w-7 rotate-45 text-brand" />
+              <div className="relative my-5 text-center sm:my-7">
+                <div className="relative mx-auto aspect-square w-full max-w-[240px] sm:max-w-[280px]">
+                  <div aria-hidden="true" className="absolute inset-8 rounded-full bg-cyan-400/15 blur-3xl" />
+                  <Image src="/brand/worldwide-export-globe.webp" alt={ar ? "الكرة الأرضية — تصدير السيارات من دبي إلى العالم" : "Digital globe — vehicle export from Dubai to the world"} width={480} height={480} unoptimized className="export-globe-float relative h-full w-full object-contain mix-blend-screen" />
                 </div>
-                <span className="export-flight-cloud absolute left-[34%] top-2 h-5 w-14 rounded-full bg-white/10 before:absolute before:-top-2 before:left-2 before:h-7 before:w-7 before:rounded-full before:bg-white/10 after:absolute after:-top-3 after:right-2 after:h-8 after:w-8 after:rounded-full after:bg-white/10" />
-                <span className="export-flight-cloud export-flight-cloud-delay absolute bottom-2 right-[24%] h-4 w-12 rounded-full bg-white/[.07] before:absolute before:-top-2 before:left-2 before:h-6 before:w-6 before:rounded-full before:bg-white/[.07] after:absolute after:-top-2 after:right-1 after:h-6 after:w-6 after:rounded-full after:bg-white/[.07]" />
+                <motion.div
+                  key={language}
+                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.8, delay: 0.15 }}
+                  className="relative -mt-1 pb-2"
+                >
+                  <h3 className={`export-world-caption text-3xl leading-tight sm:text-4xl ${ar ? "font-semibold" : "font-serif italic"}`}>
+                    {ar ? "تصدير بلا حدود." : "Export without borders."}
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-xs text-xs leading-6 tracking-wide text-cyan-100/60 sm:text-sm">
+                    {ar ? "من دبي إلى العالم. وثائق، تصدير وشحن، خطوة بخطوة." : "From Dubai to the world. Documents, export and shipping, every step of the way."}
+                  </p>
+                </motion.div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -100,6 +112,29 @@ export function HomeGlobalExport() {
               </div>
             </div>
           </div>
+        </motion.div>
+
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.7 }}
+          className="mt-8 overflow-hidden rounded-[32px] border border-white/10 bg-[#030609] px-5 py-9 text-center text-white shadow-premium sm:px-10 sm:py-12"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[.28em] text-cyan-300 sm:text-xs">{ar ? "نخدمك أينما كنت" : "Our reach. Your world."}</p>
+          <h2 className={`mx-auto mt-4 max-w-3xl text-3xl leading-tight sm:text-5xl ${ar ? "font-bold" : "font-serif"}`}>
+            {ar ? "من دبي. نخدم عملاءنا حول العالم." : "Based in Dubai. Serving customers worldwide."}
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/60 sm:text-base">
+            {ar ? "أينما كانت وجهتك، تواصل مع فريقنا في دبي لاختيار سيارتك وتنسيق وثائق التصدير والشحن." : "Wherever your destination, connect with our Dubai team for your next vehicle, export documents and shipping support."}
+          </p>
+          <Image src="/brand/worldwide-export-map.webp" alt={ar ? "خريطة العالم توضّح خدمة عملائنا في مختلف القارات" : "Dotted world map representing our worldwide customer service and export reach"} width={1703} height={960} unoptimized className="export-world-map mx-auto my-6 h-auto w-full max-w-4xl object-contain mix-blend-screen sm:my-8" />
+          <div className="flex flex-wrap justify-center gap-2">
+            {(ar ? ["الشرق الأوسط", "أفريقيا", "أوروبا", "آسيا", "الأمريكتان", "أوقيانوسيا"] : ["Middle East", "Africa", "Europe", "Asia", "Americas", "Oceania"]).map((region) => <span key={region} className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70">{region}</span>)}
+          </div>
+          <a href={buildWhatsAppUrl(ar ? "مرحباً، أريد معرفة خيارات تصدير سيارة إلى وجهتي." : "Hello, I would like to discuss vehicle export options to my destination.")} target="_blank" rel="noreferrer" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-200/30 bg-cyan-300/10 px-6 py-3 text-sm font-bold text-cyan-100 transition hover:border-cyan-200/60 hover:bg-cyan-300/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200">
+            {ar ? "أخبرنا بوجهتك" : "Tell us your destination"}<ArrowRight aria-hidden="true" className="h-4 w-4 rtl:rotate-180" />
+          </a>
         </motion.div>
       </div>
     </section>
