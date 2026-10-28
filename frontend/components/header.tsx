@@ -83,7 +83,7 @@ export function Header() {
   };
 
   return (
-    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
+    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 border-b border-zinc-200/40 bg-white/40 backdrop-blur-sm dark:border-white/10 dark:bg-zinc-950/30">
       <div className="app-header-content container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -95,28 +95,24 @@ export function Header() {
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav aria-label={language === "ar" ? "التنقل الرئيسي" : "Main navigation"} className="glass-navigation hidden w-[clamp(280px,36vw,480px)] shrink-0 grid-cols-5 items-center gap-1 rounded-full p-1.5 lg:grid">
           {navLinks.map((item) => {
-            const active = pathname === item.href;
-
-            if (item.href === "/catalogue") {
-              return <div key={item.href} className="flex h-16 items-center lg:h-18" onMouseEnter={() => setCarsMenuOpen(true)}>
-                <Link href={item.href} className={cn("nav-animated-link inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300", active && "nav-animated-link-active text-zinc-950 dark:text-white")}>
-                  {item.label}<ChevronDown className={`h-4 w-4 transition ${carsMenuOpen ? "rotate-180" : ""}`} />
-                </Link>
-              </div>;
-            }
+            const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`) || (item.href === "/catalogue" && (pathname.startsWith("/voitures/") || pathname.startsWith("/categorie/")));
+            const Icon = item.icon;
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  "nav-animated-link rounded-full px-3 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300",
-                  active && "nav-animated-link-active text-zinc-950 dark:text-white"
-                )}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+                title={item.label}
+                onMouseEnter={() => setCarsMenuOpen(item.href === "/catalogue")}
+                onFocus={() => setCarsMenuOpen(false)}
+                className={cn("glass-navigation-link", active && "glass-navigation-link-active")}
               >
-                {item.label}
+                <Icon aria-hidden="true" className="h-6 w-6" strokeWidth={1.6} />
+                {item.href === "/catalogue" && <ChevronDown aria-hidden="true" className={`absolute right-1.5 h-3 w-3 transition ${carsMenuOpen ? "rotate-180" : ""}`} />}
               </Link>
             );
           })}
@@ -205,16 +201,16 @@ export function Header() {
         </div>
       </div>
 
-      {(pathname.startsWith("/admin") || pathname.startsWith("/voitures/") || pathname === "/login") && <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="mobile-app-navigation grid grid-cols-5 gap-1 border-t border-zinc-100 pb-2 pt-1 lg:hidden dark:border-white/5">
+      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="glass-navigation mobile-app-navigation mx-4 mb-3 grid grid-cols-5 items-center gap-1 rounded-full p-1.5 lg:hidden">
         {navLinks.map((item) => {
           const accountTab = item.href === "/seller/request-account" && Boolean(adminUser || sellerUser);
           const href = accountTab ? authHref : item.href;
           const Icon = accountTab ? LayoutDashboard : item.icon;
           const label = accountTab ? (language === "ar" ? "حسابي" : "Account") : item.mobileLabel;
           const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`) || (href === "/catalogue" && (pathname.startsWith("/voitures/") || pathname.startsWith("/categorie/"))) || (href === "/seller/request-account" && pathname === "/seller/login");
-          return <Link key={item.href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand sm:text-xs", active ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-rose-300" : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-white/5")}><Icon aria-hidden="true" className="h-5 w-5 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>;
+          return <Link key={item.href} href={href} aria-label={label} title={label} aria-current={active ? "page" : undefined} className={cn("glass-navigation-link", active && "glass-navigation-link-active")}><Icon aria-hidden="true" className="h-6 w-6 shrink-0" strokeWidth={1.6} /></Link>;
         })}
-      </nav>}
+      </nav>
 
       <AnimatePresence>
         {carsMenuOpen ? <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }} onMouseEnter={() => setCarsMenuOpen(true)} onMouseLeave={() => setCarsMenuOpen(false)} className="absolute inset-x-0 top-full hidden border-b border-zinc-200 bg-white shadow-2xl lg:block dark:border-white/10 dark:bg-zinc-950">
