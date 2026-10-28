@@ -8,7 +8,7 @@
   --brand-red: #c1121f;
   --brand-gold: #d4af37;
   --brand-dark: #111111;
-  --site-header-offset: 10rem;
+  --site-header-offset: 8.5rem;
 }
 
 html {
@@ -17,7 +17,26 @@ html {
 }
 
 .mobile-app-header {
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid #e4e4e7;
+  background: rgb(255 255 255 / 95%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.dark .mobile-app-header {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(9 9 11 / 95%);
+}
+
+@media (min-width: 1024px) {
+.mobile-app-header,
+.dark .mobile-app-header {
   padding-top: calc(.625rem + env(safe-area-inset-top));
+  border-bottom: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .header-glass-shell {
@@ -49,9 +68,6 @@ html {
   background: rgb(255 255 255 / 12%);
   border-color: rgb(255 255 255 / 25%);
 }
-
-@media (max-width: 1023px) {
-  .header-glass-shell { padding-bottom: .5rem; }
 }
 
 .mobile-app-navigation {

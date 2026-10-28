@@ -83,15 +83,15 @@ export function Header() {
   };
 
   return (
-    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 px-3 pb-3 sm:px-5">
-      <div className="header-glass-shell mx-auto max-w-7xl rounded-[28px] lg:rounded-full">
+    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 lg:px-5 lg:pb-3">
+      <div className="header-glass-shell mx-auto max-w-7xl lg:rounded-full">
       <div className="app-header-content container-premium flex h-16 items-center justify-between gap-3 lg:h-[72px]">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
             <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-white">ALHADUNICARS</p>
-              <p className="text-xs text-white/55">{language === "ar" ? "سوق سيارات وتصدير من دبي" : "Dubai car marketplace"}</p>
+              <p className="truncate text-sm font-semibold text-zinc-950 lg:text-white dark:text-white">ALHADUNICARS</p>
+              <p className="text-xs text-zinc-500 lg:text-white/55 dark:text-zinc-400 dark:lg:text-white/55">{language === "ar" ? "سوق سيارات وتصدير من دبي" : "Dubai car marketplace"}</p>
             </div>
           </Link>
         </div>
@@ -202,14 +202,14 @@ export function Header() {
         </div>
       </div>
 
-      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="glass-navigation mobile-app-navigation mx-3 grid grid-cols-5 items-center gap-1 rounded-full p-1.5 lg:hidden">
+      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="mobile-app-navigation grid grid-cols-5 gap-1 border-t border-zinc-100 pb-2 pt-1 lg:hidden dark:border-white/5">
         {navLinks.map((item) => {
           const accountTab = item.href === "/seller/request-account" && Boolean(adminUser || sellerUser);
           const href = accountTab ? authHref : item.href;
           const Icon = accountTab ? LayoutDashboard : item.icon;
           const label = accountTab ? (language === "ar" ? "حسابي" : "Account") : item.mobileLabel;
           const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`) || (href === "/catalogue" && (pathname.startsWith("/voitures/") || pathname.startsWith("/categorie/"))) || (href === "/seller/request-account" && pathname === "/seller/login");
-          return <Link key={item.href} href={href} aria-label={label} title={label} aria-current={active ? "page" : undefined} className={cn("glass-navigation-link", active && "glass-navigation-link-active")}><Icon aria-hidden="true" className="h-6 w-6 shrink-0" strokeWidth={1.6} /></Link>;
+          return <Link key={item.href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand sm:text-xs", active ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-rose-300" : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-white/5")}><Icon aria-hidden="true" className="h-5 w-5 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>;
         })}
       </nav>
       </div>
