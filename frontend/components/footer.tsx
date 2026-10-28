@@ -39,7 +39,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-slate-700 bg-[#203746] text-white">
+    <footer className="border-t border-white/10 bg-gradient-to-br from-[#1c1523] via-[#100c15] to-[#0b090f] text-white">
       <div className="container-premium py-12 sm:py-14">
         <div className="grid gap-8 border-b border-white/15 pb-10 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div className="max-w-xl">
