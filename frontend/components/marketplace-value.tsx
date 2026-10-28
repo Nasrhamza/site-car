@@ -2,8 +2,60 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, BadgeCheck, Globe2, Search, ShieldCheck, Truck } from "lucide-react";
 import { useLanguage } from "@/lib/site-language";
+
+function HeroTypewriter({ text }: { text: string }) {
+  const [visible, setVisible] = useState(text);
+
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Keep Arabic diacritics attached to their letters while typing.
+    const letters = Array.from(text).reduce<string[]>((result, letter) => {
+      if (/\p{M}/u.test(letter) && result.length) result[result.length - 1] += letter;
+      else result.push(letter);
+      return result;
+    }, []);
+    let frame = 0;
+    let startedAt: number | undefined;
+    let lastCount = -1;
+
+    const tick = (now: number) => {
+      if (startedAt === undefined) startedAt = now;
+      const count = Math.min(letters.length, Math.max(0, Math.floor((now - startedAt - 280) / 45)));
+      if (count !== lastCount) {
+        setVisible(letters.slice(0, count).join(""));
+        lastCount = count;
+      }
+      if (count < letters.length) frame = window.requestAnimationFrame(tick);
+    };
+    const start = () => {
+      window.cancelAnimationFrame(frame);
+      if (preference.matches) {
+        setVisible(text);
+        return;
+      }
+      startedAt = undefined;
+      lastCount = -1;
+      setVisible("");
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    start();
+    preference.addEventListener("change", start);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      preference.removeEventListener("change", start);
+    };
+  }, [text]);
+
+  return <h2 aria-label={text} className="home-hero-enter relative mt-4 max-w-2xl text-3xl font-black leading-[1.12] tracking-[-.04em] sm:mt-6 sm:text-6xl">
+    {/* Reserve the final height so typing never moves the content below. */}
+    <span aria-hidden="true" className="invisible block">{text}</span>
+    <span aria-hidden="true" className="absolute inset-0">{visible}</span>
+  </h2>;
+}
 
 export function MarketplaceValue() {
   const { language, t } = useLanguage();
@@ -35,9 +87,9 @@ export function MarketplaceValue() {
 
       <div className="container-premium relative flex min-h-[480px] items-center pb-8 pt-28 sm:min-h-[700px] sm:pb-16 sm:pt-36">
         <div className="w-full max-w-5xl">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] backdrop-blur"><Globe2 className="h-4 w-4 text-brand" />{copy.eyebrow}</span>
-          <h2 className="mt-4 max-w-2xl text-3xl font-black leading-[1.12] tracking-[-.04em] sm:mt-6 sm:text-6xl">{copy.title}</h2>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">{copy.body}</p>
+          <span className="home-hero-enter inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] backdrop-blur"><Globe2 className="h-4 w-4 text-brand" />{copy.eyebrow}</span>
+          <HeroTypewriter key={language} text={copy.title} />
+          <p className="home-hero-enter home-hero-enter-description mt-4 max-w-xl text-sm leading-6 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">{copy.body}</p>
         <div className="mt-4 flex flex-wrap gap-3"><Link href="/catalogue" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark">{copy.cta}<ArrowUpRight className="h-4 w-4" /></Link><Link href="/contact" className="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/20">{copy.link}</Link></div>
         <div className="mt-8 hidden gap-3 sm:grid sm:grid-cols-3">{copy.points.map((point, index) => { const Icon = icons[index]; return <div key={point} className="flex items-center gap-2 rounded-2xl border border-white/15 bg-black/25 px-3 py-3 text-xs font-bold backdrop-blur"><Icon className="h-4 w-4 shrink-0 text-emerald-400" />{point}</div>; })}</div>
         </div>

@@ -205,7 +205,7 @@ export function Header() {
         </div>
       </div>
 
-      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="mobile-app-navigation grid grid-cols-5 gap-1 border-t border-zinc-100 pb-2 pt-1 lg:hidden dark:border-white/5">
+      {(pathname.startsWith("/admin") || pathname.startsWith("/voitures/") || pathname === "/login") && <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="mobile-app-navigation grid grid-cols-5 gap-1 border-t border-zinc-100 pb-2 pt-1 lg:hidden dark:border-white/5">
         {navLinks.map((item) => {
           const accountTab = item.href === "/seller/request-account" && Boolean(adminUser || sellerUser);
           const href = accountTab ? authHref : item.href;
@@ -214,7 +214,7 @@ export function Header() {
           const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`) || (href === "/catalogue" && (pathname.startsWith("/voitures/") || pathname.startsWith("/categorie/"))) || (href === "/seller/request-account" && pathname === "/seller/login");
           return <Link key={item.href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand sm:text-xs", active ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-rose-300" : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-white/5")}><Icon aria-hidden="true" className="h-5 w-5 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>;
         })}
-      </nav>
+      </nav>}
 
       <AnimatePresence>
         {carsMenuOpen ? <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }} onMouseEnter={() => setCarsMenuOpen(true)} onMouseLeave={() => setCarsMenuOpen(false)} className="absolute inset-x-0 top-full hidden border-b border-zinc-200 bg-white shadow-2xl lg:block dark:border-white/10 dark:bg-zinc-950">
