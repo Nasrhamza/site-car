@@ -83,14 +83,15 @@ export function Header() {
   };
 
   return (
-    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 border-b border-zinc-200/40 bg-white/40 backdrop-blur-sm dark:border-white/10 dark:bg-zinc-950/30">
-      <div className="app-header-content container-premium flex h-16 items-center justify-between gap-3 lg:h-18">
+    <header onMouseLeave={() => setCarsMenuOpen(false)} className="mobile-app-header sticky top-0 z-50 px-3 pb-3 sm:px-5">
+      <div className="header-glass-shell mx-auto max-w-7xl rounded-[28px] lg:rounded-full">
+      <div className="app-header-content container-premium flex h-16 items-center justify-between gap-3 lg:h-[72px]">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <BrandLogo priority compact className="h-11 w-11 sm:h-12 sm:w-12" />
             <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">ALHADUNICARS</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">{language === "ar" ? "سوق سيارات وتصدير من دبي" : "Dubai car marketplace"}</p>
+              <p className="truncate text-sm font-semibold text-white">ALHADUNICARS</p>
+              <p className="text-xs text-white/55">{language === "ar" ? "سوق سيارات وتصدير من دبي" : "Dubai car marketplace"}</p>
             </div>
           </Link>
         </div>
@@ -118,7 +119,7 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="header-glass-actions hidden items-center gap-2 lg:flex">
           {isAdminRoute && <Link
               href={authHref}
               className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 transition hover:border-brand hover:text-brand dark:border-white/10 dark:bg-zinc-900 dark:text-white"
@@ -166,7 +167,7 @@ export function Header() {
           </a>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
+        <div className="header-glass-actions flex shrink-0 items-center gap-1.5 lg:hidden">
           <a
             href={whatsappHref}
             target="_blank"
@@ -201,7 +202,7 @@ export function Header() {
         </div>
       </div>
 
-      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="glass-navigation mobile-app-navigation mx-4 mb-3 grid grid-cols-5 items-center gap-1 rounded-full p-1.5 lg:hidden">
+      <nav data-mobile-navigation aria-label={language === "ar" ? "التنقل الرئيسي" : "Mobile navigation"} className="glass-navigation mobile-app-navigation mx-3 grid grid-cols-5 items-center gap-1 rounded-full p-1.5 lg:hidden">
         {navLinks.map((item) => {
           const accountTab = item.href === "/seller/request-account" && Boolean(adminUser || sellerUser);
           const href = accountTab ? authHref : item.href;
@@ -211,6 +212,7 @@ export function Header() {
           return <Link key={item.href} href={href} aria-label={label} title={label} aria-current={active ? "page" : undefined} className={cn("glass-navigation-link", active && "glass-navigation-link-active")}><Icon aria-hidden="true" className="h-6 w-6 shrink-0" strokeWidth={1.6} /></Link>;
         })}
       </nav>
+      </div>
 
       <AnimatePresence>
         {carsMenuOpen ? <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }} onMouseEnter={() => setCarsMenuOpen(true)} onMouseLeave={() => setCarsMenuOpen(false)} className="absolute inset-x-0 top-full hidden border-b border-zinc-200 bg-white shadow-2xl lg:block dark:border-white/10 dark:bg-zinc-950">

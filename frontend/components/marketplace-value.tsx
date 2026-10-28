@@ -70,7 +70,7 @@ export function MarketplaceValue() {
   return <section className="relative isolate min-h-[480px] overflow-hidden bg-zinc-950 text-white shadow-[0_24px_70px_rgba(15,23,42,.12)] sm:mb-12 sm:min-h-[700px]">
       <div className="absolute inset-0">
         <Image src="/brand/alhadunicars-marketplace-hero-2026.webp" alt="Premium vehicles presented by ALHADUNICARS in Dubai" fill priority className="object-cover object-center" sizes="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-black/5 rtl:bg-gradient-to-l" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/10 rtl:bg-gradient-to-l" />
       </div>
 
       <div className="container-premium absolute inset-x-0 top-5 z-20 sm:top-7">
@@ -89,7 +89,7 @@ export function MarketplaceValue() {
         <div className="w-full max-w-5xl">
           <span className="home-hero-enter inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] backdrop-blur"><Globe2 className="h-4 w-4 text-brand" />{copy.eyebrow}</span>
           <HeroTypewriter key={language} text={copy.title} />
-          <p className="home-hero-enter home-hero-enter-description mt-4 max-w-xl text-sm leading-6 text-white/75 sm:mt-5 sm:text-lg sm:leading-8">{copy.body}</p>
+          <p className="home-hero-enter home-hero-enter-description mt-4 max-w-xl text-sm leading-6 text-white/85 sm:mt-5 sm:text-lg sm:leading-8">{copy.body}</p>
         <div className="mt-4 flex flex-wrap gap-3"><Link href="/catalogue" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-brand-dark">{copy.cta}<ArrowUpRight className="h-4 w-4" /></Link><Link href="/contact" className="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/20">{copy.link}</Link></div>
         <div className="mt-8 hidden gap-3 sm:grid sm:grid-cols-3">{copy.points.map((point, index) => { const Icon = icons[index]; return <div key={point} className="flex items-center gap-2 rounded-2xl border border-white/15 bg-black/25 px-3 py-3 text-xs font-bold backdrop-blur"><Icon className="h-4 w-4 shrink-0 text-emerald-400" />{point}</div>; })}</div>
         </div>
